@@ -8,6 +8,7 @@ public class Main {
 	/// 봇 프로그램 실행 시 맵 파일 분석에 소요되는 딜레이를 줄일 수 있습니다.
 	
 	// 최혜진 commit test4
+	// 박민헤 commit test
     public static void main(String[] args) {
     	try{
             new MyBotModule().run();   		
