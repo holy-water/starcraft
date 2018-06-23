@@ -7,9 +7,9 @@ public class Main {
 	/// 봇 프로그램이 기 생성되어있는 맵 파일 분석 캐시파일을 활용하게 되어서<br>
 	/// 봇 프로그램 실행 시 맵 파일 분석에 소요되는 딜레이를 줄일 수 있습니다.
 	
-	// 최혜진 commit test4
-	// 박민헤 commit test
-	// 김성수 바보
+	// 최혜진 잠이 오니?
+	// 박민혜 잠이 오시나요?
+	// 김성수 저는 이만
     public static void main(String[] args) {
     	try{
             new MyBotModule().run();   		
