@@ -9,6 +9,7 @@ public class Main {
 	
 	// 최혜진 commit test4
 	// 박민헤 commit test
+	// 김성수 바보
     public static void main(String[] args) {
     	try{
             new MyBotModule().run();   		
