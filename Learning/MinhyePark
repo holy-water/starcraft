@@ -12,16 +12,3 @@ pull 하는 과정에서 BasicBot/bin 쪽 폴더에서 CheckoutConflict 에러 �
 GameCommander : 게임 이벤트 처리, Controller
 InformationManager : 게임 상황 정보 저장 및 업데이트
 WorkerManager : 일꾼 관리 - Best Mineral 찾는 로직 다시 확인하기
-
-여기까지 쓰고 커밋을 하려는데 이클립스에선 아예 안돼서..
-콘솔로 했더니 커밋이 되는 척 하면서 안되는데
-왜죠? ㅜ.ㅜ 후 
-
-참고 > console
-
-C:\Users\박서현\Desktop\빵미네\starcraft-workspace\starcraft\Learning>git commit -m "20180626 민혜"
-[master 8b6d195] 20180626 민혜
- 1 file changed, 14 insertions(+), 4 deletions(-)
- rewrite Learning/MinhyePark (100%)
- 
-됐다고 나오는데 막상 git 사이트에선 아무것도 안나옴 ㅠㅠ
