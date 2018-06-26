@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import bwapi.Position;
 import bwapi.Race;
 import bwapi.TechType;
 import bwapi.Unit;
@@ -232,24 +233,59 @@ public class StrategyManager {
 			*/
 		} 
 		else if (MyBotModule.Broodwar.self().getRace() == Race.Terran) {
+			// 0626 수정
+			// 5 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 6 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-					InformationManager.Instance().getBasicSupplyProviderUnitType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 7 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 8 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// Supply Depot
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getBasicSupplyProviderUnitType(),
+								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 9 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 10 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// Barracks
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 11 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 12 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 13 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// Command Center
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getBasicResourceDepotBuildingType(),
+					BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+			// 14 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 15 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 1 Marine
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-
+			// Supply Depot
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getBasicSupplyProviderUnitType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// Bunker
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
+					BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+						
 			/*
 			// 가스 리파이너리
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getRefineryBuildingType());
@@ -575,7 +611,7 @@ public class StrategyManager {
 				}
 			}
 
-			if (workerCount < 30) {
+			if (workerCount < 50) {
 				for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 					if (unit.getType().isResourceDepot()) {
 						if (unit.isTraining() == false || unit.getLarva().size() > 0) {
@@ -712,22 +748,35 @@ public class StrategyManager {
 
 		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
 		if (isFullScaleAttackStarted == false) {
-			Chokepoint firstChokePoint = BWTA.getNearestChokepoint(InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getTilePosition());
-
+			// 0626 수정 및 추가
+			Chokepoint secondChokePoint = InformationManager.Instance().getSecondChokePoint(InformationManager.Instance().selfPlayer);
+			Unit bunker = null;
+			
+			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Bunker) {
+					bunker = unit;
+					break;
+				}
+			}
+			
 			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 				if (unit.getType() == InformationManager.Instance().getBasicCombatUnitType() && unit.isIdle()) {
-					commandUtil.attackMove(unit, firstChokePoint.getCenter());
+					if (bunker != null && bunker.canLoad()) {
+						commandUtil.rightClick(unit, bunker);
+					}
+					commandUtil.attackMove(unit, secondChokePoint.getCenter());
 				}
 			}
-
+			
+			// 0626 주석 처리
 			// 전투 유닛이 2개 이상 생산되었고, 적군 위치가 파악되었으면 총공격 모드로 전환
-			if (MyBotModule.Broodwar.self().completedUnitCount(InformationManager.Instance().getBasicCombatUnitType()) > 2) {
-				if (InformationManager.Instance().enemyPlayer != null
-					&& InformationManager.Instance().enemyRace != Race.Unknown  
-					&& InformationManager.Instance().getOccupiedBaseLocations(InformationManager.Instance().enemyPlayer).size() > 0) {				
-					isFullScaleAttackStarted = true;
-				}
-			}
+//			if (MyBotModule.Broodwar.self().completedUnitCount(InformationManager.Instance().getBasicCombatUnitType()) > 2) {
+//				if (InformationManager.Instance().enemyPlayer != null
+//					&& InformationManager.Instance().enemyRace != Race.Unknown  
+//					&& InformationManager.Instance().getOccupiedBaseLocations(InformationManager.Instance().enemyPlayer).size() > 0) {				
+//					isFullScaleAttackStarted = true;
+//				}
+//			}
 		}
 		// 공격 모드가 되면, 모든 전투유닛들을 적군 Main BaseLocation 로 공격 가도록 합니다
 		else {

@@ -6,6 +6,7 @@ import bwapi.Color;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
+import bwapi.UnitType;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Region;
@@ -62,12 +63,13 @@ public class ScoutManager {
 				currentScoutUnit = null;
 				currentScoutStatus = ScoutStatus.NoScout.ordinal();
 
-				// first building (Pylon / Supply Depot / Spawning Pool) 을 건설 시작한 후, 가장 가까이에 있는 Worker 를 정찰유닛으로 지정한다
+				// 0626 수정
+				// Barracks 건설 시작한 후, 가장 가까이에 있는 Worker 를 정찰유닛으로 지정한다
 				Unit firstBuilding = null;
 
 				for (Unit unit : MyBotModule.Broodwar.self().getUnits())
 				{
-					if (unit.getType().isBuilding() == true && unit.getType().isResourceDepot() == false)
+					if (unit.getType().isBuilding() == true && unit.getType() == UnitType.Terran_Barracks)
 					{
 						firstBuilding = unit;
 						break;
