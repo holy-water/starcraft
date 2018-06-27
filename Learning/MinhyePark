@@ -1,4 +1,14 @@
-#1 (20180625) 첫번째 과제
-ㅎㅎㅎㅎ 프로젝트 임포트 하다가 두시간이 가버렸다 ^_^
-ㅎㅎㅎㅎㅎㅎㅎㅎㅎ 아무래도 실습을 내일부터 해야할 것 같다.. 아디오스...
-오늘 내가 한 일은 BWAPI / BWTA 정독 ㅜㅜ 노쓸모
+#1 (20180625) 환경설정
+git clone https://github.com/holy-water/starcraft.git
+
+이클립스에서 git 프로젝트 내의 모든 폴더 Import 하는 방법
+Package Explorer > New > Java Project > starcraft 이름으로 생성 - 자동 연결
+
+#2 (20180626) TutorialBot 학습
+pull 하는 과정에서 BasicBot/bin 쪽 폴더에서 CheckoutConflict 에러 발생
+> 전체 업데이트를 지양해야 할 것 같다
+> BasicBot/src & Learning 개별 업데이트
+
+GameCommander : 게임 이벤트 처리, Controller
+InformationManager : 게임 상황 정보 저장 및 업데이트
+WorkerManager : 일꾼 관리 - Best Mineral 찾는 로직 다시 확인하기
