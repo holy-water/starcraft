@@ -12,3 +12,17 @@ pull 하는 과정에서 BasicBot/bin 쪽 폴더에서 CheckoutConflict 에러 �
 GameCommander : 게임 이벤트 처리, Controller
 InformationManager : 게임 상황 정보 저장 및 업데이트
 WorkerManager : 일꾼 관리 - Best Mineral 찾는 로직 다시 확인하기
+
+#3 (20180628) TutorialBot 학습
+건물 건설 조건
+- 해당 위치에 아무것도 없어야
+- 일꾼 유닛 죽으면 건설 중지
+
+BuildManager : 건물 및 유닛 생산
+
+// 궁금한 점
+서플라이가 부족하다는게 무슨 말?
+supplyUsed + 6 > supplyTotal 이면 생산하게 해놓았는데 이게 뭘까
+
+테란 supply Depot - Barracks - 마린
+프로토스 저그 생략
