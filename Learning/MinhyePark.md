@@ -1,11 +1,11 @@
-## 1 (20180625) 환경설정
+## (20180625) 환경설정
 
 1. git clone https://github.com/holy-water/starcraft.git
 2. 이클립스에서 git 프로젝트 내의 모든 폴더 Import 하는 방법
     - Package Explorer > New > Java Project > starcraft 이름으로 생성
     - 자동 연결
  
-## 2 (20180626) TutorialBot 학습
+## (20180626) TutorialBot 학습
 
 1. pull 하는 과정에서 BasicBot/bin 쪽 폴더에서 CheckoutConflict 에러 발생
     - 전체 업데이트 지양
@@ -15,7 +15,7 @@
 3. InformationManager : 게임 상황 정보 저장 및 업데이트
 4. WorkerManager : 일꾼 관리 - Best Mineral 찾는 로직 다시 확인하기
 
-## 3 (20180628) TutorialBot 학습 / 다크템플러
+## (20180628) TutorialBot 학습 / 다크템플러
 1. 건물 건설 조건
     - 해당 위치에 아무것도 없어야
     - 일꾼 유닛 죽으면 건설 중지
