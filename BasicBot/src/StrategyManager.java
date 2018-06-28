@@ -794,7 +794,7 @@ public class StrategyManager {
 
 	// 일꾼 계속 추가 생산
 	public void executeWorkerTraining() {
-
+		
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
@@ -830,15 +830,33 @@ public class StrategyManager {
 			if (workerCount < 50) {
 				for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 					if (unit.getType().isResourceDepot()) {
-						if (unit.isTraining() == false || unit.getLarva().size() > 0) {
+					  // 0628 최혜진 수정 - 기존에 빌드큐에 하나씩 무조건 넣어놓는 로직 삭제 후 직접 명령을 내리는 방식으로 소스 추가
+//						if (unit.isTraining() == false || unit.getLarva().size() > 0) {
 							// 빌드큐에 일꾼 생산이 1개는 있도록 한다
-							if (BuildManager.Instance().buildQueue
-									.getItemCount(InformationManager.Instance().getWorkerType(), null) == 0) {
-								// std.cout + "worker enqueue" + std.endl;
-								BuildManager.Instance().buildQueue.queueAsLowestPriority(
-										new MetaType(InformationManager.Instance().getWorkerType()), false);
-							}
-						}
+//							if (BuildManager.Instance().buildQueue
+//									.getItemCount(InformationManager.Instance().getWorkerType(), null) == 0) {
+//								// std.cout + "worker enqueue" + std.endl;
+//								BuildManager.Instance().buildQueue.queueAsLowestPriority(
+//										new MetaType(InformationManager.Instance().getWorkerType()), false);
+//							}
+			
+//							for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+//													
+//								// 건물이고 트레이닝 할 수 있는 경우
+//								if (unit.getType().isBuilding()) {
+//									if(unit.canTrain()) {
+										//System.out.println(unit.getTrainingQueue().size());
+										unit.train(InformationManager.Instance().getWorkerType());
+										unit.train(InformationManager.Instance().getWorkerType());
+										unit.train(InformationManager.Instance().getWorkerType());
+										unit.train(InformationManager.Instance().getWorkerType());
+										unit.train(InformationManager.Instance().getWorkerType());
+//									}
+//								}
+//
+//							}
+											
+//						}
 					}
 				}
 			}
