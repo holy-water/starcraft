@@ -87,13 +87,43 @@ public class StrategyManager {
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
 	}
+	
+	// 0628 추가
+	private void executeFactoryManagement() {
+		
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
 
+		// 1초에 한번만 실행
+		if (MyBotModule.Broodwar.getFrameCount() % 24 != 0) {
+			return;
+		}
+
+		int factoryCount = 0;
+
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory) {
+				factoryCount++;
+			}
+		}
+
+		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 250) {
+			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			}
+		}
+		
+	}
+	
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
 	public void update() {
 		if (BuildManager.Instance().buildQueue.isEmpty()) {
 			isInitialBuildOrderFinished = true;
 		}
-
+		
 		executeWorkerTraining();
 
 		executeSupplyManagement();
@@ -102,6 +132,9 @@ public class StrategyManager {
 		// executeBasicCombatUnitTraining();
 
 		executeSeniorityCombatUnitTraining();
+		
+		// 0628 추가
+		executeFactoryManagement();
 
 		executeCombat();
 
@@ -301,7 +334,7 @@ public class StrategyManager {
 			 * 
 			 */
 		} else if (MyBotModule.Broodwar.self().getRace() == Race.Terran) {
-			// 0627 수정
+			// 0628 수정
 			// 5 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -336,16 +369,13 @@ public class StrategyManager {
 			// 13 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 14 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Command Center
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getBasicResourceDepotBuildingType(),
 					BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
-			// 14 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 1 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 15 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -356,30 +386,27 @@ public class StrategyManager {
 			// 16 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 1 Marine
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Refinery
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getRefineryBuildingType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 17 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Bunker
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
 					BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-			// 17 SCV
+			// 18 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 2 Marine
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 18 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 3 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 19 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 4 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 20 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
@@ -390,11 +417,17 @@ public class StrategyManager {
 			// 21 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 3 Marine
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 22 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Factory
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 4 Marine
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 
 			/*
@@ -799,6 +832,12 @@ public class StrategyManager {
 		if (isInitialBuildOrderFinished == false) {
 			return;
 		}
+		
+		// 0628 추가 
+		// 12초에 한번만 실행
+		if (MyBotModule.Broodwar.getFrameCount() % (24 * 12) != 0) {
+			return;
+		}
 
 		if (MyBotModule.Broodwar.self().minerals() >= 50) {
 			// workerCount = 현재 일꾼 수 + 생산중인 일꾼 수
@@ -846,10 +885,6 @@ public class StrategyManager {
 //								if (unit.getType().isBuilding()) {
 //									if(unit.canTrain()) {
 										//System.out.println(unit.getTrainingQueue().size());
-										unit.train(InformationManager.Instance().getWorkerType());
-										unit.train(InformationManager.Instance().getWorkerType());
-										unit.train(InformationManager.Instance().getWorkerType());
-										unit.train(InformationManager.Instance().getWorkerType());
 										unit.train(InformationManager.Instance().getWorkerType());
 //									}
 //								}
@@ -900,10 +935,18 @@ public class StrategyManager {
 		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
 		if (MyBotModule.Broodwar.self().supplyTotal() <= 400) {
 
+			// 0628 추가
+			int factoryCount = 0;
+			
+			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory) {
+					factoryCount++;
+				}
+			}
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
 			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
-			int supplyMargin = 12;
+			int supplyMargin = 8 + (factoryCount * 8);
 
 			// currentSupplyShortage 를 계산한다
 			int currentSupplyShortage = MyBotModule.Broodwar.self().supplyUsed() + supplyMargin
@@ -1003,14 +1046,15 @@ public class StrategyManager {
 			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 				if (unit.getType() == InformationManager.Instance().getBasicCombatBuildingType()) {
 					if (unit.isTraining() == false || unit.getLarva().size() > 0) {
-						if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Siege_Tank_Tank_Mode, null) == 0) {
-							if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
-								BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Machine_Shop,
-										BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-							}
-							BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Siege_Tank_Tank_Mode,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-						}
+						// 0628 수정
+//						if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Siege_Tank_Tank_Mode, null) == 0) {
+//							if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
+//								BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Machine_Shop,
+//										BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+//							}
+//							BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Siege_Tank_Tank_Mode,
+//									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+//						}
 						if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture, null) == 0) {
 							BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Vulture,
 									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
