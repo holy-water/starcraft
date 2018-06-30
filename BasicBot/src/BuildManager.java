@@ -760,6 +760,7 @@ public class BuildManager {
 				seedPosition = tempChokePoint.getCenter();
 			}
 			break;
+		// 	
 		}
 
 		return seedPosition;
