@@ -1,8 +1,9 @@
 2018.06.30 토요일
-우선 맵 차체는 가로 세로 127 픽셀로 이루어진 형태
+우선 맵 차체는 가로 세로 128 픽셀(0-127)로 이루어진 형태
 건물의 정중앙이 아닌 좌상단 꼭지점을 getTilePosition 메서드로 알 수 있음
 SupplyDepot을 원하는 곳에 '오와열을 맞추어' 건설하기 위한 개발 시작 SupplyDepotPosition 전략
 SupplyDepot은 가장자리에서 가로로 지을 예정
+SupplyDepot은 가로 2 세로 1의 직사각형 공간을 차지함
 BaseLocation과 FirstExpansionPoint 간의 x y좌표를 비교하여 
 BaseLocation이 좌상단, 우상단, 좌하단, 우하단에 위치하고 있는지 파악
 
