@@ -35,22 +35,21 @@
 
 ## (20180630) WorkerManager 분석
 1. 현 상태 분석
-  1. Idle 상태의 Worker가 있을 경우(커맨드 센터 파괴시 포함) > 가까운 미네랄 채취하게 함
-    - handleIdleWorkers() > setMineralWorker(worker) > getClosestResourceDepotFromWorker()
-    - getClosestResourceDepotFromWorker()
-      - 커맨드센터 선택 기준
-        - (전제조건 외) ① 미네랄 일꾼 수가 꽉 차지 않은 곳 ② 가까운 곳
-        - 없으면, 미네랄이 남은 커맨드센터 선택
-        - 없으면, 가장 가까운 커맨드센터 선택
-  2. 커맨드 센터 신규 생성 시 / 일꾼 신규 생성 시 / 일꾼 죽었을 경우 > Worker들을 리밸런스
-    - rebalanceWorkers(): 미네랄 일꾼 수가 꽉 찼을 경우 worker들을 idle 상태로 변경
-  3. depotHasEnoughMineralWorkers()
-    - 미네랄 일꾼 수가 꽉 찼는지 확인, true이면 꽉 찬 것, false이면 아직 여유있는 것
-    - 미네랄 일꾼 수가 꽉 찼다 = 커맨드센터 근처 미네랄 수 * 2 로 현재 고정
+    1. Idle 상태의 Worker가 있을 경우(커맨드 센터 파괴시 포함) > 가까운 커맨드 센터 선택하여 미네랄 채취하게 함
+        - handleIdleWorkers() > setMineralWorker(worker) > getClosestResourceDepotFromWorker()
+        - getClosestResourceDepotFromWorker() : 커맨드센터 선택 기준
+            1. (전제조건 외) ① 미네랄 일꾼 수가 꽉 차지 않은 곳 ② 가까운 곳
+            2. 없으면, 미네랄이 남은 커맨드센터 선택
+            3. 없으면, 가장 가까운 커맨드센터 선택
+    2. 커맨드 센터 신규 생성 시 / 일꾼 신규 생성 시 / 일꾼 죽었을 경우 > Worker들을 리밸런스
+        - rebalanceWorkers(): 미네랄 일꾼 수가 꽉 찼을 경우 worker들을 idle 상태로 변경
+    3. depotHasEnoughMineralWorkers()
+        - 미네랄 일꾼 수가 꽉 찼는지 확인, true이면 꽉 찬 것, false이면 아직 여유있는 것
+        - 미네랄 일꾼 수가 꽉 찼다 = 커맨드센터 근처 미네랄 수 * 2 로 현재 고정
 
 2. 문제점: 멀티 기지로 갈 경우 scv 재분배가 이뤄지지 않는다
 3. 해결방안 : 미네랄 일꾼 수가 꽉 찬 기준을 조정
-    - 현재 일꾼 수 = 미네랄수*2 이면 꽉찬 것으로 판단
-    - 2를 상수로 두지 않고 변수로 둬야할 것으로 추정
-    - 초기값은 1로 시작하고 최대값은 2로 되도록 설정해야되는 건가?
-    - 어떤 식으로 하지..?
+      - 현재 일꾼 수 = 미네랄수*2 이면 꽉찬 것으로 판단
+      - 2를 상수로 두지 않고 변수로 둬야할 것으로 추정
+      - 초기값은 1로 시작하고 최대값은 2로 되도록 설정해야되는 건가?
+      - 어떤 식으로 하지..?
