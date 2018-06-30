@@ -1,3 +1,35 @@
+2018.06.30 토요일
+우선 맵 차체는 가로 세로 127 픽셀로 이루어진 형태
+건물의 정중앙이 아닌 좌상단 꼭지점을 getTilePosition 메서드로 알 수 있음
+SupplyDepot을 원하는 곳에 '오와열을 맞추어' 건설하기 위한 개발 시작 SupplyDepotPosition 전략
+SupplyDepot은 가장자리에서 가로로 지을 예정
+BaseLocation과 FirstExpansionPoint 간의 x y좌표를 비교하여 
+BaseLocation이 좌상단, 우상단, 좌하단, 우하단에 위치하고 있는지 파악
+
+1. 좌상단 위치
+- BaseLocation x – FirstExpansionLocation x 음수
+- BaseLocation y – FirstExpansionLocation y 음수
+- Supply Depot : x 0부터 시작 + 2씩 증가 y 0부터 시작 그대로 
+2. 우상단 위치
+- BaseLocation x – FirstExpansionLocation x 양수
+- BaseLocation y – FirstExpansionLocation y 음수
+- Supply Depot : x 125부터 시작 + 2씩 감소 y 0부터 시작 그대로 
+3. 좌하단 위치
+- BaseLocation x – FirstExpansionLocation x 음수
+- BaseLocation y – FirstExpansionLocation y 양수
+- Supply Depot : x 0부터 시작 + 2씩 증가 y 125부터 시작 그대로 
+4. 우하단 위치
+- BaseLocation x – FirstExpansionLocation x 양수
+- BaseLocation y – FirstExpansionLocation y 양수
+- Supply Depot :  x 125부터 시작 + 2씩 감소 y 125부터 시작 그대로 
+
+현재까지는 BaseLocaton의 위치 파악까지만 완료 된 상태이며, Supply Depot 위치 찍어주는 것 뿐만 아니라
+아래의 것도 추가 구현이 필요할 것 같음
+- 가로로 쭉 짓다가 해당 위치에 이미 건물이 존재하거나 낭떠러지 라서 더 이상 지을 수 없는 경우
+- 우선 서킷 브레이커에만 맞춰서 진행하였으나 오버워치 맵에서도 동기화될 필요가 있음
+
+
+
 2018.06.27 수요일
 오 어제 다른 파일 실행한듯.... 다크템플러 4마리를 모두 확인하였따!
 적 위치 파악 후에도 다크 템플러 2마리 이상 안모이면 공격 출발 안함 특이점!
