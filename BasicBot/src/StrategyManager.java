@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import bwapi.Position;
@@ -90,7 +91,6 @@ public class StrategyManager {
 	
 	// 0628 추가
 	private void executeFactoryManagement() {
-		
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
@@ -101,13 +101,8 @@ public class StrategyManager {
 			return;
 		}
 
-		int factoryCount = 0;
-
-		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-			if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory) {
-				factoryCount++;
-			}
-		}
+		// 0630 추가
+		int factoryCount = getUnitTypeCount(UnitType.Terran_Factory);
 
 		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 250) {
 			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
@@ -115,8 +110,58 @@ public class StrategyManager {
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			}
 		}
+	}
+	
+	// 0630 추가
+	private int getUnitTypeCount(UnitType unitType) {
+		int count = 0;
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit.getType().isBuilding() && unit.getType() == unitType) {
+				count++;
+			}	
+		}		
+		return count;
+	}
+	
+	// 0630 추가
+	private void executeControl() {
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+		
+		// 1. 적을 발견
+		Unit unit = null;
+		// 2. 적이 레인지 유닛이 아닐 경우
+		if (!isRangeUnit(unit.getType())) {
+			
+		}
+
 		
 	}
+	
+	// 0630 추가
+	private boolean isRangeUnit(UnitType unitType) {
+		if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss) {
+			return Arrays.asList(protossRangeUnits).contains(unitType);
+		} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+			return Arrays.asList(terranRangeUnits).contains(unitType);
+		} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+			return Arrays.asList(zergRangeUnits).contains(unitType);
+		}
+		return false;
+	}
+	
+	// 0630 추가
+	private UnitType[] terranRangeUnits = { UnitType.Terran_Ghost, UnitType.Terran_Goliath, UnitType.Terran_Marine,
+			UnitType.Terran_Siege_Tank_Siege_Mode, UnitType.Terran_Siege_Tank_Tank_Mode, UnitType.Terran_Vulture };
+	
+	// 0630 추가
+	private UnitType[] zergRangeUnits = { UnitType.Zerg_Hydralisk, UnitType.Zerg_Lurker };
+	
+	// 0630 추가
+	private UnitType[] protossRangeUnits = { UnitType.Protoss_Archon, UnitType.Protoss_Dragoon,
+			UnitType.Protoss_Reaver };
 	
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
 	public void update() {
@@ -137,6 +182,9 @@ public class StrategyManager {
 		executeFactoryManagement();
 
 		executeCombat();
+		
+		// 0630 추가
+		executeControl();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -935,14 +983,9 @@ public class StrategyManager {
 		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
 		if (MyBotModule.Broodwar.self().supplyTotal() <= 400) {
 
-			// 0628 추가
-			int factoryCount = 0;
+			// 0630 수정
+			int factoryCount = getUnitTypeCount(UnitType.Terran_Factory);
 			
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory) {
-					factoryCount++;
-				}
-			}
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
 			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
@@ -1084,7 +1127,7 @@ public class StrategyManager {
 			Unit bunker = null;
 
 			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Bunker) {
+				if (unit.getType() == UnitType.Terran_Bunker) {
 					bunker = unit;
 					break;
 				}
