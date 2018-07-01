@@ -33,6 +33,13 @@ public class ConstructionPlaceFinder {
 	private static ConstructionPlaceFinder instance = new ConstructionPlaceFinder();
 
 	private static boolean isInitialized = false;
+	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
+	private static boolean isSupplyDepotBuild = false;
+	private static int leftcornerX = 0;
+	private static int rightcornerX = 125;
+	private static int uppercornerY = 0;
+	private static int lowercornerY = 125;
+	private static int locationOfBase = 0;
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
@@ -201,23 +208,62 @@ public class ConstructionPlaceFinder {
 
 			// 0630 - 최혜진 추가 SupplyDepot에 대한 전략 추가
 			case SupplyDepotPosition:
-				tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
-				tempFirstExpansion = InformationManager.Instance()
-						.getFirstExpansionLocation(MyBotModule.Broodwar.self());
-				int dx = tempBaseLocation.getX() - tempFirstExpansion.getX();
-				int dy = tempBaseLocation.getY() - tempFirstExpansion.getY();
+				int nx = 0;
+				int ny = 0;
+				if (isSupplyDepotBuild == false) { // Supply Depot 첫번째 위치 지정인 경우
+					// BaseLocation이 맵의 어느 부분에 위치하는지 파악하고 초기값 리턴
+					tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
+					tempFirstExpansion = InformationManager.Instance()
+							.getFirstExpansionLocation(MyBotModule.Broodwar.self());
+					tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+					int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
+					int dy = tempBaseLocation.getTilePosition().getY() - tempFirstExpansion.getTilePosition().getY();
 
-				System.out.println("This is for Supply Depot");
-				if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-					
-				} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
+					if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
+						nx = leftcornerX;
+						ny = uppercornerY;
+						locationOfBase = 1;
+					} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
+						nx = rightcornerX;
+						ny = uppercornerY;
+						locationOfBase = 2;
+					} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
+						nx = leftcornerX;
+						ny = lowercornerY;
+						locationOfBase = 3;
+					} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
+						nx = rightcornerX;
+						ny = lowercornerY;
+						locationOfBase = 4;
+					}
 
-				} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
+					isSupplyDepotBuild = true;
+					//System.out.println(locationOfBase + " " + nx + " " + ny);
 
-				} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
+				} else { // 첫번째가 아닌 경우
+					if (locationOfBase == 1) {
+						leftcornerX = leftcornerX + 3;
+						nx = leftcornerX;
+						ny = uppercornerY;
+					} else if (locationOfBase == 2) {
+						rightcornerX = rightcornerX - 3;
+						nx = rightcornerX;
+						ny = uppercornerY;
+					} else if (locationOfBase == 3) {
+						leftcornerX = leftcornerX + 3;
+						nx = leftcornerX;
+						ny = lowercornerY;
+					} else if (locationOfBase == 4) {
+						rightcornerX = rightcornerX - 3;
+						nx = rightcornerX;
+						ny = lowercornerY;
+					}
+
+					//System.out.println(nx + " " + ny);
 
 				}
-
+				tempTilePosition = new TilePosition(nx, ny);
+				desiredPosition = tempTilePosition.getPoint();
 				break;
 			}
 		}

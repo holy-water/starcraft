@@ -377,13 +377,13 @@ public class StrategyManager {
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Supply Depot
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-			InformationManager.Instance().getBasicSupplyProviderUnitType(),
-			BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);	
-			// 0630 - 최혜진 추가 테스트용
 //			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-//					InformationManager.Instance().getBasicSupplyProviderUnitType(),
-//					BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+//			InformationManager.Instance().getBasicSupplyProviderUnitType(),
+//			BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);	
+			// 0630 - 최혜진 추가 테스트용
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(
+					InformationManager.Instance().getBasicSupplyProviderUnitType(),
+					BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 			// 9 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -413,9 +413,12 @@ public class StrategyManager {
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Supply Depot
+//			BuildManager.Instance().buildQueue.queueAsLowestPriority(
+//					InformationManager.Instance().getBasicSupplyProviderUnitType(),
+//					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getBasicSupplyProviderUnitType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 			// 16 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
