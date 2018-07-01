@@ -1,4 +1,4 @@
-2018.07.01 일요일ㅇ
+2018.07.01 일요일
 1. BaseLocation과 FirstExpansionPoint 간의 x y좌표를 비교하여 위치 파악하려고 했으나
    둘의 Y좌표가 같은 경우가 많이 발생하여 Y좌표는 Second Choke Point로 비교하는 것으로 수정
 2. 위치 파악은 처음 한번만 실시하는 것으로 수정
