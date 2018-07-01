@@ -8,6 +8,13 @@
  - 밀리 유닛은 사용할 예정이 없으므로 아군 유닛은 전부 레인지 유닛
 
 
+BasicBot v1.0.6
+
+1. SupplyDepotPostion 건설 전략 수정
+ - BaseLocation의 전체적인 위치 파악 로직 수정 : X축은 FirstChockePoint 기준으로 변경
+ - SupplyDepot 위치 지정까지 완료
+ - BaseLocation이 좌하단과 우하단에 위치하는 경우 지정한 위치에 짓지 않는 문제 발생
+ 
 
 BasicBot v1.0.5
 
