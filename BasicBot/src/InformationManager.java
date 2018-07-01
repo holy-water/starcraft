@@ -577,7 +577,7 @@ public class InformationManager {
 		if (race == Race.Protoss) {
 			return UnitType.Protoss_Zealot;
 		} else if (race == Race.Terran) {
-			return UnitType.Terran_Marine;
+			return UnitType.Terran_Vulture;
 		} else if (race == Race.Zerg) {
 			return UnitType.Zerg_Zergling;
 		} else {
