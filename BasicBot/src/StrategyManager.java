@@ -103,8 +103,25 @@ public class StrategyManager {
 			return;
 		}
 
-		// 0630 추가
-		int factoryCount = getUnitTypeCount(UnitType.Terran_Factory);
+		// 0702 추가
+		int machineShopCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Machine_Shop, MyBotModule.Broodwar.self());
+
+		if (machineShopCount < 2) {
+			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory && unit.isCompleted()) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
+						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Machine_Shop,
+								BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+					}
+				}
+
+			}
+		} else {
+			// 업그레이드
+		}
+
+		// 0702 추가
+		int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory, MyBotModule.Broodwar.self());
 
 		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 250) {
 			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
@@ -115,17 +132,6 @@ public class StrategyManager {
 		}
 	}
 
-	// 0630 추가
-	private int getUnitTypeCount(UnitType unitType) {
-		int count = 0;
-		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-			if (unit.getType().isBuilding() && unit.getType() == unitType) {
-				count++;
-			}
-		}
-		return count;
-	}
-
 	// 0701 수정
 	private void executeControl() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
@@ -133,58 +139,21 @@ public class StrategyManager {
 			return;
 		}
 
-		// 1. 공격하는 적을 발견
-		Unit enemyUnit = null;
-		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
+		// 0702 수정 
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
 				continue;
 			}
-			if (unit.isAttacking()) {
-				System.out.println("공격하는 " + unit.getType() + "을(를) 발견!!!");
-				enemyUnit = unit;
-				break;
-			}
-		}
-		// 2. 적이 레인지 유닛이 아닐 경우
-		if (enemyUnit != null && !isRangeUnit(enemyUnit.getType())) {
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-				if (unit.getType().isBuilding() || unit.getType().isWorker()) {
-					continue;
-				}
-				if (unit.isUnderAttack()) {
-					System.out.println("공격당하고 있는 " + unit.getType() + "을(를) 본진으로 이동!!!");
-					unit.patrol(InformationManager.Instance()
-							.getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition());
-				} else {
-					unit.attack(unit.getPosition());
-				}
+			if (unit.isUnderAttack()) {
+				System.out.println("공격당하고 있는 " + unit.getType() + "을(를) 본진으로 이동!!!");
+				unit.move(InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer)
+						.getPosition());
+			} else {
+				unit.attack(unit.getPosition());
 			}
 		}
 
 	}
-
-	// 0630 추가
-	private boolean isRangeUnit(UnitType unitType) {
-		if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss) {
-			return Arrays.asList(protossRangeUnits).contains(unitType);
-		} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
-			return Arrays.asList(terranRangeUnits).contains(unitType);
-		} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
-			return Arrays.asList(zergRangeUnits).contains(unitType);
-		}
-		return false;
-	}
-
-	// 0630 추가
-	private UnitType[] terranRangeUnits = { UnitType.Terran_Ghost, UnitType.Terran_Goliath, UnitType.Terran_Marine,
-			UnitType.Terran_Siege_Tank_Siege_Mode, UnitType.Terran_Siege_Tank_Tank_Mode, UnitType.Terran_Vulture };
-
-	// 0630 추가
-	private UnitType[] zergRangeUnits = { UnitType.Zerg_Hydralisk, UnitType.Zerg_Lurker };
-
-	// 0630 추가
-	private UnitType[] protossRangeUnits = { UnitType.Protoss_Archon, UnitType.Protoss_Dragoon,
-			UnitType.Protoss_Reaver, };
 
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
 	public void update() {
@@ -452,6 +421,9 @@ public class StrategyManager {
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getBasicResourceDepotBuildingType(),
 					BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+			// 1 Marine
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 15 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -465,9 +437,6 @@ public class StrategyManager {
 			// 16 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 1 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Refinery
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getRefineryBuildingType(),
@@ -478,11 +447,11 @@ public class StrategyManager {
 			// Bunker
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
 					BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-			// 18 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 2 Marine
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			// 18 SCV
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 19 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
@@ -496,18 +465,12 @@ public class StrategyManager {
 			// 21 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 3 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// 22 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Factory - 0702 최혜진 수정 입구로
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
 					BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
-			// 4 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 
 			/*
 			 * // 가스 리파이너리
@@ -1021,7 +984,7 @@ public class StrategyManager {
 		if (MyBotModule.Broodwar.self().supplyTotal() <= 400) {
 
 			// 0630 수정
-			int factoryCount = getUnitTypeCount(UnitType.Terran_Factory);
+			int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory, MyBotModule.Broodwar.self());
 
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
@@ -1080,8 +1043,10 @@ public class StrategyManager {
 						// +
 						// 0702 - 최혜진 수정 Supply Depot을 정렬하여 짓기 위해 기존 소스 수정
 						// InformationManager.Instance().getBasicSupplyProviderUnitType());
-//						BuildManager.Instance().buildQueue.queueAsHighestPriority(
-//								new MetaType(InformationManager.Instance().getBasicSupplyProviderUnitType()), true);
+						// BuildManager.Instance().buildQueue.queueAsHighestPriority(
+						// new
+						// MetaType(InformationManager.Instance().getBasicSupplyProviderUnitType()),
+						// true);
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(
 								InformationManager.Instance().getBasicSupplyProviderUnitType(),
 								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
