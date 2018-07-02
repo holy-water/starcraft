@@ -35,11 +35,12 @@ public class ConstructionPlaceFinder {
 	private static boolean isInitialized = false;
 	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
 	private static boolean isSupplyDepotBuild = false;
-	private static int leftcornerX = 0;
-	private static int rightcornerX = 125;
+	private static int leftcornerX = 22;
+	private static int rightcornerX = 103;
 	private static int uppercornerY = 0;
 	private static int lowercornerY = 125;
 	private static int locationOfBase = 0;
+	private static int numberOfSupply = 0;
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
@@ -218,7 +219,7 @@ public class ConstructionPlaceFinder {
 					tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 					int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
 					int dy = tempBaseLocation.getTilePosition().getY() - tempFirstExpansion.getTilePosition().getY();
-
+					numberOfSupply = 1;
 					if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
 						nx = leftcornerX;
 						ny = uppercornerY;
@@ -238,28 +239,49 @@ public class ConstructionPlaceFinder {
 					}
 
 					isSupplyDepotBuild = true;
-					//System.out.println(locationOfBase + " " + nx + " " + ny);
+					// System.out.println(locationOfBase + " " + nx + " " + ny);
 
 				} else { // 첫번째가 아닌 경우
+					numberOfSupply++;
 					if (locationOfBase == 1) {
-						leftcornerX = leftcornerX + 3;
+						if (numberOfSupply % 3 == 1) {
+							leftcornerX = leftcornerX - 3;
+							uppercornerY = 0;
+						} else {
+							uppercornerY = uppercornerY + 2;
+						}
 						nx = leftcornerX;
 						ny = uppercornerY;
 					} else if (locationOfBase == 2) {
-						rightcornerX = rightcornerX - 3;
+						if (numberOfSupply % 3 == 1) {
+							rightcornerX = rightcornerX + 3;
+							uppercornerY = 0;
+						} else {
+							uppercornerY = uppercornerY + 2;
+						}
 						nx = rightcornerX;
 						ny = uppercornerY;
 					} else if (locationOfBase == 3) {
-						leftcornerX = leftcornerX + 3;
+						if (numberOfSupply % 3 == 1) {
+							leftcornerX = leftcornerX - 3;
+							lowercornerY = 125;
+						} else {
+							lowercornerY = lowercornerY - 2;
+						}
 						nx = leftcornerX;
 						ny = lowercornerY;
 					} else if (locationOfBase == 4) {
-						rightcornerX = rightcornerX - 3;
+						if (numberOfSupply % 3 == 1) {
+							rightcornerX = rightcornerX + 3;
+							lowercornerY = 125;
+						} else {
+							lowercornerY = lowercornerY - 2;
+						}
 						nx = rightcornerX;
 						ny = lowercornerY;
 					}
 
-					//System.out.println(nx + " " + ny);
+					// System.out.println(nx + " " + ny);
 
 				}
 				tempTilePosition = new TilePosition(nx, ny);

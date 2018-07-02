@@ -108,8 +108,9 @@ public class StrategyManager {
 
 		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 250) {
 			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
+				// 0702 - 최혜진 수정 입구로
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 			}
 		}
 	}
@@ -489,9 +490,9 @@ public class StrategyManager {
 			// 20 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Factory
+			// Factory - 0702 최혜진 수정 입구로
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 			// 21 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -501,9 +502,9 @@ public class StrategyManager {
 			// 22 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Factory
+			// Factory - 0702 최혜진 수정 입구로
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 			// 4 Marine
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -1077,9 +1078,13 @@ public class StrategyManager {
 						// 주석처리
 						// System.out.println("enqueue supply provider "
 						// +
+						// 0702 - 최혜진 수정 Supply Depot을 정렬하여 짓기 위해 기존 소스 수정
 						// InformationManager.Instance().getBasicSupplyProviderUnitType());
+//						BuildManager.Instance().buildQueue.queueAsHighestPriority(
+//								new MetaType(InformationManager.Instance().getBasicSupplyProviderUnitType()), true);
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(
-								new MetaType(InformationManager.Instance().getBasicSupplyProviderUnitType()), true);
+								InformationManager.Instance().getBasicSupplyProviderUnitType(),
+								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					}
 				}
 			}
