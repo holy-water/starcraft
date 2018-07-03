@@ -3,8 +3,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import bwapi.Position;
 import bwapi.Race;
@@ -91,7 +93,7 @@ public class StrategyManager {
 		// //////////////////////////////////////////////////
 	}
 
-	// 0628 추가
+	// 0702 수정
 	private void executeFactoryManagement() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
@@ -104,9 +106,13 @@ public class StrategyManager {
 		}
 
 		// 0702 추가
-		int machineShopCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Machine_Shop, MyBotModule.Broodwar.self());
+		int machineShopCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Machine_Shop,
+				MyBotModule.Broodwar.self());
 
-		if (machineShopCount < 2) {
+		// 팩토리 숫자에 비례해서 증가
+		int machineShopMargin = 2;
+
+		if (machineShopCount < machineShopMargin) {
 			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory && unit.isCompleted()) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
@@ -121,9 +127,10 @@ public class StrategyManager {
 		}
 
 		// 0702 추가
-		int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory, MyBotModule.Broodwar.self());
+		int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory,
+				MyBotModule.Broodwar.self());
 
-		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 250) {
+		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 300) {
 			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 				// 0702 - 최혜진 수정 입구로
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
@@ -132,24 +139,22 @@ public class StrategyManager {
 		}
 	}
 
-	// 0701 수정
+	// 0703 수정
 	private void executeControl() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
 		}
 
-		// 0702 수정 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
 				continue;
 			}
-			if (unit.isUnderAttack()) {
-				System.out.println("공격당하고 있는 " + unit.getType() + "을(를) 본진으로 이동!!!");
-				unit.move(InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer)
-						.getPosition());
-			} else {
-				unit.attack(unit.getPosition());
+			// TO-DO 상대유닛과 멀어지는 방향으로 이동
+			// 11시 -- 1시 +- 7시 -+ 5시 ++
+			if (unit.getType() == UnitType.Terran_Vulture && unit.isAttacking()) {
+				Position position = unit.getPosition();
+				unit.move(new Position(position.getX() - 50, position.getX() - 50));
 			}
 		}
 
@@ -977,7 +982,8 @@ public class StrategyManager {
 		if (MyBotModule.Broodwar.self().supplyTotal() <= 400) {
 
 			// 0630 수정
-			int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory, MyBotModule.Broodwar.self());
+			int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory,
+					MyBotModule.Broodwar.self());
 
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
@@ -1113,15 +1119,6 @@ public class StrategyManager {
 		}
 	}
 
-	// 0627 추가
-	private boolean isCombatUnitType(UnitType unitType) {
-		if (unitType == UnitType.Terran_Marine || unitType == UnitType.Terran_Vulture
-				|| unitType == UnitType.Terran_Siege_Tank_Tank_Mode) {
-			return true;
-		}
-		return false;
-	}
-
 	public void executeCombat() {
 
 		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
@@ -1138,8 +1135,9 @@ public class StrategyManager {
 				}
 			}
 
+			// 앞마당 랠리 포인트
 			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-				if (isCombatUnitType(unit.getType()) && unit.isIdle()) {
+				if (!unit.getType().isWorker() && unit.isIdle()) {
 					if (bunker != null && unit.getType() == UnitType.Terran_Marine) {
 						commandUtil.rightClick(unit, bunker);
 					}
@@ -1147,7 +1145,6 @@ public class StrategyManager {
 				}
 			}
 
-			// 0626 주석 처리
 			// 전투 유닛이 2개 이상 생산되었고, 적군 위치가 파악되었으면 총공격 모드로 전환
 			if (MyBotModule.Broodwar.self()
 					.completedUnitCount(InformationManager.Instance().getBasicCombatUnitType()) > 2) {

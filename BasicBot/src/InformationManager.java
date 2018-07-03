@@ -613,7 +613,7 @@ public class InformationManager {
 		if (race == Race.Protoss) {
 			return UnitType.Protoss_Gateway;
 		} else if (race == Race.Terran) {
-			return UnitType.Terran_Barracks;
+			return UnitType.Terran_Factory;
 		} else if (race == Race.Zerg) {
 			return UnitType.Zerg_Hatchery;
 		} else {
