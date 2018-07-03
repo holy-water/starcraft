@@ -35,13 +35,14 @@ public class ConstructionPlaceFinder {
 	private static boolean isInitialized = false;
 	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
 	private static boolean isSupplyDepotBuild = false;
-	private static int leftcornerX = 22;
-	private static int rightcornerX = 103;
+	private static int leftcornerX = 21;
+	private static int rightcornerX = 105;
 	private static int uppercornerY = 0;
 	private static int lowercornerY = 125;
 	private static int locationOfBase = 0;
 	private static int numberOfSupply = 0;
-
+	private static boolean isBarrackBuilt = false; // 0703 - 최혜진 추가
+	
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
 		if (isInitialized == false) {
@@ -244,7 +245,7 @@ public class ConstructionPlaceFinder {
 				} else { // 첫번째가 아닌 경우
 					numberOfSupply++;
 					if (locationOfBase == 1) {
-						if (numberOfSupply % 3 == 1) {
+						if (numberOfSupply % 6 == 1) {
 							leftcornerX = leftcornerX - 3;
 							uppercornerY = 0;
 						} else {
@@ -253,7 +254,7 @@ public class ConstructionPlaceFinder {
 						nx = leftcornerX;
 						ny = uppercornerY;
 					} else if (locationOfBase == 2) {
-						if (numberOfSupply % 3 == 1) {
+						if (numberOfSupply % 6 == 1) {
 							rightcornerX = rightcornerX + 3;
 							uppercornerY = 0;
 						} else {
@@ -262,7 +263,7 @@ public class ConstructionPlaceFinder {
 						nx = rightcornerX;
 						ny = uppercornerY;
 					} else if (locationOfBase == 3) {
-						if (numberOfSupply % 3 == 1) {
+						if (numberOfSupply % 6 == 1) {
 							leftcornerX = leftcornerX - 3;
 							lowercornerY = 125;
 						} else {
@@ -271,7 +272,7 @@ public class ConstructionPlaceFinder {
 						nx = leftcornerX;
 						ny = lowercornerY;
 					} else if (locationOfBase == 4) {
-						if (numberOfSupply % 3 == 1) {
+						if (numberOfSupply % 6 == 1) {
 							rightcornerX = rightcornerX + 3;
 							lowercornerY = 125;
 						} else {
@@ -287,6 +288,43 @@ public class ConstructionPlaceFinder {
 				tempTilePosition = new TilePosition(nx, ny);
 				desiredPosition = tempTilePosition.getPoint();
 				break;
+			case BlockFirstChokePoint:
+				int blockx = 0;
+				int blocky = 0;
+				tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
+				if (isBarrackBuilt == false) {
+					isBarrackBuilt = true;
+					if (locationOfBase == 1) {
+						blockx = tempFirstExpansion.getTilePosition().getX() + 3;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+					} else if (locationOfBase == 2) {
+						blockx = tempFirstExpansion.getTilePosition().getX() - 3;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+					} else if (locationOfBase == 3) {
+						blockx = tempFirstExpansion.getTilePosition().getX() + 3;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+					} else if (locationOfBase == 4) {
+						blockx = tempFirstExpansion.getTilePosition().getX() - 3;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+					}
+				}else {
+					if (locationOfBase == 1) {
+						blockx = tempFirstExpansion.getTilePosition().getX() + 7;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 6;
+					} else if (locationOfBase == 2) {
+						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 6;
+					} else if (locationOfBase == 3) {
+						blockx = tempFirstExpansion.getTilePosition().getX() + 7;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+					} else if (locationOfBase == 4) {
+						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+					}				
+				}
+				tempTilePosition = new TilePosition(blockx, blocky);
+				seedPosition = tempTilePosition.getPoint();
+				break;	
 			}
 		}
 

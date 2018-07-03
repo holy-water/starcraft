@@ -439,6 +439,8 @@ public class ConstructionManager {
 	            if (MyBotModule.Broodwar.self().getRace() == Race.Terran)
 	            {
 	                WorkerManager.Instance().setIdleWorker(b.getConstructionWorker());
+	                // 0730 - 최혜진 추가 건설 후 놀고있는 scv를 바로 일꾼으로 투입하도록 추가
+	                WorkerManager.Instance().handleIdleWorkers();
 	            }
 
 	            // remove this unit from the under construction vector
