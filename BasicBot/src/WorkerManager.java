@@ -53,16 +53,16 @@ public class WorkerManager {
 			
 			// worker가 공격을 받으면 다른 진영으로 이동하도록 설정
 			// 테스트 아직 못한 상태
-			if ( worker.isUnderAttack() )
+			if (worker.isUnderAttack())
 			{
 				// 각각 본진, 확장진영(앞마당)의 위치
 				Position baseP = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
 				Position firstP = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self()).getPosition();
 				
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
-				if( BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(baseP) ) {					
+				if(BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(baseP)) {					
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstP));
-				} else if ( BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstP) ) {
+				} else if (BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstP)) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, baseP));
 				}
 			}
