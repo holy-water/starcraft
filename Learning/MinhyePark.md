@@ -1,4 +1,19 @@
+## (20180703) WorkerManager 수정
+
+1. 해결해야할 문제
+    - scv가 공격당했을 경우, 해당 scv의 위치가 본진이면 앞마당으로, 앞마당이면 본진으로 이동하도록 설정
+    - 이동 중 다른 명령과 충돌되지 않도록 설정할 필요
+    
+2. 해결 방법
+    - scv의 역할을 Move로 설정하면 다른 명령의 영향을 받지 않게 됨
+    - WorkerManager.java > updateWorkerStatus() 수정
+      + 공격을 받았을 경우 (isUnderAttack())
+      + 본진의 Region / 앞마당의 Region 을 각각 계산
+      + worker의 Region과 비교
+      + worker가 다른 진영으로 이동할 수 있도록 job(Move), WorkerMoveData 설정
+
 ## (20180701) 강의듣기
+
 이영호 테란 초보 강의 <https://youtu.be/STvspTUYlsU>
 1. 가스가 88이 되면 두마리를 뺀다. 더블을 가려면 미네랄이 많이 필요하기 때문
 2. 가스가 100이 되면 팩토리를 짓는다.
@@ -29,7 +44,7 @@
       - 2를 상수로 두지 않고 변수로 둬야할 것으로 추정
       - 초기값은 1로 시작하고 최대값은 2로 되도록 설정해야되는 건가?
       - 어떤 식으로 하지..?
-      
+      - WorkerData.java > 생성자 부분의 mineralAndMineralWorkerRatio = 1로 수정 
 
 ## (20180628) TutorialBot 학습 / 다크템플러
 

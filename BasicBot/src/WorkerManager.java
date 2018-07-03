@@ -50,6 +50,21 @@ public class WorkerManager {
 			{
 				continue;
 			}
+			
+			// worker가 공격을 받으면 다른 진영으로 이동하도록 설정
+			if ( worker.isUnderAttack() )
+			{
+				// 각각 본진, 확장진영(앞마당)의 위치
+				Position baseP = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+				Position firstP = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self()).getPosition();
+				
+				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
+				if( BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(baseP) ) {					
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstP));
+				} else if ( BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstP) ) {
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, baseP));
+				}
+			}
 
 			// 게임상에서 worker가 isIdle 상태가 되었으면 (새로 탄생했거나, 그전 임무가 끝난 경우), WorkerData 도 Idle 로 맞춘 후, handleGasWorkers, handleIdleWorkers 등에서 새 임무를 지정한다 
 			if ( worker.isIdle() )
