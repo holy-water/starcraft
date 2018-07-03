@@ -12,6 +12,8 @@
       + worker의 Region과 비교
       + worker가 다른 진영으로 이동할 수 있도록 job(Move), WorkerMoveData 설정
 
+3. 아직 테스트는 못한 상태 ㅠㅠ
+
 ## (20180701) 강의듣기
 
 이영호 테란 초보 강의 <https://youtu.be/STvspTUYlsU>

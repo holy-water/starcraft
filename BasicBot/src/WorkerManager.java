@@ -52,6 +52,7 @@ public class WorkerManager {
 			}
 			
 			// worker가 공격을 받으면 다른 진영으로 이동하도록 설정
+			// 테스트 아직 못한 상태
 			if ( worker.isUnderAttack() )
 			{
 				// 각각 본진, 확장진영(앞마당)의 위치
