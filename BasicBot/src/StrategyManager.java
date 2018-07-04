@@ -403,9 +403,9 @@ public class StrategyManager {
 			// 10 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Barracks
+			// Barracks - 0704 최혜진 수정 
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
-					BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+					BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 			// 11 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -428,10 +428,10 @@ public class StrategyManager {
 			// 15 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Supply Depot
+			// Supply Depot - 0704 최혜진 수정 
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getBasicSupplyProviderUnitType(),
-					BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 			// 16 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);

@@ -882,17 +882,17 @@ public class BuildManager {
 			if (isBarrackBuilt == false) {
 				isBarrackBuilt = true;
 				if (locationOfBase == 1) {
-					blockx = tempFirstExpansion.getTilePosition().getX() + 3;
-					blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+					blockx = tempFirstExpansion.getTilePosition().getX() + 4;
+					blocky = tempFirstExpansion.getTilePosition().getY() - 2;
 				} else if (locationOfBase == 2) {
-					blockx = tempFirstExpansion.getTilePosition().getX() - 3;
-					blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+					blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+					blocky = tempFirstExpansion.getTilePosition().getY() - 2;
 				} else if (locationOfBase == 3) {
-					blockx = tempFirstExpansion.getTilePosition().getX() + 3;
-					blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+					blockx = tempFirstExpansion.getTilePosition().getX() + 4;
+					blocky = tempFirstExpansion.getTilePosition().getY() + 2;
 				} else if (locationOfBase == 4) {
-					blockx = tempFirstExpansion.getTilePosition().getX() - 3;
-					blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+					blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+					blocky = tempFirstExpansion.getTilePosition().getY() + 2;
 				}
 			}else {
 				if (locationOfBase == 1) {

@@ -292,21 +292,23 @@ public class ConstructionPlaceFinder {
 				int blockx = 0;
 				int blocky = 0;
 				tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
+				System.out.println(tempFirstExpansion.getTilePosition().getX()+" "+tempFirstExpansion.getTilePosition().getY());
 				if (isBarrackBuilt == false) {
 					isBarrackBuilt = true;
 					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 3;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
 					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 3;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
 					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 3;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
 					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 3;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
 					}
+					System.out.println(blockx +" "+blocky);
 				}else {
 					if (locationOfBase == 1) {
 						blockx = tempFirstExpansion.getTilePosition().getX() + 7;
@@ -323,7 +325,9 @@ public class ConstructionPlaceFinder {
 					}				
 				}
 				tempTilePosition = new TilePosition(blockx, blocky);
-				seedPosition = tempTilePosition.getPoint();
+				desiredPosition = tempTilePosition.getPoint();
+//				ConstructionTask b = new ConstructionTask(buildingType, desiredPosition);
+//				b.setFinalPosition(desiredPosition);
 				break;	
 			}
 		}
@@ -400,7 +404,6 @@ public class ConstructionPlaceFinder {
 
 			testPosition = getBuildLocationNear(buildingType, desiredPosition, buildingGapSpace,
 					constructionPlaceSearchMethod);
-
 			// std::cout << "ConstructionPlaceFinder testPosition " << testPosition.x << ","
 			// << testPosition.y << std::endl;
 
