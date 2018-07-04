@@ -106,27 +106,6 @@ public class StrategyManager {
 		}
 
 		// 0702 추가
-		int machineShopCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Machine_Shop,
-				MyBotModule.Broodwar.self());
-
-		// 팩토리 숫자에 비례해서 증가
-		int machineShopMargin = 2;
-
-		if (machineShopCount < machineShopMargin) {
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-				if (unit.getType().isBuilding() && unit.getType() == UnitType.Terran_Factory && unit.isCompleted()) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
-						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Machine_Shop,
-								BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
-					}
-				}
-
-			}
-		} else {
-			// 업그레이드
-		}
-
-		// 0702 추가
 		int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory,
 				MyBotModule.Broodwar.self());
 
@@ -139,7 +118,11 @@ public class StrategyManager {
 		}
 	}
 
-	// 0703 수정
+	// 0704 추가
+	int[] dx = { 0, -1, 1, -1, 1 };
+	int[] dy = { 0, -1, -1, 1, 1 };
+
+	// 0704 수정
 	private void executeControl() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
@@ -153,11 +136,13 @@ public class StrategyManager {
 			// TO-DO 상대유닛과 멀어지는 방향으로 이동
 			// 11시 -- 1시 +- 7시 -+ 5시 ++
 			if (unit.getType() == UnitType.Terran_Vulture && unit.isAttacking()) {
-				Position position = unit.getPosition();
-				unit.move(new Position(position.getX() - 50, position.getX() - 50));
+				int weight = 80;
+				int location = BuildManager.Instance().locationOfBase;
+				Position position = new Position(unit.getPosition().getX() + weight * dx[location], unit.getPosition().getY() + weight * dy[location]);
+				unit.move(position);
 			}
 		}
-
+		
 	}
 
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
@@ -181,7 +166,7 @@ public class StrategyManager {
 		executeCombat();
 
 		// 0630 추가
-		// executeControl();
+		executeControl();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -988,7 +973,7 @@ public class StrategyManager {
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
 			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
-			int supplyMargin = 8 + (factoryCount * 8);
+			int supplyMargin = 10 + (factoryCount * 8);
 
 			// currentSupplyShortage 를 계산한다
 			int currentSupplyShortage = MyBotModule.Broodwar.self().supplyUsed() + supplyMargin
