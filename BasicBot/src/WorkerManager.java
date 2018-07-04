@@ -61,8 +61,10 @@ public class WorkerManager {
 				
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
 				if(BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(baseP)) {					
+					System.out.println(worker.getID() + "가 앞마당으로 이동!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstP));
 				} else if (BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstP)) {
+					System.out.println(worker.getID() + "가 본진으로 이동!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, baseP));
 				}
 			}
@@ -162,6 +164,7 @@ public class WorkerManager {
 
 				// 목적지에 도착한 경우 이동 명령을 해제한다
 				if (worker.getPosition().getDistance(data.getPosition()) < 4) {
+					System.out.println(worker.getID()+"가 목적지에 도착");
 					setIdleWorker(worker);
 				}
 				else {
@@ -789,6 +792,7 @@ public class WorkerManager {
 		// ResourceDepot 건물이 파괴되면, 자료구조 삭제 처리를 한 후, 일꾼들을 Idle 상태로 만들어 rebalanceWorkers 한 효과가 나게 한다
 		if (unit.getType().isResourceDepot() && unit.getPlayer() == MyBotModule.Broodwar.self())
 		{
+			System.out.println("ResourceDepot 건물 파괴!");
 			workerData.removeDepot(unit);
 		}
 
