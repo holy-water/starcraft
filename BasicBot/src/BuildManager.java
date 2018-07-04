@@ -29,9 +29,10 @@ public class BuildManager {
 	private static int rightcornerX = 105;
 	private static int uppercornerY = 0;
 	private static int lowercornerY = 125;
-	private static int locationOfBase = 0;
 	private static int numberOfSupply = 0;
 	private static boolean isBarrackBuilt = false;
+	// 0704 - 김성수 수정 StrategyManager에서 사용
+	public int locationOfBase = 0;
 
 	/// BuildOrderItem 들의 목록을 저장하는 buildQueue
 	public BuildOrderQueue buildQueue = new BuildOrderQueue();
