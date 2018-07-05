@@ -5,6 +5,7 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwta.BWTA;
+import bwta.Region;
 
 /// 일꾼 유닛들의 상태를 관리하고 컨트롤하는 class
 public class WorkerManager {
@@ -330,12 +331,29 @@ public class WorkerManager {
 
 		Unit closestDepot = null;
 		double closestDistance = 1000000000;
+		
+		// 본진과 앞마당 위치 변수
+		Position baseP = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+		Position firstP = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self()).getPosition();
+		Region baseR = BWTA.getRegion(baseP);
+		Region firstR = BWTA.getRegion(firstP);
+		
+		// unit의 위치
+		Position nowP = null;
+		
+		// 상대 유닛 수
+		int enemyCnt = 0;
+		// 상대 유닛 수가 5이상인지 판단하는 플래그
+		boolean isDangerous = false;
 
 		// 완성된, 공중에 떠있지 않고 땅에 정착해있는, ResourceDepot 혹은 Lair 나 Hive로 변형중인 Hatchery 중에서
 		// 첫째로 미네랄 일꾼수가 꽉 차지않은 곳
 		// 둘째로 가까운 곳을 찾는다
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits())
 		{
+			enemyCnt = 0;
+			isDangerous = false;
+			
 			if (unit == null) continue;
 			
 			if (unit.getType().isResourceDepot()
@@ -343,6 +361,24 @@ public class WorkerManager {
 				&& unit.isLifted() == false)
 			{
 				if (workerData.depotHasEnoughMineralWorkers(unit) == false) {
+					// 해당 지역이 공격받는 중이라고 판단될 경우 제외
+					// 해당 지역에 상대 유닛이 5개 이상 있을 경우로 판단한다					
+					if (baseR == BWTA.getRegion(unit.getPosition())) nowP = baseP;
+					else if (firstR == BWTA.getRegion(unit.getPosition())) nowP = firstP;
+							
+					for (Unit tempUnit : MyBotModule.Broodwar.getUnitsInRadius(nowP, 10 * Config.TILE_SIZE))
+					{
+						if (tempUnit.getPlayer() == MyBotModule.Broodwar.enemy()) enemyCnt++;
+						if (enemyCnt >= 5) {
+							isDangerous = true;
+							break;
+						}
+					}
+					if (isDangerous) {
+						System.out.println("위험하니까 안갈래");
+						continue;
+					}
+
 					double distance = unit.getDistance(worker);
 					if (closestDistance > distance) {
 						closestDepot = unit;
