@@ -129,6 +129,27 @@ public class StrategyManager {
 			return;
 		}
 
+		// 0705 추가 - 내 유닛을 공격하는 적 유닛이 있으면 반대로 이동
+		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
+			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
+				continue;
+			}
+			Unit myUnit = unit.getOrderTarget();
+			if (myUnit != null) {
+				Position enemyPosition = unit.getPosition();
+				Position myPosition = myUnit.getPosition();
+				Position position = getOppositePosition(myPosition, enemyPosition);
+				if (myUnit.getGroundWeaponCooldown() != 0) {
+					myUnit.move(position);
+				} else {
+					myUnit.attack(unit);
+					myUnit.move(position);
+				}
+			} else {
+				break;
+			}
+		}
+
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
 				continue;
@@ -138,11 +159,18 @@ public class StrategyManager {
 			if (unit.getType() == UnitType.Terran_Vulture && unit.isAttacking()) {
 				int weight = 80;
 				int location = BuildManager.Instance().locationOfBase;
-				Position position = new Position(unit.getPosition().getX() + weight * dx[location], unit.getPosition().getY() + weight * dy[location]);
+				Position position = new Position(unit.getPosition().getX() + weight * dx[location],
+						unit.getPosition().getY() + weight * dy[location]);
 				unit.move(position);
 			}
 		}
-		
+
+	}
+
+	// 0705 추가 - 내 위치와 적 위치를 기반으로 반대위치를 리턴
+	private Position getOppositePosition(Position myPosition, Position enemyPosition) {
+		Position position = null;
+		return position;
 	}
 
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
@@ -166,7 +194,7 @@ public class StrategyManager {
 		executeCombat();
 
 		// 0630 추가
-		executeControl();
+		// executeControl();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -388,7 +416,7 @@ public class StrategyManager {
 			// 10 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Barracks - 0704 최혜진 수정 
+			// Barracks - 0704 최혜진 수정
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
 					BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 			// 11 SCV
@@ -413,7 +441,7 @@ public class StrategyManager {
 			// 15 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Supply Depot - 0704 최혜진 수정 
+			// Supply Depot - 0704 최혜진 수정
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(
 					InformationManager.Instance().getBasicSupplyProviderUnitType(),
 					BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
