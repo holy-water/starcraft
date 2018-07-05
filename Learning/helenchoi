@@ -1,3 +1,27 @@
+2018.07.05 목요일
+건물 건설 위치 지정시 method 경로
+1. BuildManager 클래스의 Update 메서드 : 빌드큐에 들어있는 것을 하나씩 꺼내면서 실행
+2. BuildManager 클래스의 getSeedPositionFromSeedLocationStrategy 메서드 : 위치 지정하여 리턴
+3. BuildManager 클래스의 Update 메서드 : 건물의 경우 Construction Queue에 넣음
+4. ConstructionManager 클래스의 add 메서드 : 해당 건물에 대해 일꾼을 Unassigned 상태로 변경
+5. ConstructionManager 클래스의 Update 메서드 : assignWorkersToUnassignedBuildings와 constructAssignedBuildings 실행
+6. ConstructionManager 클래스의 assignWorkersToUnassignedBuildings 메서드
+ - 기존에는 이미 장소가 지정되었는데도 ConstructionPlaceFinder의 getBuildLocationNear메서드를 호출하여,
+   이전에 위에서 지정했던 장소가 리셋되어 버리는 문제 발생
+ - 이를 삭제하고 위에서 지정했던 위치 그대로 가는 것으로 변경하였더니 '무조건' 원하는 좌표에 건설할 수 있게 됨!!!!
+7. ConstructionManager 클래스의 constructAssignedBuildings 메서드
+ - 일꾼이 건물 짓는 도중이나 그 이전에 발생하는 문제 등을 처리함
+ - 해당 위치에 지을 수 없는 경우 일꾼을 해제하는 로직 존재함 - 추후에 이 부분 보완 필요
+ 
+반드시 원하는 좌표에 건설함으로 인해 발생한 문제점
+1. 애초에 해당 좌표가 잘못 되었으면(건물 overlapping) 영원히 그 건물 건설 불가.
+   처리되지 않은 채로 계속 남아있으며, 건물도 다른 위치로 지어지지 않고, Update 메서드에서 계속 실행만 함
+   또한 맵이 대칭이 아니라는 점을 발견! - MainBaseLocation의 위치에 따라서 좌표를 모두 다 테스트 해 보아야 함
+2. 게임 중후반부에 Supply Depot을 동시에 여러개 짓는 경우 SCV의 행동 반경이 겹쳐서 Dead Lock이 발생 - 속도 매우 감소 Frame 초과 에러 발생
+3. 첫번째 길목을 막은 후에 SCV가 벙커를 지으러 두번째 길목으로 가야하는데 그 사이를 못지나가서 결국엔 건설 불가한 상태로 이어짐
+
+
+
 2018.07.01 일요일
 1. BaseLocation과 FirstExpansionPoint 간의 x y좌표를 비교하여 위치 파악하려고 했으나
    둘의 Y좌표가 같은 경우가 많이 발생하여 Y좌표는 Second Choke Point로 비교하는 것으로 수정
