@@ -1,21 +1,21 @@
 ## 7/5
-1. Position
+- Position
    1. Position (1px, 0 ~ 4096)
    2. WalkPosition (8px, 0 ~ 1024)
       - isWalkable(WalkPosition) : 해당 WalkPosition에 유닛이 이동가능한지를 리턴함
    3. TilePosition (32px, 0 ~ 128)
 
-2. Unit그룹 : 자바는 지원하지 않음
+- Unit그룹 : 자바는 지원하지 않음
    1. Unitset
    2. getCloseUnit()
 
-3. 그 외
+- 그 외
    1. getGroundWeaponCooldown() / getAirWeaponCooldown() : 해당 유닛이 공격할 수 있는지를 리턴함
       - Cooldown == 0 이면 공격 가능 상태
    2. getVelocityX() / getVelocityY() : 이전 프레임과 현재 프레임의 위치를 비교하여 X, Y축의 이동속도를 리턴함
    3. getTarget() / getOrderTarget() : 해당 유닛이 타겟으로 삼고 있는 유닛을 리턴함
 
-4. Tip
+- Tip
    1. 게임 속도 변경하는 방법
       1. Chaoslauncher > BWAPI 4.1.2 Injector [RELEASE] > Config > speed_override 값 주석 처리
       2. 스타 실행 중 afap(빠름), fast(기본), slow(느림) 입력 시 속도를 조절할 수 있다.
