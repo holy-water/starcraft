@@ -118,10 +118,6 @@ public class StrategyManager {
 		}
 	}
 
-	// 0704 추가
-	int[] dx = { 0, -1, 1, -1, 1 };
-	int[] dy = { 0, -1, -1, 1, 1 };
-
 	// 0704 수정
 	private void executeControl() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
@@ -130,47 +126,60 @@ public class StrategyManager {
 		}
 
 		// 0705 추가 - 내 유닛을 공격하는 적 유닛이 있으면 반대로 이동
+		// 0706 수정 - 내 유닛이 공격이 가능 하면 공격, 불가능하면 반대로 이동
 		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
 			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
 				continue;
 			}
 			Unit myUnit = unit.getOrderTarget();
 			if (myUnit != null) {
-				Position enemyPosition = unit.getPosition();
-				Position myPosition = myUnit.getPosition();
-				Position position = getOppositePosition(myPosition, enemyPosition);
 				if (myUnit.getGroundWeaponCooldown() != 0) {
+					Position enemyPosition = unit.getPosition();
+					Position myPosition = myUnit.getPosition();
+					// 0706 추가 - 받아온 위치로 이동할 수 있는지 확인하고 만약 이동할 수 없다면 수정하는 로직 필요
+					Position position = getOppositePosition(myPosition, enemyPosition);
 					myUnit.move(position);
 				} else {
 					myUnit.attack(unit);
-					myUnit.move(position);
 				}
-			} else {
-				break;
-			}
-		}
-
-		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
-				continue;
-			}
-			// TO-DO 상대유닛과 멀어지는 방향으로 이동
-			// 11시 -- 1시 +- 7시 -+ 5시 ++
-			if (unit.getType() == UnitType.Terran_Vulture && unit.isAttacking()) {
-				int weight = 80;
-				int location = BuildManager.Instance().locationOfBase;
-				Position position = new Position(unit.getPosition().getX() + weight * dx[location],
-						unit.getPosition().getY() + weight * dy[location]);
-				unit.move(position);
 			}
 		}
 
 	}
 
 	// 0705 추가 - 내 위치와 적 위치를 기반으로 반대위치를 리턴
+	// 0706 수정
 	private Position getOppositePosition(Position myPosition, Position enemyPosition) {
-		Position position = null;
-		return position;
+		int x = myPosition.getX();
+		int y = myPosition.getY();
+		int dx = enemyPosition.getX() - x;
+		int dy = enemyPosition.getY() - y;
+		if (dx == 0) {
+			y = dy > 0 ? y - 100 : y + 100;
+		} else if (dy == 0) {
+			x = dx > 0 ? x - 100 : x + 100;
+		} else {
+			double tangent = Math.abs((double) dy / (double) dx);
+			if (tangent < 0.268) {
+				x = dx > 0 ? x - 97 : x + 97;
+				y = dy > 0 ? y - 26 : y + 26;
+			} else if (tangent < 0.577) {
+				x = dx > 0 ? x - 87 : x + 87;
+				y = dy > 0 ? y - 50 : y + 50;
+			} else if (tangent < 1) {
+				x = dx > 0 ? x - 71 : x + 71;
+				y = dy > 0 ? y - 71 : y + 71;
+			} else if (tangent < 1.732) {
+				x = dx > 0 ? x - 50 : x + 50;
+				y = dy > 0 ? y - 87 : y + 87;
+			} else if (tangent < 3.732) {
+				x = dx > 0 ? x - 26 : x + 26;
+				y = dy > 0 ? y - 97 : y + 97;
+			} else {
+				y = dy > 0 ? y - 100 : y + 100;
+			}
+		}
+		return new Position(x, y);
 	}
 
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
@@ -194,7 +203,7 @@ public class StrategyManager {
 		executeCombat();
 
 		// 0630 추가
-		// executeControl();
+		executeControl();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
