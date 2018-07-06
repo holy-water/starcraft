@@ -25,6 +25,12 @@ public class WorkerManager {
 		return instance;
 	}
 	
+	// 본진과 앞마당 위치 변수
+	private Position basePosition = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+	private Position firstPosition = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self()).getPosition();
+	private Region baseRegion = BWTA.getRegion(basePosition);
+	private Region firstRegion = BWTA.getRegion(firstPosition);
+	
 	/// 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트하고, 일꾼 유닛들이 자원 채취 등 임무 수행을 하도록 합니다
 	public void update() {
 
@@ -56,17 +62,13 @@ public class WorkerManager {
 			// 테스트 아직 못한 상태
 			if (worker.isUnderAttack())
 			{
-				// 각각 본진, 확장진영(앞마당)의 위치
-				Position baseP = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-				Position firstP = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self()).getPosition();
-				
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
-				if(BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(baseP)) {					
+				if(BWTA.getRegion(worker.getPosition()) == baseRegion) {					
 					System.out.println(worker.getID() + "가 앞마당으로 이동!!");
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstP));
-				} else if (BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstP)) {
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstPosition));
+				} else if (BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstPosition)) {
 					System.out.println(worker.getID() + "가 본진으로 이동!!");
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, baseP));
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, basePosition));
 				}
 			}
 
@@ -332,12 +334,6 @@ public class WorkerManager {
 		Unit closestDepot = null;
 		double closestDistance = 1000000000;
 		
-		// 본진과 앞마당 위치 변수
-		Position baseP = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-		Position firstP = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self()).getPosition();
-		Region baseR = BWTA.getRegion(baseP);
-		Region firstR = BWTA.getRegion(firstP);
-		
 		// unit의 위치
 		Position nowP = null;
 		
@@ -363,8 +359,8 @@ public class WorkerManager {
 				if (workerData.depotHasEnoughMineralWorkers(unit) == false) {
 					// 해당 지역이 공격받는 중이라고 판단될 경우 제외
 					// 해당 지역에 상대 유닛이 5개 이상 있을 경우로 판단한다					
-					if (baseR == BWTA.getRegion(unit.getPosition())) nowP = baseP;
-					else if (firstR == BWTA.getRegion(unit.getPosition())) nowP = firstP;
+					if (baseRegion == BWTA.getRegion(unit.getPosition())) nowP = basePosition;
+					else if (firstRegion == BWTA.getRegion(unit.getPosition())) nowP = firstPosition;
 							
 					for (Unit tempUnit : MyBotModule.Broodwar.getUnitsInRadius(nowP, 10 * Config.TILE_SIZE))
 					{
@@ -889,5 +885,11 @@ public class WorkerManager {
 	public WorkerData getWorkerData()
 	{
 		return workerData;
+	}
+	
+	/// 일꾼 유닛이 도망쳤던 지역의 위험성으 체크하는 함수
+	public boolean isDangerous(Region region)
+	{
+		return false;
 	}
 }
