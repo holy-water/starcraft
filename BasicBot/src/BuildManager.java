@@ -183,7 +183,7 @@ public class BuildManager {
 							// desiredPosition 주위에서 찾을 것이다
 							TilePosition desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation,
 									currentItem.seedLocationStrategy);
-
+							//System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
 							// std::cout << "BuildManager " +
 							// currentItem.metaType.getUnitType().getName().c_str()
 							// + " desiredPosition " + desiredPosition.x + "," +
@@ -530,7 +530,7 @@ public class BuildManager {
 			BuildOrderItem.SeedPositionStrategy seedPositionStrategy) {
 		TilePosition desiredPosition = ConstructionPlaceFinder.Instance()
 				.getBuildLocationWithSeedPositionAndStrategy(unitType, seedPosition, seedPositionStrategy);
-
+		//System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
 		/*
 		 * std::cout +
 		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
@@ -583,6 +583,7 @@ public class BuildManager {
 			}
 		}
 
+		//System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
 		return desiredPosition;
 	}
 
@@ -897,17 +898,17 @@ public class BuildManager {
 				}
 			}else {
 				if (locationOfBase == 1) {
-					blockx = tempFirstExpansion.getTilePosition().getX() + 7;
-					blocky = tempFirstExpansion.getTilePosition().getY() - 6;
+					blockx = tempFirstExpansion.getTilePosition().getX() + 8;
+					blocky = tempFirstExpansion.getTilePosition().getY() - 3;
 				} else if (locationOfBase == 2) {
 					blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-					blocky = tempFirstExpansion.getTilePosition().getY() - 6;
+					blocky = tempFirstExpansion.getTilePosition().getY() - 3;
 				} else if (locationOfBase == 3) {
-					blockx = tempFirstExpansion.getTilePosition().getX() + 7;
-					blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+					blockx = tempFirstExpansion.getTilePosition().getX() + 8;
+					blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 				} else if (locationOfBase == 4) {
 					blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-					blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+					blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 				}				
 			}
 			tempTilePosition = new TilePosition(blockx, blocky);

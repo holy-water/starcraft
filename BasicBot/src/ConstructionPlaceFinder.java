@@ -190,7 +190,8 @@ public class ConstructionPlaceFinder {
 			case FirstExpansionLocation:
 				tempBaseLocation = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
 				if (tempBaseLocation != null) {
-					desiredPosition = getBuildLocationNear(buildingType, tempBaseLocation.getTilePosition());
+					//desiredPosition = getBuildLocationNear(buildingType, tempBaseLocation.getTilePosition());
+					desiredPosition = tempBaseLocation.getTilePosition();
 				}
 				break;
 
@@ -292,7 +293,7 @@ public class ConstructionPlaceFinder {
 				int blockx = 0;
 				int blocky = 0;
 				tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
-				System.out.println(tempFirstExpansion.getTilePosition().getX()+" "+tempFirstExpansion.getTilePosition().getY());
+				//System.out.println(tempFirstExpansion.getTilePosition().getX()+" "+tempFirstExpansion.getTilePosition().getY());
 				if (isBarrackBuilt == false) {
 					isBarrackBuilt = true;
 					if (locationOfBase == 1) {
@@ -308,20 +309,20 @@ public class ConstructionPlaceFinder {
 						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
 						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
 					}
-					System.out.println(blockx +" "+blocky);
+					//System.out.println(blockx +" "+blocky);
 				}else {
 					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 6;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
 					} else if (locationOfBase == 2) {
 						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 6;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
 					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 					} else if (locationOfBase == 4) {
 						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 					}				
 				}
 				tempTilePosition = new TilePosition(blockx, blocky);
