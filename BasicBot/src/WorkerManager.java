@@ -66,9 +66,11 @@ public class WorkerManager {
 				if(BWTA.getRegion(worker.getPosition()) == baseRegion) {					
 					System.out.println(worker.getID() + "가 앞마당으로 이동!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstPosition));
+					workerData.setWorkerDangerData(worker, true);
 				} else if (BWTA.getRegion(worker.getPosition()) == BWTA.getRegion(firstPosition)) {
 					System.out.println(worker.getID() + "가 본진으로 이동!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, basePosition));
+					workerData.setWorkerDangerData(worker, true);
 				}
 			}
 
@@ -885,11 +887,5 @@ public class WorkerManager {
 	public WorkerData getWorkerData()
 	{
 		return workerData;
-	}
-	
-	/// 일꾼 유닛이 도망쳤던 지역의 위험성으 체크하는 함수
-	public boolean isDangerous(Region region)
-	{
-		return false;
 	}
 }

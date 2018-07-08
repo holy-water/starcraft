@@ -58,6 +58,10 @@ public class InformationManager {
 	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 
+	/// 각 진영에 쳐들어온 적군의 정보를 담는 Vector
+	private Vector<UnitInfo> mainBaseEnemyInfo = new Vector<>();
+	private Vector<UnitInfo> firstExpansionEnemyInfo = new Vector<>();
+	
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -745,5 +749,11 @@ public class InformationManager {
 		} else {
 			return UnitType.None;
 		}
+	}
+	
+	// 지역의 위험성을 체크하는 함수
+	public boolean isRegionDangerous(Region region)
+	{
+		return false;
 	}
 }

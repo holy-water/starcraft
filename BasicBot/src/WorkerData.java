@@ -713,6 +713,15 @@ public class WorkerData {
 		return 0;
 	}
 	
+	public void setWorkerDangerData(Unit unit, boolean flag)
+	{
+		if (unit == null) return;
+		
+		if (workerDangerMap.containsKey(unit.getID())) {
+			workerDangerMap.put(unit.getID(), flag);
+		}
+	}
+	
 	public boolean getWorkerDangerData(Unit unit)
 	{
 		if (unit == null) return false;
