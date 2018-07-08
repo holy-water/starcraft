@@ -204,6 +204,9 @@ public class StrategyManager {
 
 		// 0630 추가
 		executeControl();
+		
+		// 0708 - 최혜진 추가 배럭 컨트롤
+		executeBarrackControl();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -214,6 +217,23 @@ public class StrategyManager {
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
+	}
+
+	// 0708 - 최혜진 추가 초반 빌드 완료 후 배럭을 들어올림
+	public void executeBarrackControl() {
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+		
+		for(Unit unit:MyBotModule.Broodwar.getAllUnits()) {
+			if(unit.getType() !=UnitType.Terran_Barracks) {
+				continue;
+			}
+			if(!unit.isLifted()) {
+				unit.lift();
+			}
+		}
 	}
 
 	public void setInitialBuildOrder() {
