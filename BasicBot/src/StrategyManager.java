@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -29,10 +30,17 @@ public class StrategyManager {
 
 	private CommandUtil commandUtil = new CommandUtil();
 
+	// 0709 추가 - 내 유닛 리스트
+	private List<Unit> MyUnits;
+	// 0709 추가 - 적 유닛 리스트
+	private List<Unit> EnemyUnits;
+
 	private boolean isFullScaleAttackStarted;
 	private boolean isInitialBuildOrderFinished;
 	// 0709 - 최혜진 추가 배럭 Lifting 여부 체크
 	private boolean BarrackLifting;
+	// 0709 - FrameCount 저장
+	private int FrameCount;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -103,7 +111,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (MyBotModule.Broodwar.getFrameCount() % 24 != 0) {
+		if (FrameCount % 24 != 0) {
 			return;
 		}
 
@@ -129,8 +137,9 @@ public class StrategyManager {
 
 		// 0705 추가 - 내 유닛을 공격하는 적 유닛이 있으면 반대로 이동
 		// 0706 수정 - 내 유닛이 공격이 가능 하면 공격, 불가능하면 반대로 이동
-		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
-			if (unit.getType().isBuilding() || unit.getType().isWorker()) {
+		// 0709 추가 - 컨트롤이 무의미한 경우 컨트롤 하지 않음
+		for (Unit unit : EnemyUnits) {
+			if (unit.getType().isBuilding() || unit.getType().isWorker() || isGroundRangeUnit(unit.getType())) {
 				continue;
 			}
 			Unit myUnit = unit.getOrderTarget();
@@ -146,7 +155,17 @@ public class StrategyManager {
 				}
 			}
 		}
+	}
 
+	// 0709 추가
+	private boolean isGroundRangeUnit(UnitType unitType) {
+		if (unitType == UnitType.Protoss_Dragoon || unitType == UnitType.Protoss_Reaver
+				|| unitType == UnitType.Terran_Ghost || unitType == UnitType.Terran_Goliath
+				|| unitType == UnitType.Terran_Marine || unitType == UnitType.Terran_Siege_Tank_Siege_Mode
+				|| unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Zerg_Hydralisk) {
+			return true;
+		}
+		return false;
 	}
 
 	// 0705 추가 - 내 위치와 적 위치를 기반으로 반대위치를 리턴
@@ -184,11 +203,28 @@ public class StrategyManager {
 		return new Position(x, y);
 	}
 
+	// 0709 추가
+	private void init() {
+		
+		FrameCount = MyBotModule.Broodwar.getFrameCount();
+		
+		MyUnits = MyBotModule.Broodwar.self().getUnits();
+		
+		EnemyUnits = MyBotModule.Broodwar.enemy().getUnits();
+		
+	}
+
 	/// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
 	public void update() {
 		if (BuildManager.Instance().buildQueue.isEmpty()) {
 			isInitialBuildOrderFinished = true;
 		}
+
+		// 0709 추가
+		init();
+
+		// 0709 추가
+		executeAnalyzeBuild();
 
 		executeWorkerTraining();
 
@@ -206,7 +242,7 @@ public class StrategyManager {
 
 		// 0630 추가
 		executeControl();
-		
+
 		// 0708 - 최혜진 추가 배럭 컨트롤
 		executeBarrackControl();
 
@@ -221,34 +257,55 @@ public class StrategyManager {
 		// //////////////////////////////////////////////////
 	}
 
+	private void executeAnalyzeBuild() {
+
+		// 1초에 한번만 180초 실행
+		if (FrameCount % 24 != 0 || FrameCount / 24 < 180) {
+			return;
+		}
+
+		if (InformationManager.Instance().getNumUnits(UnitType.Zerg_Zergling, MyBotModule.Broodwar.enemy()) != 0) {
+			if (FrameCount / 24 < 135) {
+				// 4드론
+			} else {
+				// 9드론
+			}
+		}
+	}
+
 	// 0708 - 최혜진 추가 초반 빌드 완료 후 배럭을 들어올림
 	public void executeBarrackControl() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
 		}
-		
-		if(BarrackLifting == true) {
+
+		// 1초에 한번만 실행
+		if (FrameCount % 24 != 0) {
 			return;
 		}
-		for(Unit unit:MyBotModule.Broodwar.getAllUnits()) {
-			if(unit.getType() !=UnitType.Terran_Barracks) {
+
+		if (BarrackLifting == true) {
+			return;
+		}
+		for (Unit unit : MyUnits) {
+			if (unit.getType() != UnitType.Terran_Barracks) {
 				continue;
 			}
-			if(!unit.isLifted()) {
+			if (!unit.isLifted()) {
 				unit.lift();
-			}else {
+			} else {
 				// 0709 - 최혜진 추가 배럭 이동
 				TilePosition initialPosition = unit.getTilePosition();
 				TilePosition targetPosition = TilePosition.None;
-				if(BuildManager.Instance().locationOfBase<=2) {
-					targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY()+15);	
+				if (BuildManager.Instance().locationOfBase <= 2) {
+					targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() + 15);
 					commandUtil.move(unit, targetPosition.toPosition());
-				    System.out.println("move to "+targetPosition.getX()+","+targetPosition.getY());
-				}else {
-					targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY()-15);
+					System.out.println("move to " + targetPosition.getX() + "," + targetPosition.getY());
+				} else {
+					targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() - 15);
 					commandUtil.move(unit, targetPosition.toPosition());
-					System.out.println("move to "+targetPosition.getX()+","+targetPosition.getY());
+					System.out.println("move to " + targetPosition.getX() + "," + targetPosition.getY());
 				}
 				BarrackLifting = true;
 			}
@@ -441,95 +498,137 @@ public class StrategyManager {
 			 */
 		} else if (MyBotModule.Broodwar.self().getRace() == Race.Terran) {
 
-			// 0628 수정
-			// 5 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 6 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 7 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 8 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Supply Depot - 최혜진 수정
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-					InformationManager.Instance().getBasicSupplyProviderUnitType(),
-					BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-			// 9 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 10 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Barracks - 0704 최혜진 수정
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
-					BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
-			// 11 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 12 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 13 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 14 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Command Center
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-					InformationManager.Instance().getBasicResourceDepotBuildingType(),
-					BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
-			// 1 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 15 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Supply Depot - 0704 최혜진 수정
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-					InformationManager.Instance().getBasicSupplyProviderUnitType(),
-					BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
-			// 16 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Refinery
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(
-					InformationManager.Instance().getRefineryBuildingType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 17 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Bunker
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
-					BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-			// 2 Marine
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 18 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 19 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 20 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Factory - 0702 최혜진 수정 입구로
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-					BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
-			// 21 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// 22 SCV
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
-					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			// Factory - 0702 최혜진 수정 입구로
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-					BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+			// 0709 추가
+			if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+				// 5 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 6 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 7 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 8 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Supply Depot
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						InformationManager.Instance().getBasicSupplyProviderUnitType(),
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+				// 9 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 10 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Barracks
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 11 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 12 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 13 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 14 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+
+			} else {
+				// 0628 수정
+				// 5 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 6 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 7 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 8 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Supply Depot - 최혜진 수정
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						InformationManager.Instance().getBasicSupplyProviderUnitType(),
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+				// 9 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 10 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Barracks - 0704 최혜진 수정
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
+						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+				// 11 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 12 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 13 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 14 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Command Center
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						InformationManager.Instance().getBasicResourceDepotBuildingType(),
+						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+				// 1 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 15 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Supply Depot - 0704 최혜진 수정
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						InformationManager.Instance().getBasicSupplyProviderUnitType(),
+						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+				// 16 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Refinery
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						InformationManager.Instance().getRefineryBuildingType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 17 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Bunker
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
+						BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+				// 2 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 18 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 19 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 20 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Factory - 0702 최혜진 수정 입구로
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+				// 21 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 22 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(InformationManager.Instance().getWorkerType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Factory - 0702 최혜진 수정 입구로
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+			}
 
 			/*
 			 * // 가스 리파이너리
@@ -936,7 +1035,7 @@ public class StrategyManager {
 
 		// 0628 추가
 		// 12초에 한번만 실행
-		if (MyBotModule.Broodwar.getFrameCount() % (24 * 12) != 0) {
+		if (FrameCount % (24 * 12) != 0) {
 			return;
 		}
 
@@ -945,7 +1044,7 @@ public class StrategyManager {
 			int workerCount = MyBotModule.Broodwar.self().allUnitCount(InformationManager.Instance().getWorkerType());
 
 			if (MyBotModule.Broodwar.self().getRace() == Race.Zerg) {
-				for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+				for (Unit unit : MyUnits) {
 					if (unit.getType() == UnitType.Zerg_Egg) {
 						// Zerg_Egg 에게 morph 명령을 내리면 isMorphing = true,
 						// isBeingConstructed = true, isConstructing = true 가 된다
@@ -958,7 +1057,7 @@ public class StrategyManager {
 					}
 				}
 			} else {
-				for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+				for (Unit unit : MyUnits) {
 					if (unit.getType().isResourceDepot()) {
 						if (unit.isTraining()) {
 							workerCount += unit.getTrainingQueue().size();
@@ -968,7 +1067,7 @@ public class StrategyManager {
 			}
 
 			if (workerCount < 50) {
-				for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+				for (Unit unit : MyUnits) {
 					if (unit.getType().isResourceDepot()) {
 						// 0628 최혜진 수정 - 기존에 빌드큐에 하나씩 무조건 넣어놓는 로직 삭제 후 직접 명령을
 						// 내리는 방식으로 소스 추가
@@ -1034,7 +1133,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (MyBotModule.Broodwar.getFrameCount() % 24 != 0) {
+		if (FrameCount % 24 != 0) {
 			return;
 		}
 
@@ -1063,7 +1162,7 @@ public class StrategyManager {
 				// 저그 종족인 경우, 생산중인 Zerg_Overlord (Zerg_Egg) 를 센다. Hatchery 등 건물은
 				// 세지 않는다
 				if (MyBotModule.Broodwar.self().getRace() == Race.Zerg) {
-					for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+					for (Unit unit : MyUnits) {
 						if (unit.getType() == UnitType.Zerg_Egg && unit.getBuildType() == UnitType.Zerg_Overlord) {
 							onBuildingSupplyCount += UnitType.Zerg_Overlord.supplyProvided();
 						}
@@ -1128,7 +1227,7 @@ public class StrategyManager {
 
 		// 기본 병력 추가 훈련
 		if (MyBotModule.Broodwar.self().minerals() >= 200 && MyBotModule.Broodwar.self().supplyUsed() < 390) {
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			for (Unit unit : MyUnits) {
 				if (unit.getType() == InformationManager.Instance().getBasicCombatBuildingType()) {
 					if (unit.isTraining() == false || unit.getLarva().size() > 0) {
 						if (BuildManager.Instance().buildQueue
@@ -1152,7 +1251,7 @@ public class StrategyManager {
 
 		// 고급 병력 추가 훈련
 		if (MyBotModule.Broodwar.self().minerals() >= 200 && MyBotModule.Broodwar.self().supplyUsed() < 390) {
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			for (Unit unit : MyUnits) {
 				if (unit.getType() == InformationManager.Instance().getBasicCombatBuildingType()) {
 					if (unit.isTraining() == false || unit.getLarva().size() > 0) {
 						// 0628 수정
@@ -1189,7 +1288,7 @@ public class StrategyManager {
 					.getSecondChokePoint(InformationManager.Instance().selfPlayer);
 			Unit bunker = null;
 
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			for (Unit unit : MyUnits) {
 				if (unit.getType() == UnitType.Terran_Bunker) {
 					bunker = unit;
 					break;
@@ -1197,7 +1296,7 @@ public class StrategyManager {
 			}
 
 			// 앞마당 랠리 포인트
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			for (Unit unit : MyUnits) {
 				if (!unit.getType().isWorker() && unit.isIdle()) {
 					if (bunker != null && unit.getType() == UnitType.Terran_Marine) {
 						commandUtil.rightClick(unit, bunker);
@@ -1242,7 +1341,7 @@ public class StrategyManager {
 				}
 
 				if (targetBaseLocation != null) {
-					for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+					for (Unit unit : MyUnits) {
 						// 건물은 제외
 						if (unit.getType().isBuilding()) {
 							continue;
@@ -1396,7 +1495,7 @@ public class StrategyManager {
 		// 100 프레임 (5초) 마다 1번씩 로그를 기록합니다
 		// 참가팀 당 용량 제한이 있고, 타임아웃도 있기 때문에 자주 하지 않는 것이 좋습니다
 		// 로그는 봇 개발 시 디버깅 용도로 사용하시는 것이 좋습니다
-		if (MyBotModule.Broodwar.getFrameCount() % 100 != 0) {
+		if (FrameCount % 100 != 0) {
 			return;
 		}
 

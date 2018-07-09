@@ -64,12 +64,12 @@ public class ScoutManager {
 				currentScoutStatus = ScoutStatus.NoScout.ordinal();
 
 				// 0702 수정
-				// Bunker 건설 시작한 후, 가장 가까이에 있는 Worker 를 정찰유닛으로 지정한다
+				// Barracks 건설 시작한 후, 가장 가까이에 있는 Worker 를 정찰유닛으로 지정한다
 				Unit firstBuilding = null;
 
 				for (Unit unit : MyBotModule.Broodwar.self().getUnits())
 				{
-					if (unit.getType().isBuilding() == true && unit.getType() == UnitType.Terran_Bunker)
+					if (unit.getType().isBuilding() == true && unit.getType() == UnitType.Terran_Barracks)
 					{
 						firstBuilding = unit;
 						break;
