@@ -10,6 +10,21 @@
  - 초반 러쉬 대비 빌드 수정 및 컨트롤
 
 
+BasicBot v1.1.9
+1. AnalyzeBuild 함수 추가
+ - 상대방의 초반 빌드를 파악하여 대처하는 함수
+2. 상대 유닛에 따른 컨트롤 분기
+ - 상대 유닛이 레인지 유닛일 때, 무빙 컨트롤 방지
+3. 종족별로 빌드 구분 (미완성)
+ - 건물 위치나 순서 변경 불가피
+4. 초기화 함수 및 전역 변수 생성
+ - 초기화 함수를 통해 해당 프레임에서 자주 사용되는 값들을 미리 저장해 놓고 해당 변수를 사용
+ - FrameCount :  MyBotModule.Broodwar.getFrameCount()를 저장
+ - MyUnits : MyBotModule.Broodwar.self().getUnits()를 저장
+ - EnemyUnits : MyBotModule.Broodwar.enemy().getUnits()를 저장
+ - 추가적으로 자주 사용하는 값들을 저장하여 변수로 관리
+
+
 BasicBot v1.1.8
 1. executeBarrackControl 함수 수정
  - 초반 빌드가 끝나면 배럭을 든 후 공중으로 이동하여 정찰 경계
@@ -49,7 +64,6 @@ BasicBot v1.1.3
  
 
 BasicBot v1.1.2
-
 1. 컨트롤 함수 수정
  - 현재 본진 위치를 기반으로 공격 후 본진 방향으로 무빙 후 다시 공격
  - 지형 등에 영향을 많이 받고 공격 딜레이가 너무 긴 단점이 있음
@@ -67,7 +81,6 @@ BasicBot v1.1.1
 
 
 BasicBot v1.1.0
-
 1. Supply Depot 건설 위치 선정 최적화
  - ConstructionManger 클래스와 동일하게 BuildManager 클래스에도 동일한 전략 추가
  - 건설 이후 Idle 상태인 SCV 존재하여 바로 자원 캐도록 명령
@@ -78,7 +91,6 @@ BasicBot v1.1.0
 
 
 BasicBot v1.0.9
-
 1. 빌드 수정
  - 빌드 최적화 수정
  - 가스 이후 정찰에서 벙커 이후 정찰로 변경
@@ -91,14 +103,12 @@ BasicBot v1.0.9
 
 
 BasicBot v1.0.8
-
 1. Factory 첫번째 입구 근처로 건설 위치 조정
 2. Supply Depot 좌표 지정 완료
 3. 건설 중인 SCV로 인한 Supply Depot 건설 좌표 이동 문제 발생
 
 
 BasicBot v1.0.7
-
 1. 유닛 컨트롤 함수 수정
  - 아이디어 : 공격하고 있는 적 유닛이 밀리 유닛일 때, 공격 당하고 있는 유닛을 뒤로 패트롤 시켜 거리를 벌려 피해를 최소화
  - 문제점
@@ -110,7 +120,6 @@ BasicBot v1.0.7
 
 
 BasicBot v1.0.6
-
 1. SupplyDepotPostion 건설 전략 수정
  - BaseLocation의 전체적인 위치 파악 로직 수정 : Y축은 Second Chocke Point 기준으로 변경
  - SupplyDepot X, Y 좌표 위치 지정까지 완료
@@ -118,13 +127,11 @@ BasicBot v1.0.6
  
 
 BasicBot v1.0.5
-
 1. SupplyDepotPostion 건설 전략 추가
  - 지도 내에서 BaseLocation의 전체적인 위치 파악까지 완료
  
   
 BasicBot v1.0.4
-
 1. 특정 유닛 카운트 반환 함수 추가
  - 사용하는 곳이 많아질 것 같아 함수로 구현
 2. 유닛 컨트롤 함수 및 레인지 유닛 배열 추가
@@ -132,7 +139,6 @@ BasicBot v1.0.4
 
 
 BasicBot v1.0.3
-
 1. 빌드 수정
  - 빌드 최적화 수정
 2. 예약 생산 구현 수정
@@ -147,13 +153,11 @@ BasicBot v1.0.3
  - 추가하고 싶은게 있으면 추가하고 완료된 항목은 지울 것
 
 BasicBot v1.0.2
-
 1. 예약 생산 구현
  - 초반 빌드가 모두 끝난 이후 SCV 지속 생산하는 것으로 변경 
 
 
 BasicBot v1.0.1
-
 1. 빌드 수정
  - 원 배럭 더블 빌드 이후 투 팩토리 빌드 추가
  - 탱크 및 벌쳐를 생산하는 함수 추가
@@ -166,7 +170,6 @@ BasicBot v1.0.1
 
 
 BasicBot v1.0.0
-
 1. 빌드 수정
  - 기본빌드를 원 배럭 더블 빌드로 수정
 2. 정찰 시작 시점 수정
