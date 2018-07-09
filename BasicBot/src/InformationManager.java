@@ -27,8 +27,8 @@ public class InformationManager {
 	private static InformationManager instance = new InformationManager();
 
 	public Player selfPlayer;		///< 아군 Player		
-	public Player enemyPlayer;		///< 아군 Player의 종족		
-	public Race selfRace;			///< 적군 Player		
+	public Player enemyPlayer;		///< 적군 Player		
+	public Race selfRace;			///< 아군 Player의 종족		
 	public Race enemyRace;			///< 적군 Player의 종족  
 
 	/// 해당 Player의 주요 건물들이 있는 BaseLocation. <br>
@@ -60,7 +60,7 @@ public class InformationManager {
 
 	/// 각 진영에 쳐들어온 적군의 정보를 담는 Vector
 	private Vector<UnitInfo> mainBaseEnemyInfo = new Vector<>();
-	private Vector<UnitInfo> firstExpansionEnemyInfo = new Vector<>();
+	private Map<BaseLocation, Vector<UnitInfo>> expansionEnemyInfo = new HashMap<>();
 	
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
@@ -107,6 +107,10 @@ public class InformationManager {
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
+		// occupiedBaseLocation의 unit 정보를 업데이트한다
+		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
+			updateOccupiedLocationUnitsInfo();
+		}
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
 			updateBaseLocationInfo();
@@ -183,6 +187,19 @@ public class InformationManager {
 		unitData.get(unit.getPlayer()).removeUnit(unit);
 	}
 
+	/// occupied BaseLocation 에 대해 적군 unit 정보를 업데이트 하여 Vector에 저장
+	/// mainBaseEnemyInfo / expansionEnemyInfo
+	public void updateOccupiedLocationUnitsInfo() {
+		// mainBaseLocation에 대한 업데이트
+		getNearbyForce(mainBaseEnemyInfo, mainBaseLocations.get(selfPlayer).getPosition(), enemyPlayer, 10 * Config.TILE_SIZE);
+		
+		// expansionBaseLocation에 대한 업데이트
+		Vector<UnitInfo> tempVector;
+		for(BaseLocation baseLocation : occupiedBaseLocations.get(selfPlayer)) {
+			tempVector = expansionEnemyInfo.get(baseLocation);
+			getNearbyForce(tempVector, baseLocation.getPosition(), enemyPlayer, 10 * Config.TILE_SIZE);
+		}
+	}
 
 	/// 해당 Player (아군 or 적군) 의 position 주위의 유닛 목록을 unitInfo 에 저장합니다		 
 	public void getNearbyForce(Vector<UnitInfo> unitInfo, Position p, Player player, int radius) {
@@ -225,6 +242,30 @@ public class InformationManager {
 	/// 해당 Player (아군 or 적군) 의 모든 유닛 통계 UnitData 을 리턴합니다		 
 	public final UnitData getUnitData(Player player) {
 		return unitData.get(player);
+	}
+	
+	// occupied baseLocation의 위험도를 체크하는 함수 
+	public boolean isLocationDangerous(BaseLocation baseLocation) {
+		
+		// mainBaseLocation에 대한 체크
+		if (baseLocation == mainBaseLocations.get(selfPlayer)) {
+			if (mainBaseEnemyInfo.size() > 5) {
+				return true;
+			}
+		} 
+		// expansionBaseLocation에 대한 체크
+		else {
+			for (BaseLocation iterBaseLocation : occupiedBaseLocations.get(selfPlayer)) {
+				if (baseLocation == iterBaseLocation) {
+					if (expansionEnemyInfo.get(iterBaseLocation).size() > 5) {
+						return true;
+					}
+					break;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	public void updateBaseLocationInfo() {
@@ -555,6 +596,15 @@ public class InformationManager {
 	public Chokepoint getSecondChokePoint(Player player) {
 		return secondChokePoint.get(player);
 	}
+	
+	/// baseLocation별로 적군의 unit 정보를 가져온다
+	public Vector<UnitInfo> getEnemyInfo(BaseLocation baseLocation) {
+		if(baseLocation == mainBaseLocations.get(selfPlayer)) {
+			return mainBaseEnemyInfo;
+		} else {
+			return expansionEnemyInfo.get(baseLocation);
+		}
+	}
 
 	/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 	public final boolean isCombatUnitType(UnitType type) {
@@ -749,11 +799,5 @@ public class InformationManager {
 		} else {
 			return UnitType.None;
 		}
-	}
-	
-	// 지역의 위험성을 체크하는 함수
-	public boolean isRegionDangerous(Region region)
-	{
-		return false;
 	}
 }

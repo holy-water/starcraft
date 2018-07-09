@@ -1,4 +1,19 @@
-## (21080706) scv 리밸런싱 대안
+## (20180709) InformationManager 수정
+
+1. 각 진영에 쳐들어온 적군의 정보를 담는 Vector 추가 - mainBaseEnemyInfo / expansionEnemyInfo(Vector의 Map)
+2. baseLocation의 위험도 체크를 위한 과정
+    1. update() - updateOccupiedLocationUnitsInfo() 호출
+    2. updateOccupiedLocationUnitsInfo()
+        - 각 occupied BaseLocation에 대해 적군 unit 정보를 업데이트 하여 Vector에 저장
+        - getNearbyForce(...) 호출
+        - mainBaseEnemyInfo / expansionEnemyInfo 에 적군의 정보 저장되도록 호출
+    3. getNearbyForce(...)
+        - 해당 Player의 position 주위의 유닛 목록을 unitInfo 에 저장
+    4. isLocationDangerous(baseLocation)
+        - 해당 Location의 위험도 체크하는 함수
+        - mainBaseEnemyInfo / expansionEnemyInfo 이용하여 적군의 수가 5 이상이면 true 반환
+    
+## (20180706) scv 리밸런싱 대안
 
 1. scv가 도망쳐 온 곳이 위험한지 체크하는 자료구조 만들기 - Map<Integer, Boolean>
 2. 도망쳐갈 때 boolean 값을 true로 놓기
