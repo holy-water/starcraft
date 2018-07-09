@@ -39,7 +39,7 @@ public class ConstructionPlaceFinder {
 	private static int rightcornerX = 105;
 	private static int uppercornerY = 0;
 	private static int lowercornerY = 125;
-	private static int locationOfBase = 0;
+	public static int locationOfBase = 0;
 	private static int numberOfSupply = 0;
 	private static boolean isBarrackBuilt = false; // 0703 - 최혜진 추가
 	

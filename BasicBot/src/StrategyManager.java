@@ -31,6 +31,8 @@ public class StrategyManager {
 
 	private boolean isFullScaleAttackStarted;
 	private boolean isInitialBuildOrderFinished;
+	// 0709 - 최혜진 추가 배럭 Lifting 여부 체크
+	private boolean BarrackLifting;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -226,12 +228,29 @@ public class StrategyManager {
 			return;
 		}
 		
+		if(BarrackLifting == true) {
+			return;
+		}
 		for(Unit unit:MyBotModule.Broodwar.getAllUnits()) {
 			if(unit.getType() !=UnitType.Terran_Barracks) {
 				continue;
 			}
 			if(!unit.isLifted()) {
 				unit.lift();
+			}else {
+				// 0709 - 최혜진 추가 배럭 이동
+				TilePosition initialPosition = unit.getTilePosition();
+				TilePosition targetPosition = TilePosition.None;
+				if(BuildManager.Instance().locationOfBase<=2) {
+					targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY()+15);	
+					commandUtil.move(unit, targetPosition.toPosition());
+				    System.out.println("move to "+targetPosition.getX()+","+targetPosition.getY());
+				}else {
+					targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY()-15);
+					commandUtil.move(unit, targetPosition.toPosition());
+					System.out.println("move to "+targetPosition.getX()+","+targetPosition.getY());
+				}
+				BarrackLifting = true;
 			}
 		}
 	}
