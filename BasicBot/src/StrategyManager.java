@@ -39,6 +39,8 @@ public class StrategyManager {
 	private boolean isInitialBuildOrderFinished;
 	// 0709 - 최혜진 추가 배럭 Lifting 여부 체크
 	private boolean BarrackLifting;
+	// 0709 - 4드론 등 초반 위험 상황 체크
+	private boolean isEmergency;
 	// 0709 - FrameCount 저장
 	private int FrameCount;
 
@@ -231,7 +233,7 @@ public class StrategyManager {
 		executeSupplyManagement();
 
 		// 0627 수정 및 추가
-		// executeBasicCombatUnitTraining();
+		executeBasicCombatUnitTraining();
 
 		executeSeniorityCombatUnitTraining();
 
@@ -264,13 +266,36 @@ public class StrategyManager {
 			return;
 		}
 
-		if (InformationManager.Instance().getNumUnits(UnitType.Zerg_Zergling, MyBotModule.Broodwar.enemy()) != 0) {
-			if (FrameCount / 24 < 135) {
-				// 4드론
-			} else {
-				// 9드론
+		if (isEmergency) {
+			return;
+		}
+
+		// 0710 수정
+		if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss) {
+			if (InformationManager.Instance().getNumUnits(UnitType.Protoss_Gateway,
+					MyBotModule.Broodwar.enemy()) != 0) {
+				if (FrameCount / 24 < 120) {
+					// 센터 게이트
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+				}
+			}
+		} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+			if (InformationManager.Instance().getNumUnits(UnitType.Zerg_Zergling, MyBotModule.Broodwar.enemy()) != 0) {
+				if (FrameCount / 24 < 135) {
+					// 4드론
+					isEmergency = true;
+					BuildManager.Instance().buildQueue.clearAll();
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				} else {
+					// 9드론
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+				}
 			}
 		}
+
 	}
 
 	// 0708 - 최혜진 추가 초반 빌드 완료 후 배럭을 들어올림
@@ -302,20 +327,22 @@ public class StrategyManager {
 				if (BuildManager.Instance().locationOfBase <= 2) {
 					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
 						targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() + 15);
-					}else {
-						
+					} else {
+
 					}
 					commandUtil.move(unit, targetPosition.toPosition());
-					// System.out.println("move to " + targetPosition.getX() + "," +
+					// System.out.println("move to " + targetPosition.getX() +
+					// "," +
 					// targetPosition.getY());
 				} else {
 					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
 						targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() - 15);
-					}else {
-						
+					} else {
+
 					}
 					commandUtil.move(unit, targetPosition.toPosition());
-					// System.out.println("move to " + targetPosition.getX() + "," +
+					// System.out.println("move to " + targetPosition.getX() +
+					// "," +
 					// targetPosition.getY());
 				}
 				BarrackLifting = true;
@@ -345,16 +372,19 @@ public class StrategyManager {
 
 			/*
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Assimilator, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Protoss_Assimilator,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * 
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Forge, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Protoss_Forge,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Photon_Cannon,
 			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * 
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Gateway, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Protoss_Gateway,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Zealot);
 			 * 
@@ -383,19 +413,22 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Psionic_Storm);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
-			 * .Hallucination); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * .Hallucination);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Khaydarin_Amulet);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Archon);
 			 * 
-			 * // 다크아칸 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 다크아칸
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Dark_Templar);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Dark_Templar);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Maelstrom);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
-			 * .Mind_Control); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * .Mind_Control);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Argus_Talisman);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Dark_Archon);
@@ -403,15 +436,18 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Robotics_Facility);
 			 * 
-			 * // 셔틀 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 셔틀
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Shuttle);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Robotics_Support_Bay);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Gravitic_Drive);
 			 * 
-			 * // 리버 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Reaver); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 리버
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * .Protoss_Reaver);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Scarab_Damage);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Reaver_Capacity);
@@ -421,30 +457,38 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Observatory); // 옵저버
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Observer); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * .Protoss_Observer);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Gravitic_Boosters);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Sensor_Array);
 			 * 
-			 * // 공중유닛 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 공중유닛
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Stargate);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Fleet_Beacon);
 			 * 
-			 * // 스카우트 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Scout); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 스카우트
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * .Protoss_Scout);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Apial_Sensors);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Gravitic_Thrusters);
 			 * 
-			 * // 커세어 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 커세어
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Corsair);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
-			 * .Disruption_Web); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * .Disruption_Web);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Argus_Jewel);
 			 * 
-			 * // 캐리어 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Protoss_Carrier); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 캐리어
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * .Protoss_Carrier);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Carrier_Capacity);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Interceptor);
@@ -463,16 +507,20 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Interceptor);
 			 * 
-			 * // 아비터 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 아비터
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Arbiter_Tribunal);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Protoss_Arbiter);
-			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType .Recall);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
-			 * .Stasis_Field); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * .Recall);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * .Stasis_Field);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Khaydarin_Core);
 			 * 
-			 * // 포지 - 지상 유닛 업그레이드 BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 포지 - 지상 유닛 업그레이드
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Protoss_Ground_Weapons);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Protoss_Plasma_Shields);
@@ -621,13 +669,16 @@ public class StrategyManager {
 			}
 
 			/*
-			 * // 가스 리파이너리 BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 가스 리파이너리
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * InformationManager.Instance().getRefineryBuildingType());
 			 * 
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Terran_Barracks, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Terran_Barracks,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Terran_Bunker, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+			 * .Terran_Bunker,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Marine);
 			 * 
@@ -652,19 +703,22 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Missile_Turret);
 			 * 
-			 * // 마린 스팀팩 BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * // 마린 스팀팩
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Stim_Packs, false); // 마린 사정거리 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.U_238_Shells, false);
 			 * 
-			 * // 메딕 BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * // 메딕
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Optical_Flare, false);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Restoration, false); // 메딕 에너지 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Caduceus_Reactor, false);
 			 * 
-			 * // 팩토리 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 팩토리
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Factory);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Machine_Shop); // 벌쳐 스파이더 마인
@@ -675,13 +729,16 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Tank_Siege_Mode, false);
 			 * 
-			 * // 벌쳐 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 벌쳐
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Vulture);
 			 * 
-			 * // 시즈탱크 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 시즈탱크
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Siege_Tank_Tank_Mode);
 			 * 
-			 * // 아머니 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 아머니
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Armory); // 지상 메카닉 유닛 업그레이드
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Terran_Vehicle_Plating, false);
@@ -694,10 +751,12 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Charon_Boosters, false);
 			 * 
-			 * // 골리앗 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 골리앗
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Goliath);
 			 * 
-			 * // 스타포트 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 스타포트
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Starport);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Control_Tower); // 레이쓰 클러킹
@@ -706,10 +765,12 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Apollo_Reactor, false);
 			 * 
-			 * // 레이쓰 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 레이쓰
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Wraith);
 			 * 
-			 * // 발키리 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 발키리
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Valkyrie);
 			 * 
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
@@ -718,13 +779,15 @@ public class StrategyManager {
 			 * // 사이언스 퍼실리티
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Science_Facility); // 사이언스 베슬 - 기술
-			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType .Irradiate,
-			 * false); BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * .Irradiate, false);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .EMP_Shockwave, false); // 사이언스 베슬 에너지 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Titan_Reactor, false);
 			 * 
-			 * // 사이언스 베슬 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 사이언스 베슬
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Science_Vessel); // 사이언스 퍼실리티 - 배틀크루저 생산 가능
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Physics_Lab);
@@ -740,18 +803,21 @@ public class StrategyManager {
 			 * .Terran_Science_Facility);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Covert_Ops);
-			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType .Lockdown,
-			 * false); BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * .Lockdown, false);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Personnel_Cloaking, false); // 고스트 가시거리 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Ocular_Implants, false); // 고스트 에너지 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Moebius_Reactor, false);
 			 * 
-			 * // 고스트 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 고스트
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Ghost);
 			 * 
-			 * // 핵폭탄 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 핵폭탄
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Command_Center);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Terran_Nuclear_Silo);
@@ -779,17 +845,20 @@ public class StrategyManager {
 
 			/*
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Hatchery, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Zerg_Hatchery,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * InformationManager.Instance().getWorkerType(),
 			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Hatchery, BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation);
+			 * .Zerg_Hatchery,
+			 * BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * InformationManager.Instance().getWorkerType(),
 			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Hatchery, BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation);
+			 * .Zerg_Hatchery,
+			 * BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * InformationManager.Instance().getWorkerType(),
 			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -815,22 +884,29 @@ public class StrategyManager {
 			 * InformationManager.Instance().getWorkerType(),
 			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			 * 
-			 * // 가스 익스트랙터 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Extractor, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
-			 * 
-			 * // 성큰 콜로니 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Creep_Colony, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * // 가스 익스트랙터
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Sunken_Colony, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Zerg_Extractor,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * 
+			 * // 성큰 콜로니
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * .Zerg_Creep_Colony,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * .Zerg_Sunken_Colony,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * 
 			 * BuildManager.Instance().buildQueue
 			 * .queueAsLowestPriority(InformationManager.Instance().
 			 * getRefineryBuildingType());
 			 * 
-			 * // 저글링 이동속도 업 BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 저글링 이동속도 업
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Metabolic_Boost);
 			 * 
-			 * // 에볼루션 챔버 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 에볼루션 챔버
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Evolution_Chamber); // 에볼루션 챔버 . 지상유닛 업그레이드
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Zerg_Melee_Attacks, false);
@@ -858,39 +934,48 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * InformationManager.Instance().getWorkerType());
 			 * 
-			 * // 스포어 코로니 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Creep_Colony, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * // 스포어 코로니
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
-			 * .Zerg_Spore_Colony, BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * .Zerg_Creep_Colony,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * .Zerg_Spore_Colony,
+			 * BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
 			 * 
-			 * // 히드라 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 히드라
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Hydralisk_Den);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Hydralisk);
 			 * 
-			 * // 레어 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 레어
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Lair);
 			 * 
-			 * // 오버로드 운반가능 BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 오버로드 운반가능
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Ventral_Sacs); // 오버로드 시야 증가
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Antennae); // 오버로드 속도 증가
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Pneumatized_Carapace);
 			 * 
-			 * // 히드라 이동속도 업 BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * // 히드라 이동속도 업
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Muscular_Augments, false); // 히드라 공격 사정거리 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Grooved_Spines, false);
 			 * 
-			 * // 럴커 BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * // 럴커
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Lurker_Aspect);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Hydralisk);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Lurker);
 			 * 
-			 * // 스파이어 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 스파이어
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Spire, true);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Mutalisk, true);
@@ -903,17 +988,20 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Zerg_Flyer_Carapace, false);
 			 * 
-			 * // 퀸 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 퀸
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Queens_Nest);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Queen);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Spawn_Broodlings, false);
-			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType .Ensnare,
-			 * false); BuildManager.Instance().buildQueue.queueAsLowestPriority(
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * .Ensnare, false);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Gamete_Meiosis, false);
 			 * 
-			 * // 하이브 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 하이브
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Hive); // 저글링 공격 속도 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Adrenal_Glands, false);
@@ -930,7 +1018,8 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Devourer, true);
 			 * 
-			 * // 울트라리스크 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 울트라리스크
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Ultralisk_Cavern);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Ultralisk); // 울트라리스크 이동속도 업
@@ -939,29 +1028,35 @@ public class StrategyManager {
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Chitinous_Plating, false);
 			 * 
-			 * // 디파일러 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 디파일러
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Defiler_Mound);
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Defiler);
-			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType .Consume,
-			 * false); BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
+			 * .Consume, false);
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType
 			 * .Plague, false); // 디파일러 에너지 업
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(
 			 * UpgradeType.Metasynaptic_Node, false);
 			 * 
-			 * // 나이더스 캐널 BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
+			 * // 나이더스 캐널
+			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Nydus_Canal);
 			 * 
-			 * // 참고로, Zerg_Nydus_Canal 건물로부터 Nydus Canal Exit를 만드는 방법은 다음과 같습니다 //if
-			 * (MyBotModule.Broodwar.self().completedUnitCount(UnitType. Zerg_Nydus_Canal) >
-			 * 0) { // for (Unit unit : MyBotModule.Broodwar.self().getUnits()) { // if
-			 * (unit.getType() == UnitType.Zerg_Nydus_Canal) { // TilePosition
-			 * targetTilePosition = new TilePosition(unit.getTilePosition().getX() + 6,
+			 * // 참고로, Zerg_Nydus_Canal 건물로부터 Nydus Canal Exit를 만드는 방법은 다음과 같습니다
+			 * //if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.
+			 * Zerg_Nydus_Canal) > 0) { // for (Unit unit :
+			 * MyBotModule.Broodwar.self().getUnits()) { // if (unit.getType()
+			 * == UnitType.Zerg_Nydus_Canal) { // TilePosition
+			 * targetTilePosition = new
+			 * TilePosition(unit.getTilePosition().getX() + 6,
 			 * unit.getTilePosition().getY()); // Creep 이 있는 곳이어야 한다 //
-			 * unit.build(UnitType.Zerg_Nydus_Canal, targetTilePosition); // } // } //}
+			 * unit.build(UnitType.Zerg_Nydus_Canal, targetTilePosition); // }
+			 * // } //}
 			 * 
-			 * // 퀸 - 인페스티드 테란 : 테란 Terran_Command_Center 건물의 HitPoint가 낮을 때, 퀸을 들여보내서
-			 * Zerg_Infested_Command_Center 로 바꾸면, 그 건물에서 실행 됨
+			 * // 퀸 - 인페스티드 테란 : 테란 Terran_Command_Center 건물의 HitPoint가 낮을 때, 퀸을
+			 * 들여보내서 Zerg_Infested_Command_Center 로 바꾸면, 그 건물에서 실행 됨
 			 * BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType
 			 * .Zerg_Infested_Terran);
 			 */
@@ -1084,6 +1179,10 @@ public class StrategyManager {
 		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
 		if (MyBotModule.Broodwar.self().supplyTotal() <= 400) {
 
+			// 0710 추가
+			int barracksCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Barracks,
+					MyBotModule.Broodwar.self());
+
 			// 0630 수정
 			int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory,
 					MyBotModule.Broodwar.self());
@@ -1091,7 +1190,7 @@ public class StrategyManager {
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
 			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
-			int supplyMargin = 10 + (factoryCount * 8);
+			int supplyMargin = 8 + (barracksCount * 4) + (factoryCount * 8);
 
 			// currentSupplyShortage 를 계산한다
 			int currentSupplyShortage = MyBotModule.Broodwar.self().supplyUsed() + supplyMargin
@@ -1168,6 +1267,10 @@ public class StrategyManager {
 			return;
 		}
 
+		if (!isEmergency) {
+			return;
+		}
+
 		// 기본 병력 추가 훈련
 		if (MyBotModule.Broodwar.self().minerals() >= 200 && MyBotModule.Broodwar.self().supplyUsed() < 390) {
 			for (Unit unit : MyUnits) {
@@ -1195,7 +1298,7 @@ public class StrategyManager {
 		// 고급 병력 추가 훈련
 		if (MyBotModule.Broodwar.self().minerals() >= 200 && MyBotModule.Broodwar.self().supplyUsed() < 390) {
 			for (Unit unit : MyUnits) {
-				if (unit.getType() == InformationManager.Instance().getBasicCombatBuildingType()) {
+				if (unit.getType() == UnitType.Terran_Factory) {
 					if (unit.isTraining() == false || unit.getLarva().size() > 0) {
 						// 0628 수정
 						// if
@@ -1226,6 +1329,10 @@ public class StrategyManager {
 
 		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
 		if (isFullScaleAttackStarted == false) {
+
+			// 0710 추가
+			BaseLocation mainBaseLocation = InformationManager.Instance()
+					.getMainBaseLocation(InformationManager.Instance().selfPlayer);
 			// 0627 수정 및 추가
 			Chokepoint secondChokePoint = InformationManager.Instance()
 					.getSecondChokePoint(InformationManager.Instance().selfPlayer);
@@ -1238,19 +1345,22 @@ public class StrategyManager {
 				}
 			}
 
+			// 0710 추가 - 긴급상황 시 본진 랠리 포인트
 			// 앞마당 랠리 포인트
 			for (Unit unit : MyUnits) {
-				if (!unit.getType().isWorker() && unit.isIdle()) {
-					if (bunker != null && unit.getType() == UnitType.Terran_Marine) {
+				if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
+					if (bunker != null && bunker.isCompleted() && unit.getType() == UnitType.Terran_Marine) {
 						commandUtil.rightClick(unit, bunker);
+					} else if (isEmergency) {
+						commandUtil.attackMove(unit, mainBaseLocation.getPosition());
+					} else {
+						commandUtil.attackMove(unit, secondChokePoint.getCenter());
 					}
-					commandUtil.attackMove(unit, secondChokePoint.getCenter());
 				}
 			}
 
 			// 전투 유닛이 2개 이상 생산되었고, 적군 위치가 파악되었으면 총공격 모드로 전환
-			if (MyBotModule.Broodwar.self()
-					.completedUnitCount(InformationManager.Instance().getBasicCombatUnitType()) > 2) {
+			if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Vulture) > 2) {
 				if (InformationManager.Instance().enemyPlayer != null
 						&& InformationManager.Instance().enemyRace != Race.Unknown && InformationManager.Instance()
 								.getOccupiedBaseLocations(InformationManager.Instance().enemyPlayer).size() > 0) {
