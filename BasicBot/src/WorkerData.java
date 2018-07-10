@@ -47,9 +47,6 @@ public class WorkerData {
 	private Map<Integer, Unit> workerMineralMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRefineryMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRepairMap = new HashMap<Integer, Unit>();
-	// 0707 민혜
-	// scv가 도망쳤던 지역의 위험도를 체크하는 자료구조 - 위험한 경우 true / 위험 해제시 false
-	private Map<Integer, Boolean> workerDangerMap = new HashMap<Integer, Boolean>();
 	
 	private CommandUtil commandUtil = new CommandUtil();
 	
@@ -119,9 +116,6 @@ public class WorkerData {
 					if (workerJobMap.containsKey(worker.getID())) {
 						workerJobMap.remove(worker.getID());
 					}
-					if (workerDangerMap.containsKey(worker.getID())) {
-						workerDangerMap.remove(worker.getID());
-					}
 
 					// depotWorkerCount 를 다시 셉니다
 					for (Unit depot : depots) {
@@ -167,7 +161,6 @@ public class WorkerData {
 		if (unit ==  null) { return; }
 
 		workers.add(unit); // C++ : workers.insert(unit);
-		workerDangerMap.put(unit.getID(), false);
 		workerJobMap.put(unit.getID(), WorkerJob.Idle);
 	}
 
@@ -178,7 +171,6 @@ public class WorkerData {
 //		assert(workers.find(unit) == workers.end());
 
 		workers.add(unit); // C++ : workers.insert(unit);
-		workerDangerMap.put(unit.getID(), false);
 		setWorkerJob(unit, job, jobUnit);
 	}
 
@@ -188,7 +180,6 @@ public class WorkerData {
 
 //		assert(workers.find(unit) == workers.end());
 		workers.add(unit); // C++ : workers.insert(unit);
-		workerDangerMap.put(unit.getID(), false);
 		setWorkerJob(unit, job, jobUnitType);
 	}
 
@@ -711,26 +702,6 @@ public class WorkerData {
 
 		// when all else fails, return 0
 		return 0;
-	}
-	
-	public void setWorkerDangerData(Unit unit, boolean flag)
-	{
-		if (unit == null) return;
-		
-		if (workerDangerMap.containsKey(unit.getID())) {
-			workerDangerMap.put(unit.getID(), flag);
-		}
-	}
-	
-	public boolean getWorkerDangerData(Unit unit)
-	{
-		if (unit == null) return false;
-		
-		if (workerDangerMap.containsKey(unit.getID())) {
-			return workerDangerMap.get(unit.getID());
-		}
-		
-		return false;
 	}
 
 	public char getJobCode(Unit unit)

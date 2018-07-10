@@ -1,3 +1,13 @@
+## (20180710) scv 리밸런싱 관련 처리 완료
+
+1. WorkerData에서 workerDangerMap 및 관련 로직 삭제 - 불필요
+2. 리밸런싱 과정에서 미네랄 Worker로 일할 커맨드 센터를 선택할 때, 커맨드 센터가 위치한 곳의 위험도를 체크하여 그 지역은 건너뛰도록 설정
+    - InformationManager.Instance().isLocationDangerous 함수 사용
+3. 공격받았을 경우에 대한 처리: 멀티 여러개일 경우 반영하여 수정
+    1. 본진에서 공격받을 경우 > 첫번째 멀티로 이동
+    2. 첫번째 멀티에서 공격받을 경우 > 본진으로 이동
+    3. n번째 멀티에서 공격받을 경우 > n-1번째 멀티로 이동
+
 ## (20180709) InformationManager 수정
 
 1. 각 진영에 쳐들어온 적군의 정보를 담는 Vector 추가 - mainBaseEnemyInfo / expansionEnemyInfo(Vector의 Map)
