@@ -197,6 +197,7 @@ public class InformationManager {
 		Vector<UnitInfo> tempVector;
 		for(BaseLocation baseLocation : occupiedBaseLocations.get(selfPlayer)) {
 			tempVector = expansionEnemyInfo.get(baseLocation);
+			if(tempVector == null) continue;
 			getNearbyForce(tempVector, baseLocation.getPosition(), enemyPlayer, 10 * Config.TILE_SIZE);
 		}
 	}
@@ -257,7 +258,7 @@ public class InformationManager {
 		else {
 			for (BaseLocation iterBaseLocation : occupiedBaseLocations.get(selfPlayer)) {
 				if (baseLocation.equals(iterBaseLocation)) {
-					if (expansionEnemyInfo.get(iterBaseLocation).size() > 5) {
+					if (expansionEnemyInfo.get(iterBaseLocation) != null && expansionEnemyInfo.get(iterBaseLocation).size() > 5) {
 						return true;
 					}
 					break;
