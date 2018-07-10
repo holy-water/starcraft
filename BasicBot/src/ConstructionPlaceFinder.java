@@ -42,7 +42,7 @@ public class ConstructionPlaceFinder {
 	public static int locationOfBase = 0;
 	private static int numberOfSupply = 0;
 	private static boolean isBarrackBuilt = false; // 0703 - 최혜진 추가
-	
+
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
 		if (isInitialized == false) {
@@ -190,7 +190,8 @@ public class ConstructionPlaceFinder {
 			case FirstExpansionLocation:
 				tempBaseLocation = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
 				if (tempBaseLocation != null) {
-					//desiredPosition = getBuildLocationNear(buildingType, tempBaseLocation.getTilePosition());
+					// desiredPosition = getBuildLocationNear(buildingType,
+					// tempBaseLocation.getTilePosition());
 					desiredPosition = tempBaseLocation.getTilePosition();
 				}
 				break;
@@ -216,75 +217,80 @@ public class ConstructionPlaceFinder {
 				if (isSupplyDepotBuild == false) { // Supply Depot 첫번째 위치 지정인 경우
 					// BaseLocation이 맵의 어느 부분에 위치하는지 파악하고 초기값 리턴
 					tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
-					tempFirstExpansion = InformationManager.Instance()
-							.getFirstExpansionLocation(MyBotModule.Broodwar.self());
-					tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
-					int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
-					int dy = tempBaseLocation.getTilePosition().getY() - tempFirstExpansion.getTilePosition().getY();
-					numberOfSupply = 1;
-					if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-						nx = leftcornerX;
-						ny = uppercornerY;
-						locationOfBase = 1;
-					} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-						nx = rightcornerX;
-						ny = uppercornerY;
-						locationOfBase = 2;
-					} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-						nx = leftcornerX;
-						ny = lowercornerY;
-						locationOfBase = 3;
-					} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-						nx = rightcornerX;
-						ny = lowercornerY;
-						locationOfBase = 4;
-					}
+					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+						tempFirstExpansion = InformationManager.Instance()
+								.getFirstExpansionLocation(MyBotModule.Broodwar.self());
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
+						int dy = tempBaseLocation.getTilePosition().getY()
+								- tempFirstExpansion.getTilePosition().getY();
+						numberOfSupply = 1;
+						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
+							nx = leftcornerX;
+							ny = uppercornerY;
+							locationOfBase = 1;
+						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
+							nx = rightcornerX;
+							ny = uppercornerY;
+							locationOfBase = 2;
+						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
+							nx = leftcornerX;
+							ny = lowercornerY;
+							locationOfBase = 3;
+						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
+							nx = rightcornerX;
+							ny = lowercornerY;
+							locationOfBase = 4;
+						}
+					} else {
 
+					}
 					isSupplyDepotBuild = true;
 					// System.out.println(locationOfBase + " " + nx + " " + ny);
 
 				} else { // 첫번째가 아닌 경우
 					numberOfSupply++;
-					if (locationOfBase == 1) {
-						if (numberOfSupply % 6 == 1) {
-							leftcornerX = leftcornerX - 3;
-							uppercornerY = 0;
-						} else {
-							uppercornerY = uppercornerY + 2;
+					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+						if (locationOfBase == 1) {
+							if (numberOfSupply % 6 == 1) {
+								leftcornerX = leftcornerX - 3;
+								uppercornerY = 0;
+							} else {
+								uppercornerY = uppercornerY + 2;
+							}
+							nx = leftcornerX;
+							ny = uppercornerY;
+						} else if (locationOfBase == 2) {
+							if (numberOfSupply % 6 == 1) {
+								rightcornerX = rightcornerX + 3;
+								uppercornerY = 0;
+							} else {
+								uppercornerY = uppercornerY + 2;
+							}
+							nx = rightcornerX;
+							ny = uppercornerY;
+						} else if (locationOfBase == 3) {
+							if (numberOfSupply % 6 == 1) {
+								leftcornerX = leftcornerX - 3;
+								lowercornerY = 125;
+							} else {
+								lowercornerY = lowercornerY - 2;
+							}
+							nx = leftcornerX;
+							ny = lowercornerY;
+						} else if (locationOfBase == 4) {
+							if (numberOfSupply % 6 == 1) {
+								rightcornerX = rightcornerX + 3;
+								lowercornerY = 125;
+							} else {
+								lowercornerY = lowercornerY - 2;
+							}
+							nx = rightcornerX;
+							ny = lowercornerY;
 						}
-						nx = leftcornerX;
-						ny = uppercornerY;
-					} else if (locationOfBase == 2) {
-						if (numberOfSupply % 6 == 1) {
-							rightcornerX = rightcornerX + 3;
-							uppercornerY = 0;
-						} else {
-							uppercornerY = uppercornerY + 2;
-						}
-						nx = rightcornerX;
-						ny = uppercornerY;
-					} else if (locationOfBase == 3) {
-						if (numberOfSupply % 6 == 1) {
-							leftcornerX = leftcornerX - 3;
-							lowercornerY = 125;
-						} else {
-							lowercornerY = lowercornerY - 2;
-						}
-						nx = leftcornerX;
-						ny = lowercornerY;
-					} else if (locationOfBase == 4) {
-						if (numberOfSupply % 6 == 1) {
-							rightcornerX = rightcornerX + 3;
-							lowercornerY = 125;
-						} else {
-							lowercornerY = lowercornerY - 2;
-						}
-						nx = rightcornerX;
-						ny = lowercornerY;
+
+						// System.out.println(nx + " " + ny);
 					}
-
-					// System.out.println(nx + " " + ny);
-
 				}
 				tempTilePosition = new TilePosition(nx, ny);
 				desiredPosition = tempTilePosition.getPoint();
@@ -292,44 +298,54 @@ public class ConstructionPlaceFinder {
 			case BlockFirstChokePoint:
 				int blockx = 0;
 				int blocky = 0;
-				tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
-				//System.out.println(tempFirstExpansion.getTilePosition().getX()+" "+tempFirstExpansion.getTilePosition().getY());
+				tempFirstExpansion = InformationManager.Instance()
+						.getFirstExpansionLocation(MyBotModule.Broodwar.self());
+				// System.out.println(tempFirstExpansion.getTilePosition().getX()+"
+				// "+tempFirstExpansion.getTilePosition().getY());
 				if (isBarrackBuilt == false) {
 					isBarrackBuilt = true;
-					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
-					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
-					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
-					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
+					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+						if (locationOfBase == 1) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 4;
+							blocky = tempFirstExpansion.getTilePosition().getY() - 2;
+						} else if (locationOfBase == 2) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+							blocky = tempFirstExpansion.getTilePosition().getY() - 2;
+						} else if (locationOfBase == 3) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 4;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 2;
+						} else if (locationOfBase == 4) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 2;
+						}
+					} else {
+
 					}
-					//System.out.println(blockx +" "+blocky);
-				}else {
-					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
-					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
-					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
-					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
-					}				
+					// System.out.println(blockx +" "+blocky);
+				} else {
+					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+						if (locationOfBase == 1) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 8;
+							blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+						} else if (locationOfBase == 2) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 7;
+							blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+						} else if (locationOfBase == 3) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 8;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 4;
+						} else if (locationOfBase == 4) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 7;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 4;
+						}
+					} else {
+
+					}
 				}
 				tempTilePosition = new TilePosition(blockx, blocky);
 				desiredPosition = tempTilePosition.getPoint();
-//				ConstructionTask b = new ConstructionTask(buildingType, desiredPosition);
-//				b.setFinalPosition(desiredPosition);
-				break;	
+				// ConstructionTask b = new ConstructionTask(buildingType, desiredPosition);
+				// b.setFinalPosition(desiredPosition);
+				break;
 			}
 		}
 
