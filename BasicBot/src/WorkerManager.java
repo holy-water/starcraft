@@ -64,19 +64,19 @@ public class WorkerManager {
 			if (worker.isUnderAttack())
 			{
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
-				if (BWTA.getRegion(worker.getPosition()).equals(mainBaseLocation.getRegion())) {					
+				if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion()) {					
 					System.out.println(worker.getID() + "가 앞마당으로 이동!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstExpansionLocation.getPosition()));
 				}
 				// firstExpansionLocation
-				else if (BWTA.getRegion(worker.getPosition()).equals(firstExpansionLocation.getRegion())) {
+				else if (BWTA.getRegion(worker.getPosition()) == firstExpansionLocation.getRegion()) {
 					System.out.println(worker.getID() + "가 본진으로 이동!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, mainBaseLocation.getPosition()));
 				}
 				// occupiedBaseLocation
 				else {
 					for (int i=1; i<occupiedBaseLocations.size(); i++) {
-						if (BWTA.getRegion(worker.getPosition()).equals(occupiedBaseLocations.get(i).getRegion())) {
+						if (BWTA.getRegion(worker.getPosition()) == occupiedBaseLocations.get(i).getRegion()) {
 							System.out.println(worker.getID() + "가 "+ (i-1) +"번 멀티 진영으로 이동!!");
 							workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, occupiedBaseLocations.get(i-1).getPosition()));
 							break;

@@ -248,7 +248,7 @@ public class InformationManager {
 	public boolean isLocationDangerous(BaseLocation baseLocation) {
 		
 		// mainBaseLocation에 대한 체크
-		if (baseLocation == mainBaseLocations.get(selfPlayer)) {
+		if (baseLocation.equals(mainBaseLocations.get(selfPlayer))) {
 			if (mainBaseEnemyInfo.size() > 5) {
 				return true;
 			}
@@ -256,7 +256,7 @@ public class InformationManager {
 		// expansionBaseLocation에 대한 체크
 		else {
 			for (BaseLocation iterBaseLocation : occupiedBaseLocations.get(selfPlayer)) {
-				if (baseLocation == iterBaseLocation) {
+				if (baseLocation.equals(iterBaseLocation)) {
 					if (expansionEnemyInfo.get(iterBaseLocation).size() > 5) {
 						return true;
 					}
@@ -599,7 +599,7 @@ public class InformationManager {
 	
 	/// baseLocation별로 적군의 unit 정보를 가져온다
 	public Vector<UnitInfo> getEnemyInfo(BaseLocation baseLocation) {
-		if(baseLocation == mainBaseLocations.get(selfPlayer)) {
+		if(baseLocation.equals(mainBaseLocations.get(selfPlayer))) {
 			return mainBaseEnemyInfo;
 		} else {
 			return expansionEnemyInfo.get(baseLocation);
