@@ -120,12 +120,15 @@ public class StrategyManager {
 		// 0702 추가
 		int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory,
 				MyBotModule.Broodwar.self());
-
-		if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 300) {
-			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
-				// 0702 - 최혜진 수정 입구로
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+		
+		// TODO 저그 빌드 처리 후 삭제할 조건 
+		if (factoryCount > 0) {			
+			if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 300) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
+					// 0702 - 최혜진 수정 입구로
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+				}
 			}
 		}
 	}
