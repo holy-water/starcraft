@@ -17,8 +17,6 @@ public class ScoutManager {
 
 	private Unit currentScoutUnit;
 	private int currentScoutStatus;
-	// 0710 - 최혜진 추가 정찰 경로 수정
-	private boolean isScoutStarted;
 
 	public enum ScoutStatus {
 		NoScout, /// < 정찰 유닛을 미지정한 상태
@@ -49,14 +47,14 @@ public class ScoutManager {
 
 		// scoutUnit 을 지정하고, scoutUnit 의 이동을 컨트롤함.
 		assignScoutIfNeeded();
-//		// 0710 - 최혜진 추가 정중앙 이동
-//		if (isScoutStarted == false) {
-//			TilePosition center = new TilePosition(64, 64);
-//			System.out.println("move to center");
-//			commandUtil.move(currentScoutUnit, center.toPosition());
-//			isScoutStarted = true;
-//			return;
-//		}
+		// // 0710 - 최혜진 추가 정중앙 이동
+		// if (isScoutStarted == false) {
+		// TilePosition center = new TilePosition(64, 64);
+		// System.out.println("move to center");
+		// commandUtil.move(currentScoutUnit, center.toPosition());
+		// isScoutStarted = true;
+		// return;
+		// }
 		moveScoutUnit();
 
 		// 참고로, scoutUnit 의 이동에 의해 발견된 정보를 처리하는 것은 InformationManager.update() 에서 수행함
@@ -127,32 +125,50 @@ public class ScoutManager {
 			// currentScoutTargetBaseLocation 으로 잡아서 이동
 			if (currentScoutTargetBaseLocation == null || currentScoutUnit
 					.getDistance(currentScoutTargetBaseLocation.getPosition()) < 5 * Config.TILE_SIZE) {
-				currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
+				// 0711 - 최혜진 수정 NoScout -> MovingToCenter -> MovingToAnotherBaseLocation
+				if (currentScoutStatus == ScoutStatus.NoScout.ordinal()) { // 초기에 중앙으로 가라고 명령
+					currentScoutStatus = ScoutStatus.MovingToCenter.ordinal();
+					TilePosition center = new TilePosition(64, 64);
+					// System.out.println("move to center");
+					commandUtil.move(currentScoutUnit, center.toPosition());
+				} else if (currentScoutStatus == ScoutStatus.MovingToCenter.ordinal()) {
+					if (currentScoutUnit.getPosition().toTilePosition().getX() == 64
+							&& currentScoutUnit.getPosition().toTilePosition().getY() == 64) {
+						// 중앙에 도착했다면 다른 baselocation 찾기
+						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
+						// System.out.println("arrive in center");
+					} else {
+						// 중앙에 도착하지 않았다면 계속 이동
+						return;
+					}
+				} else {
 
-				double closestDistance = 1000000000;
-				double tempDistance = 0;
-				BaseLocation closestBaseLocation = null;
-				for (BaseLocation startLocation : BWTA.getStartLocations()) {
-					// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
-					if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
-						// GroundDistance 를 기준으로 가장 가까운 곳으로 선정
-						tempDistance = (double) (InformationManager.Instance()
-								.getMainBaseLocation(MyBotModule.Broodwar.self()).getGroundDistance(startLocation)
-								+ 0.5);
+					double closestDistance = 1000000000;
+					double tempDistance = 0;
+					BaseLocation closestBaseLocation = null;
+					for (BaseLocation startLocation : BWTA.getStartLocations()) {
+						// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
+						if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
+							// GroundDistance 를 기준으로 가장 가까운 곳으로 선정
+							tempDistance = (double) (InformationManager.Instance()
+									.getMainBaseLocation(MyBotModule.Broodwar.self()).getGroundDistance(startLocation)
+									+ 0.5);
 
-						if (tempDistance > 0 && tempDistance < closestDistance) {
-							closestBaseLocation = startLocation;
-							closestDistance = tempDistance;
+							if (tempDistance > 0 && tempDistance < closestDistance) {
+								closestBaseLocation = startLocation;
+								closestDistance = tempDistance;
+							}
 						}
 					}
-				}
 
-				if (closestBaseLocation != null) {
-					// assign a scout to go scout it
-					commandUtil.move(currentScoutUnit, closestBaseLocation.getPosition());
-					currentScoutTargetBaseLocation = closestBaseLocation;
+					if (closestBaseLocation != null) {
+						// assign a scout to go scout it
+						commandUtil.move(currentScoutUnit, closestBaseLocation.getPosition());
+						currentScoutTargetBaseLocation = closestBaseLocation;
+					}
 				}
 			}
+
 		}
 		// if we know where the enemy region is
 		else {
@@ -177,6 +193,7 @@ public class ScoutManager {
 					currentScoutTargetPosition = myBaseLocation.getPosition();
 				}
 			}
+
 		}
 	}
 

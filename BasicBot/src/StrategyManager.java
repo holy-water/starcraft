@@ -328,7 +328,7 @@ public class StrategyManager {
 				TilePosition initialPosition = unit.getTilePosition();
 				TilePosition targetPosition = TilePosition.None;
 				if (BuildManager.Instance().locationOfBase <= 2) {
-					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() + 15);
 					} else {
 
@@ -338,7 +338,7 @@ public class StrategyManager {
 					// "," +
 					// targetPosition.getY());
 				} else {
-					if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() - 15);
 					} else {
 

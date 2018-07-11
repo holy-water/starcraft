@@ -803,7 +803,7 @@ public class BuildManager {
 			if (isSupplyDepotBuild == false) { // Supply Depot 첫번째 위치 지정인 경우
 				// BaseLocation이 맵의 어느 부분에 위치하는지 파악하고 초기값 리턴
 				tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
-				if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					tempFirstExpansion = InformationManager.Instance()
 							.getFirstExpansionLocation(MyBotModule.Broodwar.self());
 					tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
@@ -835,7 +835,7 @@ public class BuildManager {
 
 			} else { // 첫번째가 아닌 경우
 				numberOfSupply++;
-				if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
 						if (numberOfSupply % 6 == 1) {
 							leftcornerX = leftcornerX - 3;
@@ -888,7 +888,7 @@ public class BuildManager {
 			tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
 			if (isBarrackBuilt == false) {
 				isBarrackBuilt = true;
-				if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
 						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
 						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
@@ -906,7 +906,7 @@ public class BuildManager {
 
 				}
 			} else {
-				if (MyBotModule.Broodwar.mapFileName().equals("(4)CircuitBreaker.scx")) {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
 						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
 						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
