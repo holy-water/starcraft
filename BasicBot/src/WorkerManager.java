@@ -223,7 +223,7 @@ public class WorkerManager {
 			// 건물의 경우 아무리 멀어도 무조건 수리. 일꾼 한명이 순서대로 수리
 			if (unit.getType().isBuilding() && unit.isCompleted() == true && unit.getHitPoints() < unit.getType().maxHitPoints())
 			{
-				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 0);
+				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
 				setRepairWorker(repairWorker, unit);
 				break;
 			}
@@ -233,7 +233,9 @@ public class WorkerManager {
 				// SCV 는 수리 대상에서 제외. 전투 유닛만 수리하도록 한다
 				if (unit.getType() != UnitType.Terran_SCV) {
 					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10 * Config.TILE_SIZE);
-					setRepairWorker(repairWorker, unit);
+					if (repairWorker != null) {
+						setRepairWorker(repairWorker, unit);
+					}
 					break;
 				}
 			}
@@ -242,6 +244,7 @@ public class WorkerManager {
 	}
 
 	/// position 에서 가장 가까운 Mineral 혹은 Idle 혹은 Move 일꾼 유닛들 중에서 Repair 임무를 수행할 일꾼 유닛을 정해서 리턴합니다
+	// 0712 수정 - 거리가 멀 경우 수리할 일꾼을 리턴하지 않음
 	public Unit chooseRepairWorkerClosestTo(Position p, int maxRange)
 	{
 		if (!p.isValid()) return null;
@@ -276,12 +279,12 @@ public class WorkerManager {
 				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false && worker.isCarryingGas() == false ))
 	            {
 					closestWorker = worker;
-	                dist = closestDist;
+	                closestDist = dist;
 	            }
 			}
 		}
 
-		if (currentRepairWorker == null || currentRepairWorker.exists() == false || currentRepairWorker.getHitPoints() <= 0) {
+		if (maxRange > closestDist || currentRepairWorker == null || currentRepairWorker.exists() == false || currentRepairWorker.getHitPoints() <= 0) {
 			currentRepairWorker = closestWorker;
 		}
 

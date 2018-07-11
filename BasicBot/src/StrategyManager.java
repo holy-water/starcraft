@@ -16,6 +16,7 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import bwapi.WalkPosition;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
@@ -120,9 +121,9 @@ public class StrategyManager {
 		// 0702 추가
 		int factoryCount = InformationManager.Instance().getNumUnits(UnitType.Terran_Factory,
 				MyBotModule.Broodwar.self());
-		
-		// TODO 저그 빌드 처리 후 삭제할 조건 
-		if (factoryCount > 0) {			
+
+		// TODO 저그 빌드 처리 후 삭제할 조건
+		if (factoryCount > 0) {
 			if (MyBotModule.Broodwar.self().minerals() / factoryCount >= 300) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
@@ -154,6 +155,10 @@ public class StrategyManager {
 					Position myPosition = myUnit.getPosition();
 					// 0706 추가 - 받아온 위치로 이동할 수 있는지 확인하고 만약 이동할 수 없다면 수정하는 로직 필요
 					Position position = getOppositePosition(myPosition, enemyPosition);
+					// 이전 프레임과 동일한 위치일 때
+					if (myUnit.getVelocityX() == 0 && myUnit.getVelocityY() == 0) {
+						
+					}
 					myUnit.move(position);
 				} else {
 					myUnit.attack(unit);
@@ -175,34 +180,36 @@ public class StrategyManager {
 
 	// 0705 추가 - 내 위치와 적 위치를 기반으로 반대위치를 리턴
 	// 0706 수정
+	// 0711 수정
 	private Position getOppositePosition(Position myPosition, Position enemyPosition) {
+		int weight = 75;
 		int x = myPosition.getX();
 		int y = myPosition.getY();
 		int dx = enemyPosition.getX() - x;
 		int dy = enemyPosition.getY() - y;
 		if (dx == 0) {
-			y = dy > 0 ? y - 100 : y + 100;
+			y = dy > 0 ? y - weight : y + weight;
 		} else if (dy == 0) {
-			x = dx > 0 ? x - 100 : x + 100;
+			x = dx > 0 ? x - weight : x + weight;
 		} else {
 			double tangent = Math.abs((double) dy / (double) dx);
 			if (tangent < 0.268) {
-				x = dx > 0 ? x - 97 : x + 97;
-				y = dy > 0 ? y - 26 : y + 26;
+				x = dx > 0 ? x - (int) (weight * 0.97) : x + (int) (weight * 97);
+				y = dy > 0 ? y - (int) (weight * 0.26) : y + (int) (weight * 0.26);
 			} else if (tangent < 0.577) {
-				x = dx > 0 ? x - 87 : x + 87;
-				y = dy > 0 ? y - 50 : y + 50;
+				x = dx > 0 ? x - (int) (weight * 0.87) : x + (int) (weight * 0.87);
+				y = dy > 0 ? y - (int) (weight * 0.5) : y + (int) (weight * 0.5);
 			} else if (tangent < 1) {
-				x = dx > 0 ? x - 71 : x + 71;
-				y = dy > 0 ? y - 71 : y + 71;
+				x = dx > 0 ? x - (int) (weight * 0.71) : x + (int) (weight * 0.71);
+				y = dy > 0 ? y - (int) (weight * 0.71) : y + (int) (weight * 0.71);
 			} else if (tangent < 1.732) {
-				x = dx > 0 ? x - 50 : x + 50;
-				y = dy > 0 ? y - 87 : y + 87;
+				x = dx > 0 ? x - (int) (weight * 0.5) : x + (int) (weight * 0.5);
+				y = dy > 0 ? y - (int) (weight * 0.87) : y + (int) (weight * 0.87);
 			} else if (tangent < 3.732) {
-				x = dx > 0 ? x - 26 : x + 26;
-				y = dy > 0 ? y - 97 : y + 97;
+				x = dx > 0 ? x - (int) (weight * 0.26) : x + (int) (weight * 0.26);
+				y = dy > 0 ? y - (int) (weight * 0.97) : y + (int) (weight * 0.97);
 			} else {
-				y = dy > 0 ? y - 100 : y + 100;
+				y = dy > 0 ? y - weight : y + weight;
 			}
 		}
 		return new Position(x, y);
