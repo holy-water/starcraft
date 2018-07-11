@@ -1,3 +1,15 @@
+## (20180711) 사람 vs 봇
+
+1. BasicBot 소스를 Export
+    - Runnable JAR File 선택
+    - Launch Configuration : Main - BasicBot
+    - Export destination : 위치 무관, 주소에 영어만 있게할 것
+    - Library handling : Extract required libraries into generated JAR
+2. 생성된 jar 파일 위치에서 cmd 실행 > java -jar BasicBot.jar 입력(파일명은 각자 다를 수 있음)
+3. ChaosLauncher 반드시!!!! 관리자 권한으로 실행
+4. 나머지는 위키에서 시키는 대로 하면 대결 가능
+5. 뭔가 잘 안된다면 마음을 가라앉히고 다시 처음부터 해봅시다!
+
 ## (20180710) scv 리밸런싱 관련 처리 완료
 
 1. WorkerData에서 workerDangerMap 및 관련 로직 삭제 - 불필요
