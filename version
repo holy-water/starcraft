@@ -10,6 +10,18 @@
  - 초반 러쉬 대비 빌드 수정 및 컨트롤
 
 
+BasicBot v1.2.4
+1. 가운데 정찰 수정
+ - 기존에는 정중앙에 잠시 멈췄다가 출발했는데 부드럽게 지나갈 수 있도록 수정
+2. isWalkable 사용 가능 확인
+ - MyBotModule.Broodwar.isWalkable(WalkPosition 객체)
+ - Position : 1x1
+ - WalkPosition : 8X8
+ - TilePosition : 32X32
+ - Position / 8 = WalkPosition
+ 
+
+
 BasicBot v1.2.3
 1. 컨트롤 함수 가중치 수정
 2. 메카닉 유닛이 수리가 필요할 때, 무조건 수리하러 가지않고 가까울 때만 수리할 수 있도록 수정
