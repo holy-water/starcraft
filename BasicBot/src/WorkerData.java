@@ -6,6 +6,7 @@ import java.util.Map;
 
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
 
 public class WorkerData {
 
@@ -20,7 +21,8 @@ public class WorkerData {
 		Idle,			///< 하는 일 없음. 대기 상태. 
 		Repair,			///< 수리. Terran_SCV 만 가능
 		Move,			///< 이동
-		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨. 
+		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨.
+		RunAway,		///< 도망. Move와 다름.
 		Default 		///< 기본. 미설정 상태. 
 	};
 	
@@ -311,12 +313,20 @@ public class WorkerData {
 				}
 			}
 	    }
+	    else if (job == WorkerJob.RunAway)
+	    {
+	    	// 이동해야할 위치 저장
+	    	workerMoveMap.put(unit.getID(), new WorkerMoveData(0, 0, jobUnit.getPosition()));
+			// right click the mineral to start mining
+	        commandUtil.rightClick(unit, jobUnit);
+	    }
 		else if (job == WorkerJob.Scout)
 		{
 
 		}
 	    else if (job == WorkerJob.Build)
 	    {
+	    	
 	    }
 	}
 

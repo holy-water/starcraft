@@ -42,6 +42,7 @@ public class WorkerManager {
 		handleGasWorkers();
 		handleIdleWorkers();
 		handleMoveWorkers();
+		handleRunAwayWorkers();
 		handleCombatWorkers();
 		handleRepairWorkers();
 	}
@@ -59,26 +60,26 @@ public class WorkerManager {
 				continue;
 			}
 			
-			// worker가 공격을 받으면 다른 진영으로 이동하도록 설정
+			// worker가 공격을 받으면 다른 진영으로 도망가도록 설정
 			// 테스트 아직 못한 상태
 			if (worker.isUnderAttack())
 			{
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
-				if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion()) {					
-					System.out.println(worker.getID() + "가 앞마당으로 이동!!");
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, firstExpansionLocation.getPosition()));
+				if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion()) {
+					System.out.println(worker.getID() + "가 앞마당으로 도망!!");
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
 				}
 				// firstExpansionLocation
 				else if (BWTA.getRegion(worker.getPosition()) == firstExpansionLocation.getRegion()) {
-					System.out.println(worker.getID() + "가 본진으로 이동!!");
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, mainBaseLocation.getPosition()));
+					System.out.println(worker.getID() + "가 본진으로 도망!!");
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, mainBaseLocation.getStaticMinerals().get(0));
 				}
 				// occupiedBaseLocation
 				else {
 					for (int i=1; i<occupiedBaseLocations.size(); i++) {
 						if (BWTA.getRegion(worker.getPosition()) == occupiedBaseLocations.get(i).getRegion()) {
-							System.out.println(worker.getID() + "가 "+ (i-1) +"번 멀티 진영으로 이동!!");
-							workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, new WorkerMoveData(0, 0, occupiedBaseLocations.get(i-1).getPosition()));
+							System.out.println(worker.getID() + "가 "+ (i-1) +"번 멀티 진영으로 도망!!");
+							workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, occupiedBaseLocations.get(i-1).getStaticMinerals().get(0));
 							break;
 						}
 					}
@@ -88,10 +89,11 @@ public class WorkerManager {
 			// 게임상에서 worker가 isIdle 상태가 되었으면 (새로 탄생했거나, 그전 임무가 끝난 경우), WorkerData 도 Idle 로 맞춘 후, handleGasWorkers, handleIdleWorkers 등에서 새 임무를 지정한다 
 			if ( worker.isIdle() )
 			{
-				// workerData 에서 Build / Move / Scout 로 임무지정한 경우, worker 는 즉 임무 수행 도중 (임무 완료 전) 에 일시적으로 isIdle 상태가 될 수 있다 
+				// workerData 에서 Build / Move / Scout / RunAway 로 임무지정한 경우, worker 는 즉 임무 수행 도중 (임무 완료 전) 에 일시적으로 isIdle 상태가 될 수 있다 
 				if ((workerData.getWorkerJob(worker) != WorkerData.WorkerJob.Build)
 					&& (workerData.getWorkerJob(worker) != WorkerData.WorkerJob.Move)
-					&& (workerData.getWorkerJob(worker) != WorkerData.WorkerJob.Scout))  
+					&& (workerData.getWorkerJob(worker) != WorkerData.WorkerJob.Scout)
+					&& (workerData.getWorkerJob(worker) != WorkerData.WorkerJob.RunAway))  
 				{
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit)null);
 				}
@@ -180,7 +182,6 @@ public class WorkerManager {
 
 				// 목적지에 도착한 경우 이동 명령을 해제한다
 				if (worker.getPosition().getDistance(data.getPosition()) < 4) {
-					System.out.println(worker.getID()+"가 목적지에 도착");
 					setIdleWorker(worker);
 				}
 				else {
@@ -188,6 +189,29 @@ public class WorkerManager {
 				}
 			}
 		}
+	}
+	
+	public void handleRunAwayWorkers()
+	{
+		// for each of our workers
+		for (Unit worker : workerData.getWorkers())
+		{
+			if (worker == null) continue;
+			
+			// if it is a move worker
+			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RunAway)
+			{
+				WorkerMoveData data = workerData.getWorkerMoveData(worker);
+
+				// Mineral에 도착하여 Mineral을 캐고 있는 상태가 되면, Mineral을 Job으로 세팅
+				if (worker.getPosition().getDistance(data.getPosition()) < 4 && worker.isCarryingMinerals())
+				{
+					System.out.println(worker.getID()+"번 도망 완료! 이제 미네랄을 캐자");
+					setMineralWorker(worker);					
+				}
+			}
+		}
+		
 	}
 
 	// bad micro for combat workers
