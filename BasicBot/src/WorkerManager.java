@@ -374,12 +374,17 @@ public class WorkerManager {
 		Unit closestDepot = null;
 		double closestDistance = 1000000000;
 		
+		int selfForcePoint = 0;
+		int enemyForcePoint = 0;
+		
 		// 완성된, 공중에 떠있지 않고 땅에 정착해있는, ResourceDepot 혹은 Lair 나 Hive로 변형중인 Hatchery 중에서
 		// 첫째로 미네랄 일꾼수가 꽉 차지않은 곳
 		// 둘째로 가까운 곳을 찾는다
-		a: for (Unit unit : MyBotModule.Broodwar.self().getUnits())
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits())
 		{
 			if (unit == null) continue;
+			selfForcePoint = 0;
+			enemyForcePoint = 0;
 			
 			if (unit.getType().isResourceDepot()
 				&& (unit.isCompleted() || unit.getType() == UnitType.Zerg_Lair || unit.getType() == UnitType.Zerg_Hive) 
@@ -387,24 +392,12 @@ public class WorkerManager {
 			{
 				if (workerData.depotHasEnoughMineralWorkers(unit) == false) {
 					// 해당 지역이 위험한 지역일 경우 선택에서 제외
-					// mainBaseLocation
-					if (mainBaseLocation.getRegion() == BWTA.getRegion(unit.getPosition())) {
-						if(InformationManager.Instance().isLocationDangerous(mainBaseLocation)) {
-							System.out.println("위험하니까 안갈래");
-							continue a;
-						}
-					}
-					// occupiedBaseLocation
-					else {
-						for (BaseLocation iterBaseLocation : occupiedBaseLocations) {
-							if (iterBaseLocation.getRegion() == BWTA.getRegion(unit.getPosition())) {
-								if(InformationManager.Instance().isLocationDangerous(iterBaseLocation)) {
-									System.out.println("위험하니까 안갈래");
-									continue a;
-								}
-								break;
-							}
-						}
+					// 위험도 체크는 아군과 적군의 병력 비교로 한다
+					selfForcePoint = InformationManager.Instance().getForcePoint(BWTA.getRegion(unit.getPosition()), MyBotModule.Broodwar.self());
+					enemyForcePoint = InformationManager.Instance().getForcePoint(BWTA.getRegion(unit.getPosition()), MyBotModule.Broodwar.enemy());
+					if (selfForcePoint < enemyForcePoint) {
+						System.out.println("위험하니까 안갈래");
+						continue;
 					}
 
 					double distance = unit.getDistance(worker);

@@ -315,8 +315,8 @@ public class WorkerData {
 	    }
 	    else if (job == WorkerJob.RunAway)
 	    {
-	    	// 이동해야할 위치 저장
-	    	workerMoveMap.put(unit.getID(), new WorkerMoveData(0, 0, jobUnit.getPosition()));
+	    		// 이동해야할 위치 저장
+	    		workerMoveMap.put(unit.getID(), new WorkerMoveData(0, 0, jobUnit.getPosition()));
 			// right click the mineral to start mining
 	        commandUtil.rightClick(unit, jobUnit);
 	    }
@@ -402,6 +402,10 @@ public class WorkerData {
 		else if (previousJob == WorkerJob.Move)
 		{
 			workerMoveMap.remove(unit.getID()); // C++ : workerMoveMap.erase(unit);
+		}
+		else if (previousJob == WorkerJob.RunAway)
+		{
+			workerMoveMap.remove(unit.getID());
 		}
 
 		workerJobMap.remove(unit.getID()); // C++ : workerJobMap.erase(unit);

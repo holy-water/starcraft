@@ -58,10 +58,6 @@ public class InformationManager {
 	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 
-	/// 각 진영에 쳐들어온 적군의 정보를 담는 Vector
-	private Vector<UnitInfo> mainBaseEnemyInfo = new Vector<>();
-	private Map<BaseLocation, Vector<UnitInfo>> expansionEnemyInfo = new HashMap<>();
-	
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -107,10 +103,7 @@ public class InformationManager {
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
-		// occupiedBaseLocation의 unit 정보를 업데이트한다
-		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
-			updateOccupiedLocationUnitsInfo();
-		}
+
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
 			updateBaseLocationInfo();
@@ -187,21 +180,6 @@ public class InformationManager {
 		unitData.get(unit.getPlayer()).removeUnit(unit);
 	}
 
-	/// occupied BaseLocation 에 대해 적군 unit 정보를 업데이트 하여 Vector에 저장
-	/// mainBaseEnemyInfo / expansionEnemyInfo
-	public void updateOccupiedLocationUnitsInfo() {
-		// mainBaseLocation에 대한 업데이트
-		getNearbyForce(mainBaseEnemyInfo, mainBaseLocations.get(selfPlayer).getPosition(), enemyPlayer, 10 * Config.TILE_SIZE);
-		
-		// expansionBaseLocation에 대한 업데이트
-		Vector<UnitInfo> tempVector;
-		for(BaseLocation baseLocation : occupiedBaseLocations.get(selfPlayer)) {
-			tempVector = expansionEnemyInfo.get(baseLocation);
-			if(tempVector == null) continue;
-			getNearbyForce(tempVector, baseLocation.getPosition(), enemyPlayer, 10 * Config.TILE_SIZE);
-		}
-	}
-
 	/// 해당 Player (아군 or 적군) 의 position 주위의 유닛 목록을 unitInfo 에 저장합니다		 
 	public void getNearbyForce(Vector<UnitInfo> unitInfo, Position p, Player player, int radius) {
 		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
@@ -245,28 +223,29 @@ public class InformationManager {
 		return unitData.get(player);
 	}
 	
-	// occupied baseLocation의 위험도를 체크하는 함수 
-	public boolean isLocationDangerous(BaseLocation baseLocation) {
+	// 한 지역 내에서 아군 또는 적군의 병력 계산 - 가중치 부여
+	public int getForcePoint(Region region, Player player) {
+			
+		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
+		int forcePoint = 0;
 		
-		// mainBaseLocation에 대한 체크
-		if (baseLocation.equals(mainBaseLocations.get(selfPlayer))) {
-			if (mainBaseEnemyInfo.size() > 5) {
-				return true;
-			}
-		} 
-		// expansionBaseLocation에 대한 체크
-		else {
-			for (BaseLocation iterBaseLocation : occupiedBaseLocations.get(selfPlayer)) {
-				if (baseLocation.equals(iterBaseLocation)) {
-					if (expansionEnemyInfo.get(iterBaseLocation) != null && expansionEnemyInfo.get(iterBaseLocation).size() > 5) {
-						return true;
-					}
-					break;
-				}
+		while (it.hasNext())
+		{
+			UnitInfo ui = getUnitData(player).getUnitAndUnitInfoMap().get(it.next());
+			
+			// 유닛이 해당 지역에 들어와있는지 확인
+			if (BWTA.getRegion(ui.getLastPosition()) == region)
+			{
+				// 전투 유닛인 경우만 고려
+				if (isCombatUnitType(ui.getType()) && ui.isCompleted())
+				{
+					// TODO 타입은 나중에 고려
+					forcePoint++; 
+				}				
 			}
 		}
 		
-		return false;
+		return forcePoint;
 	}
 
 	public void updateBaseLocationInfo() {
@@ -596,15 +575,6 @@ public class InformationManager {
 	/// 게임 맵에 따라서, secondChokePoint 는 일반 상식과 다른 지점이 될 수도 있습니다
 	public Chokepoint getSecondChokePoint(Player player) {
 		return secondChokePoint.get(player);
-	}
-	
-	/// baseLocation별로 적군의 unit 정보를 가져온다
-	public Vector<UnitInfo> getEnemyInfo(BaseLocation baseLocation) {
-		if(baseLocation.equals(mainBaseLocations.get(selfPlayer))) {
-			return mainBaseEnemyInfo;
-		} else {
-			return expansionEnemyInfo.get(baseLocation);
-		}
 	}
 
 	/// 해당 UnitType 이 전투 유닛인지 리턴합니다
