@@ -239,7 +239,7 @@ public class InformationManager {
 				// 전투 유닛인 경우만 고려
 				if (isCombatUnitType(ui.getType()) && ui.isCompleted())
 				{
-					// TODO 타입은 나중에 고려
+					// TODO 타입은 나중에 다시 계산
 					forcePoint++; 
 				}				
 			}
