@@ -393,34 +393,33 @@ public class StrategyManager {
 				// 0709 - 최혜진 추가 배럭 이동
 				TilePosition initialPosition = unit.getTilePosition();
 				TilePosition targetPosition = TilePosition.None;
-				if (BuildManager.Instance().locationOfBase <= 2) {
+				// 0714 - 최혜진 수정 배럭스 드는 위치 수정
+				if (BuildManager.Instance().locationOfBase == 1) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() + 15);
+						targetPosition = new TilePosition(initialPosition.getX() - 2, initialPosition.getY() + 15);
 					} else {
 
 					}
-					commandUtil.move(unit, targetPosition.toPosition());
-					// System.out.println("move to " + targetPosition.getX() +
-					// "," +
-					// targetPosition.getY());
-				} else {
+				} else if (BuildManager.Instance().locationOfBase == 2) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(initialPosition.getX(), initialPosition.getY() - 15);
+						targetPosition = new TilePosition(initialPosition.getX() + 3, initialPosition.getY() + 15);
 					} else {
 
 					}
-					commandUtil.move(unit, targetPosition.toPosition());
-					// System.out.println("move to " + targetPosition.getX() +
-					// "," +s
-					// targetPosition.getY());
+				} else if (BuildManager.Instance().locationOfBase == 3) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						targetPosition = new TilePosition(initialPosition.getX() - 2, initialPosition.getY() - 15);
+					} else {
+
+					}
+				} else if (BuildManager.Instance().locationOfBase == 4) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						targetPosition = new TilePosition(initialPosition.getX() + 3, initialPosition.getY() - 15);
+					} else {
+
+					}
 				}
-				// 0712 - 최혜진 추가 isWalkable 테스트
-				// WalkPosition walkposition = new
-				// WalkPosition(targetPosition.toPosition().getX()/8,
-				// targetPosition.toPosition().getY()/8);
-				//
-				// System.out.println("isWalkable 공중 " + MyBotModule.Broodwar
-				// .isWalkable(walkposition));
+				commandUtil.move(unit, targetPosition.toPosition());
 				BarrackLifting = true;
 			}
 		}
