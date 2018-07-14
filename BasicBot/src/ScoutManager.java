@@ -135,15 +135,16 @@ public class ScoutManager {
 				} else if (currentScoutStatus == ScoutStatus.MovingToCenter.ordinal()) {
 					// 0712 - 최혜진 수정 중앙에서 멈추지 않고 바로 다른 곳으로 이동할 수 있도록
 					if (currentScoutUnit.getPosition().getDistance(center.toPosition()) < 150) {
-//					if (currentScoutUnit.getPosition().toTilePosition().getX() == 64
-//							&& currentScoutUnit.getPosition().toTilePosition().getY() == 64) {
+						// if (currentScoutUnit.getPosition().toTilePosition().getX() == 64
+						// && currentScoutUnit.getPosition().toTilePosition().getY() == 64) {
 						// 중앙에 도착했다면 다른 baselocation 찾기
 						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
 						// 0712 - 최혜진 추가 isWalkable 테스트
-//						WalkPosition walkposition = new WalkPosition(currentScoutUnit.getPosition().getX() /8,
-//								currentScoutUnit.getPosition().getY()/8);
-//
-//						System.out.println("isWalkable 정찰 " + MyBotModule.Broodwar.isWalkable(walkposition));
+						// WalkPosition walkposition = new
+						// WalkPosition(currentScoutUnit.getPosition().getX() /8,
+						// currentScoutUnit.getPosition().getY()/8);
+						//
+						// System.out.println("isWalkable 정찰 " +
 						// System.out.println("arrive in center");
 					} else {
 						// 중앙에 도착하지 않았다면 계속 이동
