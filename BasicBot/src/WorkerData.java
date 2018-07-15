@@ -23,6 +23,7 @@ public class WorkerData {
 		Move,			///< 이동
 		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨.
 		RunAway,		///< 도망. Move와 다름.
+		Attack,			///< 공격. 4드론 전략에 대응할 때
 		Default 		///< 기본. 미설정 상태. 
 	};
 	
@@ -315,8 +316,8 @@ public class WorkerData {
 	    }
 	    else if (job == WorkerJob.RunAway)
 	    {
-	    		// 이동해야할 위치 저장
-	    		workerMoveMap.put(unit.getID(), new WorkerMoveData(0, 0, jobUnit.getPosition()));
+    		// 이동해야할 위치 저장
+    		workerMoveMap.put(unit.getID(), new WorkerMoveData(0, 0, jobUnit.getPosition()));
 			// right click the mineral to start mining
 	        commandUtil.rightClick(unit, jobUnit);
 	    }

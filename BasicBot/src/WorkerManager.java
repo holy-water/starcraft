@@ -60,30 +60,34 @@ public class WorkerManager {
 				continue;
 			}
 			
+			// 본진에 적이 들어올 경우 바로 도망가기
+			if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion() && InformationManager.Instance().getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 1) {
+				workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
+				continue;
+			}
+			
 			// worker가 공격을 받으면 다른 진영으로 도망가도록 설정
 			// 테스트 아직 못한 상태
 			if (worker.isUnderAttack())
 			{
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
 				if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion()) {
-					System.out.println(worker.getID() + "가 앞마당으로 도망!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
 				}
 				// firstExpansionLocation
 				else if (BWTA.getRegion(worker.getPosition()) == firstExpansionLocation.getRegion()) {
-					System.out.println(worker.getID() + "가 본진으로 도망!!");
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, mainBaseLocation.getStaticMinerals().get(0));
 				}
 				// occupiedBaseLocation
 				else {
 					for (int i=1; i<occupiedBaseLocations.size(); i++) {
 						if (BWTA.getRegion(worker.getPosition()) == occupiedBaseLocations.get(i).getRegion()) {
-							System.out.println(worker.getID() + "가 "+ (i-1) +"번 멀티 진영으로 도망!!");
 							workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, occupiedBaseLocations.get(i-1).getStaticMinerals().get(0));
 							break;
 						}
 					}
 				}
+				continue;
 			}
 
 			// 게임상에서 worker가 isIdle 상태가 되었으면 (새로 탄생했거나, 그전 임무가 끝난 경우), WorkerData 도 Idle 로 맞춘 후, handleGasWorkers, handleIdleWorkers 등에서 새 임무를 지정한다 
