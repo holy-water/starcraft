@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import bwapi.Color;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -22,8 +23,10 @@ public class ScoutManager {
 	public enum ScoutStatus {
 		NoScout, /// < 정찰 유닛을 미지정한 상태
 		MovingToCenter, /// < 0710 - 최혜진 추가 초반에 중앙으로 정찰가는 상태
-		MovingToAnotherBaseLocation, /// < 적군의 BaseLocation 이 미발견된 상태에서 정찰 유닛을 이동시키고 있는 상태
-		MoveAroundEnemyBaseLocation /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을 이동시키고 있는 상태
+		MovingToAnotherBaseLocation, /// < 적군의 BaseLocation 이 미발견된 상태에서 정찰 유닛을
+										/// 이동시키고 있는 상태
+		MoveAroundEnemyBaseLocation /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을
+									/// 이동시키고 있는 상태
 	};
 
 	private BaseLocation currentScoutTargetBaseLocation = null;
@@ -58,7 +61,8 @@ public class ScoutManager {
 		// }
 		moveScoutUnit();
 
-		// 참고로, scoutUnit 의 이동에 의해 발견된 정보를 처리하는 것은 InformationManager.update() 에서 수행함
+		// 참고로, scoutUnit 의 이동에 의해 발견된 정보를 처리하는 것은 InformationManager.update()
+		// 에서 수행함
 	}
 
 	/// 정찰 유닛을 필요하면 새로 지정합니다
@@ -84,10 +88,12 @@ public class ScoutManager {
 				}
 
 				if (firstBuilding != null) {
-					// grab the closest worker to the first building to send to scout
+					// grab the closest worker to the first building to send to
+					// scout
 					Unit unit = WorkerManager.Instance().getClosestMineralWorkerTo(firstBuilding.getPosition());
 
-					// if we find a worker (which we should) add it to the scout units
+					// if we find a worker (which we should) add it to the scout
+					// units
 					// 정찰 나갈 일꾼이 없으면, 아무것도 하지 않는다
 					if (unit != null) {
 						// set unit as scout unit
@@ -103,9 +109,11 @@ public class ScoutManager {
 	}
 
 	/// 정찰 유닛을 이동시킵니다
-	// 상대방 MainBaseLocation 위치를 모르는 상황이면, StartLocation 들에 대해 아군의 MainBaseLocation에서
+	// 상대방 MainBaseLocation 위치를 모르는 상황이면, StartLocation 들에 대해 아군의
+	/// MainBaseLocation에서
 	/// 가까운 것부터 순서대로 정찰
-	// 상대방 MainBaseLocation 위치를 아는 상황이면, 해당 BaseLocation 이 있는 Region의 가장자리를 따라 계속
+	// 상대방 MainBaseLocation 위치를 아는 상황이면, 해당 BaseLocation 이 있는 Region의 가장자리를 따라
+	/// 계속
 	/// 이동함 (정찰 유닛이 죽을때까지)
 	public void moveScoutUnit() {
 		if (currentScoutUnit == null || currentScoutUnit.exists() == false || currentScoutUnit.getHitPoints() <= 0) {
@@ -126,22 +134,31 @@ public class ScoutManager {
 			// currentScoutTargetBaseLocation 으로 잡아서 이동
 			if (currentScoutTargetBaseLocation == null || currentScoutUnit
 					.getDistance(currentScoutTargetBaseLocation.getPosition()) < 5 * Config.TILE_SIZE) {
-				// 0711 - 최혜진 수정 NoScout -> MovingToCenter -> MovingToAnotherBaseLocation
+				// 0711 - 최혜진 수정 NoScout -> MovingToCenter ->
+				// MovingToAnotherBaseLocation
 				TilePosition center = new TilePosition(64, 64);
-				if (currentScoutStatus == ScoutStatus.NoScout.ordinal()) { // 초기에 중앙으로 가라고 명령
+				// 0716 추가 - 프로토스일 때만 중앙 정찰
+				if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss
+						&& currentScoutStatus == ScoutStatus.NoScout.ordinal()) { 
+					// 초기에 중앙으로 가라고 명령
 					currentScoutStatus = ScoutStatus.MovingToCenter.ordinal();
 					// System.out.println("move to center");
 					commandUtil.move(currentScoutUnit, center.toPosition());
 				} else if (currentScoutStatus == ScoutStatus.MovingToCenter.ordinal()) {
 					// 0712 - 최혜진 수정 중앙에서 멈추지 않고 바로 다른 곳으로 이동할 수 있도록
 					if (currentScoutUnit.getPosition().getDistance(center.toPosition()) < 150) {
-						// if (currentScoutUnit.getPosition().toTilePosition().getX() == 64
-						// && currentScoutUnit.getPosition().toTilePosition().getY() == 64) {
+						// if
+						// (currentScoutUnit.getPosition().toTilePosition().getX()
+						// == 64
+						// &&
+						// currentScoutUnit.getPosition().toTilePosition().getY()
+						// == 64) {
 						// 중앙에 도착했다면 다른 baselocation 찾기
 						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
 						// 0712 - 최혜진 추가 isWalkable 테스트
 						// WalkPosition walkposition = new
-						// WalkPosition(currentScoutUnit.getPosition().getX() /8,
+						// WalkPosition(currentScoutUnit.getPosition().getX()
+						// /8,
 						// currentScoutUnit.getPosition().getY()/8);
 						//
 						// System.out.println("isWalkable 정찰 " +
@@ -193,9 +210,12 @@ public class ScoutManager {
 					commandUtil.move(currentScoutUnit, currentScoutTargetPosition);
 
 				} else {
-					// currentScoutStatus = ScoutStatus.MoveAroundEnemyBaseLocation.ordinal();
-					// currentScoutTargetPosition = getScoutFleePositionFromEnemyRegionVertices();
-					// commandUtil.move(currentScoutUnit, currentScoutTargetPosition);
+					// currentScoutStatus =
+					// ScoutStatus.MoveAroundEnemyBaseLocation.ordinal();
+					// currentScoutTargetPosition =
+					// getScoutFleePositionFromEnemyRegionVertices();
+					// commandUtil.move(currentScoutUnit,
+					// currentScoutTargetPosition);
 
 					WorkerManager.Instance().setIdleWorker(currentScoutUnit);
 					currentScoutStatus = ScoutStatus.NoScout.ordinal();
@@ -216,7 +236,8 @@ public class ScoutManager {
 			return MyBotModule.Broodwar.self().getStartLocation().toPosition();
 		}
 
-		// if this is the first flee, we will not have a previous perimeter index
+		// if this is the first flee, we will not have a previous perimeter
+		// index
 		if (currentScoutFreeToVertexIndex == -1) {
 			// so return the closest position in the polygon
 			int closestPolygonIndex = getClosestVertexIndex(currentScoutUnit);
@@ -224,18 +245,21 @@ public class ScoutManager {
 			if (closestPolygonIndex == -1) {
 				return MyBotModule.Broodwar.self().getStartLocation().toPosition();
 			} else {
-				// set the current index so we know how to iterate if we are still fleeing later
+				// set the current index so we know how to iterate if we are
+				// still fleeing later
 				currentScoutFreeToVertexIndex = closestPolygonIndex;
 				return enemyBaseRegionVertices.get(closestPolygonIndex);
 			}
 		}
-		// if we are still fleeing from the previous frame, get the next location if we
+		// if we are still fleeing from the previous frame, get the next
+		// location if we
 		// are close enough
 		else {
 			double distanceFromCurrentVertex = enemyBaseRegionVertices.get(currentScoutFreeToVertexIndex)
 					.getDistance(currentScoutUnit.getPosition());
 
-			// keep going to the next vertex in the perimeter until we get to one we're far
+			// keep going to the next vertex in the perimeter until we get to
+			// one we're far
 			// enough from to issue another move command
 			while (distanceFromCurrentVertex < 128) {
 				currentScoutFreeToVertexIndex = (currentScoutFreeToVertexIndex + 1) % enemyBaseRegionVertices.size();
@@ -273,7 +297,8 @@ public class ScoutManager {
 			}
 
 			// a tile is 'surrounded' if
-			// 1) in all 4 directions there's a tile position in the current region
+			// 1) in all 4 directions there's a tile position in the current
+			// region
 			// 2) in all 4 directions there's a buildable tile
 			boolean surrounded = true;
 			if (BWTA.getRegion(new TilePosition(tp.getX() + 1, tp.getY())) != enemyRegion
@@ -309,7 +334,8 @@ public class ScoutManager {
 		enemyBaseRegionVertices.add(current);
 		unsortedVertices.remove(current);
 
-		// while we still have unsorted vertices left, find the closest one remaining to
+		// while we still have unsorted vertices left, find the closest one
+		// remaining to
 		// current
 		while (!unsortedVertices.isEmpty()) {
 			double bestDist = 1000000;
@@ -333,7 +359,8 @@ public class ScoutManager {
 		int distanceThreshold = 100;
 
 		while (true) {
-			// find the largest index difference whose distance is less than the threshold
+			// find the largest index difference whose distance is less than the
+			// threshold
 			int maxFarthest = 0;
 			int maxFarthestStart = 0;
 			int maxFarthestEnd = 0;
@@ -343,7 +370,8 @@ public class ScoutManager {
 				int farthest = 0;
 				int farthestIndex = 0;
 
-				// only test half way around because we'll find the other one on the way back
+				// only test half way around because we'll find the other one on
+				// the way back
 				for (int j = 1; j < sortedVertices.size() / 2; ++j) {
 					int jindex = (i + j) % sortedVertices.size();
 
