@@ -60,8 +60,15 @@ public class WorkerManager {
 				continue;
 			}
 			
+			// 4드론 공격시 scv 전체 공격 태세 전환
+			if (StrategyManager.Instance().isEmergency())
+			{
+				
+			}
+			
 			// 본진에 적이 들어올 경우 바로 도망가기
-			if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion() && InformationManager.Instance().getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 1) {
+			if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion() && InformationManager.Instance().getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 1) 
+			{
 				workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
 				continue;
 			}

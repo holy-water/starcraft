@@ -1,3 +1,13 @@
+## (20180717) scv 리밸런싱 수정 완료 및 4드론 관련 처리
+
+1. scv가 공격당했을 경우 or 본진에 적들이 왔을 경우 무조건 도망가도록 처리 - continue 처리
+2. 4드론 관련 처리
+    - InformationManager 에 isZerglingInMainBaseLocation() 메서드 생성
+      + 본진 Region에 저글링 존재 여부 확인
+      + update() 메서드에서 1초에 한번, 2분 45초 전에만 체크하게 함
+      + 변수를 어디에 어떻게 둘까?
+      + strategyManager에서도 위험도 체크를 InformationManager에서 하게 해서 공동으로 사용할 수 있게 하면 안되나?
+
 ## (20180712) scv 리밸런싱 관련 처리 수정
 
 1. 문제 상황 

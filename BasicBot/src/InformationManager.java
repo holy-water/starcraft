@@ -103,7 +103,16 @@ public class InformationManager {
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
-
+		
+		// 4드론 체크는 1초에 한번, 2분 45초 전에만
+		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
+			if (MyBotModule.Broodwar.getFrameCount() / 24 < 165 ) {
+				if (isZerglingInMainBaseLocation()) {
+					// 위험상황
+				}
+			}
+		}
+		
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
 			updateBaseLocationInfo();
@@ -246,6 +255,25 @@ public class InformationManager {
 		}
 		
 		return forcePoint;
+	}
+	
+	// 본진 내에 적군 저글링이 있는지 체크
+	public boolean isZerglingInMainBaseLocation() {
+		
+		Iterator<Integer> it = getUnitData(enemyPlayer).getUnitAndUnitInfoMap().keySet().iterator();
+		
+		while (it.hasNext())
+		{
+			UnitInfo ui = getUnitData(enemyPlayer).getUnitAndUnitInfoMap().get(it.next());
+			
+			// 유닛이 본진에 들어와있는지 확인
+			if (BWTA.getRegion(ui.getLastPosition()) == mainBaseLocations.get(selfPlayer).getRegion())
+			{
+				if (ui.getType() == UnitType.Zerg_Zergling)	return true;	
+			}
+		}
+		
+		return false;
 	}
 
 	public void updateBaseLocationInfo() {

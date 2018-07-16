@@ -979,6 +979,10 @@ public class StrategyManager {
 		}
 	}
 
+	public boolean isEmergency() {
+		return isEmergency;
+	}
+	
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가
 
