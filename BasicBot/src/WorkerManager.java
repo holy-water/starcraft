@@ -32,6 +32,10 @@ public class WorkerManager {
 	private BaseLocation firstExpansionLocation = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
 	private List<BaseLocation> occupiedBaseLocations = InformationManager.Instance().getOccupiedBaseLocations(MyBotModule.Broodwar.self());
 	
+	// 공격용 scv 개수 / 최적 공격 유닛 수
+	private int attackScvCnt = 0;
+	private int optimalAttackCnt = 8;
+	
 	/// 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트하고, 일꾼 유닛들이 자원 채취 등 임무 수행을 하도록 합니다
 	public void update() {
 
@@ -61,9 +65,28 @@ public class WorkerManager {
 			}
 			
 			// 4드론 공격시 scv 전체 공격 태세 전환
-			if (StrategyManager.Instance().isEmergency())
+			if (InformationManager.Instance().isEmergency())
 			{
-				
+				// 벙커가 완성되기 전까지는 저글링과 싸운다
+				if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Bunker) == 0) {
+					while(attackScvCnt < optimalAttackCnt) {
+						if(workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Build 
+								&& workerData.getWorkerBuildingType(worker) == UnitType.Terran_Bunker) {
+							continue;
+						}
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);						
+						attackScvCnt++;
+					}
+				}
+				// 벙커가 완성되면 벙커 수리 (이때 벙커가 체력이 풀이라 수리가 되지않으면 우클릭시 벙커안으로 들어갈 수있으니 주의)
+				else {
+					for (Unit unit: MyBotModule.Broodwar.self().getUnits()) {
+						if(unit.getType() == UnitType.Terran_Bunker) {
+							workerData.setWorkerJob(worker, WorkerData.WorkerJob.Repair, unit);
+							break;
+						}
+					}
+				}
 			}
 			
 			// 본진에 적이 들어올 경우 바로 도망가기
@@ -249,6 +272,12 @@ public class WorkerManager {
 	public void handleRepairWorkers()
 	{
 		if (MyBotModule.Broodwar.self().getRace() != Race.Terran)
+		{
+			return;
+		}
+		
+		// 4드론 위험 상황에서는 금지
+		if (InformationManager.Instance().isEmergency())
 		{
 			return;
 		}

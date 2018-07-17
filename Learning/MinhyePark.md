@@ -1,3 +1,10 @@
+## (20180718) 4드론 관련 처리 추가
+
+1. InformationManager - isEmergency 변수 추가, 세팅 로직 추가
+2. WorkerData - Job이 Attack인 경우의 setWorkerJob 메소드 추가
+3. WorkerManager - 4드론 공격시, scv 8기 공격 태세 전환, Repair 관련 조정 안되도록 설정(? 맞나 모르겠다)
+4. 테스트는 아직 못하였습니다 ㅠㅠ 에러나면 수정 부탁드려요.
+
 ## (20180717) scv 리밸런싱 수정 완료 및 4드론 관련 처리
 
 1. scv가 공격당했을 경우 or 본진에 적들이 왔을 경우 무조건 도망가도록 처리 - continue 처리

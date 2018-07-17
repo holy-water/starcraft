@@ -29,7 +29,7 @@ public class InformationManager {
 	public Player selfPlayer;		///< 아군 Player		
 	public Player enemyPlayer;		///< 적군 Player		
 	public Race selfRace;			///< 아군 Player의 종족		
-	public Race enemyRace;			///< 적군 Player의 종족  
+	public Race enemyRace;			///< 적군 Player의 종족
 
 	/// 해당 Player의 주요 건물들이 있는 BaseLocation. <br>
 	/// 처음에는 StartLocation 으로 지정. mainBaseLocation 내 모든 건물이 파괴될 경우 재지정<br>
@@ -57,6 +57,8 @@ public class InformationManager {
 
 	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
+	
+	private boolean isEmergency;
 
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
@@ -108,7 +110,15 @@ public class InformationManager {
 		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
 			if (MyBotModule.Broodwar.getFrameCount() / 24 < 165 ) {
 				if (isZerglingInMainBaseLocation()) {
-					// 위험상황
+					// 4드론 위험상황
+					isEmergency = true;
+				}
+			}
+			
+			if (isEmergency) {
+				if (!isZerglingInMainBaseLocation()) {
+					// 4드론 위험해제
+					isEmergency = false;
 				}
 			}
 		}
@@ -798,5 +808,9 @@ public class InformationManager {
 		} else {
 			return UnitType.None;
 		}
+	}
+	
+	public boolean isEmergency() {
+		return isEmergency;
 	}
 }

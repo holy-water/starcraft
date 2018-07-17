@@ -4,9 +4,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwta.BWTA;
 
 public class WorkerData {
 
@@ -361,6 +361,21 @@ public class WorkerData {
 		if (workerJobMap.get(unit.getID()) != WorkerJob.Move)
 		{
 			//BWAPI::Broodwar->printf("Something went horribly wrong");
+		}
+	}
+	
+	public void setWorkerJob(Unit unit, WorkerJob job)
+	{
+		if (unit == null) { return; }
+
+		clearPreviousJob(unit);
+		workerJobMap.put(unit.getID(), job);
+
+		if (job == WorkerJob.Attack)
+		{
+			// 본진 입구로 Attack Move
+			Position targetPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getCenter();
+			commandUtil.attackMove(unit, targetPos);
 		}
 	}
 
