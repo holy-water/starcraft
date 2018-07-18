@@ -57,8 +57,7 @@ public class WorkerManager {
 
 	public void updateWorkerStatus() {
 		// Drone 은 건설을 위해 isConstructing = true 상태로 건설장소까지 이동한 후,
-		// 잠깐 getBuildType() == none 가 되었다가, isConstructing = true, isMorphing =
-		// true 가 된 후, 건설을 시작한다
+		// 잠깐 getBuildType() == none 가 되었다가, isConstructing = true, isMorphing = true 가 된 후, 건설을 시작한다
 
 		// for each of our Workers
 		for (Unit worker : workerData.getWorkers()) {

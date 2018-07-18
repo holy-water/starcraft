@@ -59,6 +59,7 @@ public class InformationManager {
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 	
 	private boolean isEmergency;
+	private boolean isZerglingInMainBaseLocation;
 
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
@@ -112,10 +113,11 @@ public class InformationManager {
 				if (isZerglingInMainBaseLocation()) {
 					// 4드론 위험상황
 					isEmergency = true;
+					isZerglingInMainBaseLocation = true;
 				}
 			}
 			
-			if (isEmergency) {
+			if (isZerglingInMainBaseLocation) {
 				if (!isZerglingInMainBaseLocation()) {
 					// 4드론 위험해제
 					isEmergency = false;
