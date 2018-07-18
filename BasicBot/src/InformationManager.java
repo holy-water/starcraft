@@ -119,6 +119,7 @@ public class InformationManager {
 				if (!isZerglingInMainBaseLocation()) {
 					// 4드론 위험해제
 					isEmergency = false;
+					// 0718 추가 - 위험이 해제되면 빌드를 다시 지정
 				}
 			}
 		}
@@ -812,5 +813,9 @@ public class InformationManager {
 	
 	public boolean isEmergency() {
 		return isEmergency;
+	}
+	
+	public void setIsEmergency(boolean isEmergency) {
+		this.isEmergency = isEmergency;
 	}
 }

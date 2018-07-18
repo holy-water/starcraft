@@ -267,6 +267,8 @@ public class StrategyManager {
 				MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Machine_Shop));
 
 		FactoryCount = Math.max(FactoryCount, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Factory));
+		
+		isEmergency = InformationManager.Instance().isEmergency();
 
 	}
 
@@ -321,7 +323,7 @@ public class StrategyManager {
 			return;
 		}
 
-		if (isEmergency) {
+		if (InformationManager.Instance().isEmergency()) {
 			// 0715 추가 - 위험도 체크하여 긴급상황 해제하는 로직 필요
 			return;
 		}
@@ -332,7 +334,7 @@ public class StrategyManager {
 			// 센터 게이트
 			if (FrameCount / 24 < 120) {
 				if (MyBotModule.Broodwar.enemy().allUnitCount(UnitType.Protoss_Gateway) != 0) {
-					isEmergency = true;
+					// InformationManager.Instance().setIsEmergency(true);
 					BuildManager.Instance().buildQueue.clearAll();
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
@@ -367,7 +369,7 @@ public class StrategyManager {
 			if (FrameCount / 24 < 135) {
 				// 4드론
 				if (MyBotModule.Broodwar.enemy().allUnitCount(UnitType.Zerg_Zergling) != 0) {
-					isEmergency = true;
+					InformationManager.Instance().setIsEmergency(true);
 					BuildManager.Instance().buildQueue.clearAll();
 					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -375,7 +377,7 @@ public class StrategyManager {
 			} else if (FrameCount / 24 < 180) {
 				// 9드론
 				if (MyBotModule.Broodwar.enemy().allUnitCount(UnitType.Zerg_Zergling) != 0) {
-					isEmergency = true;
+					// InformationManager.Instance().setIsEmergency(true);
 					BuildManager.Instance().buildQueue.clearAll();
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
@@ -427,7 +429,7 @@ public class StrategyManager {
 			return;
 		}
 
-		if (isEmergency || BarrackLifting) {
+		if (InformationManager.Instance().isEmergency() || BarrackLifting) {
 			return;
 		}
 
@@ -835,7 +837,7 @@ public class StrategyManager {
 			return;
 		}
 
-		if (!isEmergency) {
+		if (!InformationManager.Instance().isEmergency()) {
 			return;
 		}
 
