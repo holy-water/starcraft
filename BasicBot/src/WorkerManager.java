@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.List;
 
 import bwapi.Color;
@@ -27,13 +28,12 @@ public class WorkerManager {
 		return instance;
 	}
 
+	public InformationManager infoMngr = InformationManager.Instance();
+
 	// 각 진영의 정보
-	private BaseLocation mainBaseLocation = InformationManager.Instance()
-			.getMainBaseLocation(MyBotModule.Broodwar.self());
-	private BaseLocation firstExpansionLocation = InformationManager.Instance()
-			.getFirstExpansionLocation(MyBotModule.Broodwar.self());
-	private List<BaseLocation> occupiedBaseLocations = InformationManager.Instance()
-			.getOccupiedBaseLocations(MyBotModule.Broodwar.self());
+	private BaseLocation mainBaseLocation = infoMngr.getMainBaseLocation(MyBotModule.Broodwar.self());
+	private BaseLocation firstExpansionLocation = infoMngr.getFirstExpansionLocation(MyBotModule.Broodwar.self());
+	private List<BaseLocation> occupiedBaseLocations = infoMngr.getOccupiedBaseLocations(MyBotModule.Broodwar.self());
 
 	// 공격용 scv 개수 / 최적 공격 유닛 수
 	private int attackScvCnt = 0;
@@ -57,7 +57,8 @@ public class WorkerManager {
 
 	public void updateWorkerStatus() {
 		// Drone 은 건설을 위해 isConstructing = true 상태로 건설장소까지 이동한 후,
-		// 잠깐 getBuildType() == none 가 되었다가, isConstructing = true, isMorphing = true 가 된 후, 건설을 시작한다
+		// 잠깐 getBuildType() == none 가 되었다가, isConstructing = true, isMorphing = true 가
+		// 된 후, 건설을 시작한다
 
 		// for each of our Workers
 		for (Unit worker : workerData.getWorkers()) {
@@ -65,8 +66,21 @@ public class WorkerManager {
 				continue;
 			}
 
+			// 본진에 적군 쳐들어온 경우
+			// if 드랍 -> scv 전체 튄다
+			// else -> scv 싸운다
+			if (infoMngr.getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 0) {
+				if (infoMngr.getDropSituation() == "99") {
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway,
+							firstExpansionLocation.getStaticMinerals().get(0));
+				} else if (infoMngr.getDropSituation() == "00") {
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
+				}
+				continue;
+			}
+
 			// 4드론 공격시 scv 전체 공격 태세 전환
-			if (InformationManager.Instance().isEmergency()) {
+			/*if (infoMngr.isEmergency()) {
 				// 벙커가 완성되기 전까지는 저글링과 싸운다
 				if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Bunker) == 0) {
 					while (attackScvCnt < optimalAttackCnt) {
@@ -87,15 +101,7 @@ public class WorkerManager {
 						}
 					}
 				}
-			}
-
-			// 본진에 적이 들어올 경우 바로 도망가기
-			if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion() && InformationManager.Instance()
-					.getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 1) {
-				workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway,
-						firstExpansionLocation.getStaticMinerals().get(0));
-				continue;
-			}
+			}*/
 
 			// worker가 공격을 받으면 다른 진영으로 도망가도록 설정
 			// 테스트 아직 못한 상태
@@ -260,7 +266,7 @@ public class WorkerManager {
 		}
 
 		// 4드론 위험 상황에서는 금지
-		if (InformationManager.Instance().isEmergency()) {
+		if (infoMngr.isEmergency()) {
 			return;
 		}
 
@@ -409,9 +415,9 @@ public class WorkerManager {
 				if (workerData.depotHasEnoughMineralWorkers(unit) == false) {
 					// 해당 지역이 위험한 지역일 경우 선택에서 제외
 					// 위험도 체크는 아군과 적군의 병력 비교로 한다
-					selfForcePoint = InformationManager.Instance().getForcePoint(BWTA.getRegion(unit.getPosition()),
+					selfForcePoint = infoMngr.getForcePoint(BWTA.getRegion(unit.getPosition()),
 							MyBotModule.Broodwar.self());
-					enemyForcePoint = InformationManager.Instance().getForcePoint(BWTA.getRegion(unit.getPosition()),
+					enemyForcePoint = infoMngr.getForcePoint(BWTA.getRegion(unit.getPosition()),
 							MyBotModule.Broodwar.enemy());
 					if (selfForcePoint < enemyForcePoint) {
 						System.out.println("위험하니까 안갈래");
@@ -774,12 +780,12 @@ public class WorkerManager {
 
 	// onUnitShow 메소드 제거
 	/*
-	 * // 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트합니다 public void onUnitShow(Unit
-	 * unit) { if (unit == null) return;
+	 * // 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트합니다 public void onUnitShow(Unit unit)
+	 * { if (unit == null) return;
 	 * 
 	 * // add the depot if it exists if (unit.getType().isResourceDepot() &&
-	 * unit.getPlayer() == MyBotModule.Broodwar.self()) {
-	 * workerData.addDepot(unit); }
+	 * unit.getPlayer() == MyBotModule.Broodwar.self()) { workerData.addDepot(unit);
+	 * }
 	 * 
 	 * // add the worker if (unit.getType().isWorker() && unit.getPlayer() ==
 	 * MyBotModule.Broodwar.self() && unit.getHitPoints() >= 0) {

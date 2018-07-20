@@ -288,6 +288,24 @@ public class InformationManager {
 		
 		return false;
 	}
+	
+	// 드랍 상황인지 체크하는 메소드
+	// 본진에 드랍쉽, 셔틀, 오버로드가 있을 경우에 true 반환
+	public String getDropSituation() {
+		for (Unit unit : enemyPlayer.getUnits()) {
+			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
+				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
+						|| unit.getType() == UnitType.Zerg_Overlord) {
+					if(unit.getLoadedUnits().size() > 0) {
+						return "99";	// 위험상황(드랍)
+					} else {
+						return "01";	// 정찰
+					}
+				}
+			}
+		}
+		return "00";	// 드랍 상황 무관
+	}
 
 	public void updateBaseLocationInfo() {
 		if (occupiedRegions.get(selfPlayer) != null) {
@@ -626,7 +644,7 @@ public class InformationManager {
 
 		// check for various types of combat units
 		if (type.canAttack() || type == UnitType.Terran_Medic || type == UnitType.Protoss_Observer
-				|| type == UnitType.Terran_Bunker) {
+				|| type == UnitType.Terran_Bunker || type == UnitType.Zerg_Overlord) {
 			return true;
 		}
 

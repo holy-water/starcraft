@@ -374,7 +374,7 @@ public class WorkerData {
 		if (job == WorkerJob.Attack)
 		{
 			// 본진 입구로 Attack Move
-			Position targetPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getCenter();
+			Position targetPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
 			commandUtil.attackMove(unit, targetPos);
 		}
 	}
