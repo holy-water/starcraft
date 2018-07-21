@@ -39,15 +39,15 @@ public class StrategyManager {
 	private boolean isFullScaleAttackStarted;
 	private boolean isInitialBuildOrderFinished;
 	// 0709 - 최혜진 추가 배럭 Lifting 여부 체크
-	private boolean BarrackLifting;
-	// 0709 - 4드론 등 초반 위험 상황 체크
-	private boolean isEmergency;
+	private boolean isBarrackLifting;
 	// 0709 - FrameCount 저장
 	private int FrameCount;
 	// 0716 추가
 	private int MachineShopCount;
 	// 0716 추가
 	private int FactoryCount;
+	// 0721 추가
+	private int CompletedFactoryCount;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -111,7 +111,7 @@ public class StrategyManager {
 	}
 
 	// 0702 수정
-	private void executeFactoryManagement() {
+	private void executeBuildingManagement() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
@@ -147,21 +147,32 @@ public class StrategyManager {
 		}
 
 		// 0715 추가 - 머신샵 추가
-		if (FactoryCount > 0) {
-			if (MachineShopCount < Math.max(2, (int) Math.sqrt(FactoryCount))) {
+		if (CompletedFactoryCount > 0) {
+			if (MachineShopCount < (int) Math.sqrt(CompletedFactoryCount)) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Machine_Shop,
 							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 				}
 			}
+		}
 
+		if (FactoryCount > 0 && MachineShopCount > 0) {
 			if (MyBotModule.Broodwar.self().minerals() / FactoryCount >= 300
 					&& MyBotModule.Broodwar.self().gas() / MachineShopCount >= 100) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
 							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+				}
+			}
+		}
+
+		if (MachineShopCount > 1) {
+			if (MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Command_Center) > MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Refinery)) {
+				if(BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Refinery,
+							BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
 				}
 			}
 		}
@@ -267,8 +278,8 @@ public class StrategyManager {
 				MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Machine_Shop));
 
 		FactoryCount = Math.max(FactoryCount, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Factory));
-		
-		isEmergency = InformationManager.Instance().isEmergency();
+
+		CompletedFactoryCount = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Factory);
 
 	}
 
@@ -294,7 +305,8 @@ public class StrategyManager {
 		executeSeniorityCombatUnitTraining();
 
 		// 0628 추가
-		executeFactoryManagement();
+		// 0721 수정
+		executeBuildingManagement();
 
 		executeCombat();
 
@@ -429,7 +441,11 @@ public class StrategyManager {
 			return;
 		}
 
-		if (InformationManager.Instance().isEmergency() || BarrackLifting) {
+		if (InformationManager.Instance().isEmergency()) {
+			return;
+		}
+
+		if (isBarrackLifting) {
 			return;
 		}
 
@@ -475,7 +491,7 @@ public class StrategyManager {
 					}
 				}
 				commandUtil.move(unit, targetPosition.toPosition());
-				BarrackLifting = true;
+				isBarrackLifting = true;
 			}
 		}
 	}
@@ -917,8 +933,15 @@ public class StrategyManager {
 						} else {
 							commandUtil.rightClick(unit, bunker);
 						}
-					} else if (!isEmergency) {
-						commandUtil.attackMove(unit, secondChokePoint.getCenter());
+					} else if (!InformationManager.Instance().isEmergency()) {
+						if (!unit.isMoving() && !unit.isAttacking()) {
+							if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode
+									&& MyBotModule.Broodwar.self().hasResearched(TechType.Tank_Siege_Mode)) {
+								unit.useTech(TechType.Tank_Siege_Mode);
+							}
+						} else {
+							commandUtil.attackMove(unit, secondChokePoint.getCenter());
+						}
 					}
 				}
 			}
@@ -981,10 +1004,6 @@ public class StrategyManager {
 		}
 	}
 
-	public boolean isEmergency() {
-		return isEmergency;
-	}
-	
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가
 
