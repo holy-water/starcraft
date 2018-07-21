@@ -72,8 +72,10 @@ public class BuildManager {
 		while (!buildQueue.isEmpty()) {
 			boolean isOkToRemoveQueue = true;
 
-			// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
-			// 빌드 실행 유닛 (일꾼/건물) 결정 로직이 seedLocation 이나 seedLocationStrategy 를 잘 반영하도록 수정
+			// BasicBot 1.1 Patch Start
+			// ////////////////////////////////////////////////
+			// 빌드 실행 유닛 (일꾼/건물) 결정 로직이 seedLocation 이나 seedLocationStrategy 를 잘
+			// 반영하도록 수정
 
 			// seedPosition 을 도출한다
 			Position seedPosition = null;
@@ -87,13 +89,15 @@ public class BuildManager {
 			// this is the unit which can produce the currentItem
 			Unit producer = getProducer(currentItem.metaType, seedPosition, currentItem.producerID);
 
-			// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+			// BasicBot 1.1 Patch End
+			// //////////////////////////////////////////////////
 
 			/*
 			 * if (currentItem.metaType.isUnit() &&
-			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer != null) {
-			 * System.out.println("Build " + currentItem.metaType.getName() + " producer : "
-			 * + producer.getType() + " ID : " + producer.getID()); } else {
+			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer
+			 * != null) { System.out.println("Build " +
+			 * currentItem.metaType.getName() + " producer : " +
+			 * producer.getType() + " ID : " + producer.getID()); } else {
 			 * System.out.println("Build " + currentItem.metaType.getName() +
 			 * " producer null"); } }
 			 */
@@ -111,8 +115,9 @@ public class BuildManager {
 
 				/*
 				 * if (currentItem.metaType.isUnit() &&
-				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout + "Build " +
-				 * currentItem.metaType.getName() + " canMakeNow : " + canMake + std::endl; }
+				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout
+				 * + "Build " + currentItem.metaType.getName() +
+				 * " canMakeNow : " + canMake + std::endl; }
 				 */
 
 				// 프로토스 종족 유닛 중 Protoss_Archon / Protoss_Dark_Archon 은 기존
@@ -183,7 +188,8 @@ public class BuildManager {
 							// desiredPosition 주위에서 찾을 것이다
 							TilePosition desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation,
 									currentItem.seedLocationStrategy);
-							// System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
+							// System.out.println(desiredPosition.getX()+"
+							// "+desiredPosition.getY());
 							// std::cout << "BuildManager " +
 							// currentItem.metaType.getUnitType().getName().c_str()
 							// + " desiredPosition " + desiredPosition.x + "," +
@@ -276,7 +282,8 @@ public class BuildManager {
 
 	/// 해당 MetaType 을 build 할 수 있는 producer 를 찾아 반환합니다
 	/// @param t 빌드하려는 대상의 타입
-	/// @param closestTo 파라메타 입력 시 producer 후보들 중 해당 position 에서 가장 가까운 producer 를
+	/// @param closestTo 파라메타 입력 시 producer 후보들 중 해당 position 에서 가장 가까운 producer
+	/// 를
 	/// 리턴합니다
 	/// @param producerID 파라메타 입력 시 해당 ID의 unit 만 producer 후보가 될 수 있습니다
 	public Unit getProducer(MetaType t, Position closestTo, int producerID) {
@@ -286,6 +293,7 @@ public class BuildManager {
 		// make a set of all candidate producers
 		List<Unit> candidateProducers = new ArrayList<Unit>();
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			
 			if (unit == null)
 				continue;
 
@@ -386,10 +394,13 @@ public class BuildManager {
 							// 아군 유닛은 Addon 지을 위치에 있어도 괜찮음. (적군 유닛은 Addon 지을 위치에
 							// 있으면 건설 안되는지는 아직 불확실함)
 							for (Unit u : MyBotModule.Broodwar.getUnitsOnTile(tilePos.getX(), tilePos.getY())) {
-								// System.out.println("Construct " + t.getName() + " beside " + unit.getType() +
+								// System.out.println("Construct " + t.getName()
+								// + " beside " + unit.getType() +
 								// "("
-								// + unit.getID() + ")" + ", units on Addon Tile " + tilePos.getX() + ","
-								// + tilePos.getY() + " is " + u.getType() + "(ID : " + u.getID() + " Player : "
+								// + unit.getID() + ")" + ", units on Addon Tile
+								// " + tilePos.getX() + ","
+								// + tilePos.getY() + " is " + u.getType() +
+								// "(ID : " + u.getID() + " Player : "
 								// + u.getPlayer().getName() + ")");
 								if (u.getPlayer() != InformationManager.Instance().selfPlayer) {
 									isBlocked = false;
@@ -467,8 +478,10 @@ public class BuildManager {
 			return null;
 		}
 
-		// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
-		// 빌드 실행 유닛 (일꾼/건물) 결정 로직이 seedLocation 이나 seedLocationStrategy 를 잘 반영하도록 수정
+		// BasicBot 1.1 Patch Start
+		// ////////////////////////////////////////////////
+		// 빌드 실행 유닛 (일꾼/건물) 결정 로직이 seedLocation 이나 seedLocationStrategy 를 잘
+		// 반영하도록 수정
 
 		// if we don't care where the unit is return the first one we have
 		if (closestTo == Position.None || closestTo == Position.Invalid || closestTo == Position.Unknown
@@ -476,7 +489,8 @@ public class BuildManager {
 			return units.get(0); // C++ : return units.begin();
 		}
 
-		// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+		// BasicBot 1.1 Patch End
+		// //////////////////////////////////////////////////
 
 		Unit closestUnit = null;
 		double minDist = 1000000000;
@@ -496,7 +510,8 @@ public class BuildManager {
 	}
 
 	// 지금 해당 유닛을 건설/생산 할 수 있는지에 대해 자원, 서플라이, 테크 트리, producer 만을 갖고 판단한다<br>
-	// 해당 유닛이 건물일 경우 건물 지을 위치의 적절 여부 (탐색했었던 타일인지, 건설 가능한 타일인지, 주위에 Pylon이 있는지,<br>
+	// 해당 유닛이 건물일 경우 건물 지을 위치의 적절 여부 (탐색했었던 타일인지, 건설 가능한 타일인지, 주위에 Pylon이
+	// 있는지,<br>
 	// Creep이 있는 곳인지 등) 는 판단하지 않는다
 	public boolean canMakeNow(Unit producer, MetaType t) {
 		if (producer == null) {
@@ -523,18 +538,21 @@ public class BuildManager {
 
 	// 건설 가능 위치를 찾는다<br>
 	// seedLocationStrategy 가 SeedPositionSpecified 인 경우에는 그 근처만 찾아보고,<br>
-	// SeedPositionSpecified 이 아닌 경우에는 seedLocationStrategy 를 조금씩 바꿔가며 계속 찾아본다.<br>
-	// (MainBase . MainBase 주위 . MainBase 길목 . MainBase 가까운 앞마당 . MainBase 가까운 앞마당의
+	// SeedPositionSpecified 이 아닌 경우에는 seedLocationStrategy 를 조금씩 바꿔가며 계속
+	// 찾아본다.<br>
+	// (MainBase . MainBase 주위 . MainBase 길목 . MainBase 가까운 앞마당 . MainBase 가까운
+	// 앞마당의
 	// 길목 . 탐색 종료)
 	public TilePosition getDesiredPosition(UnitType unitType, TilePosition seedPosition,
 			BuildOrderItem.SeedPositionStrategy seedPositionStrategy) {
 		TilePosition desiredPosition = ConstructionPlaceFinder.Instance()
 				.getBuildLocationWithSeedPositionAndStrategy(unitType, seedPosition, seedPositionStrategy);
-		// System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
+		// System.out.println(desiredPosition.getX()+"
+		// "+desiredPosition.getY());
 		/*
 		 * std::cout +
-		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
-		 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
+		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
+		 * + unitType.getName().c_str() + " strategy " + seedPositionStrategy +
 		 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
 		 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
 		 * std::endl;
@@ -570,11 +588,11 @@ public class BuildManager {
 						.getBuildLocationWithSeedPositionAndStrategy(unitType, seedPosition, seedPositionStrategy);
 				/*
 				 * std::cout +
-				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
-				 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
-				 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
-				 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
-				 * std::endl;
+				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
+				 * + unitType.getName().c_str() + " strategy " +
+				 * seedPositionStrategy + " seedPosition " + seedPosition.x +
+				 * "," + seedPosition.y + " desiredPosition " +
+				 * desiredPosition.x + "," + desiredPosition.y + std::endl;
 				 */
 			}
 			// 다른 곳을 더 찾아보지 않고, 끝낸다
@@ -583,7 +601,8 @@ public class BuildManager {
 			}
 		}
 
-		// System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
+		// System.out.println(desiredPosition.getX()+"
+		// "+desiredPosition.getY());
 		return desiredPosition;
 	}
 
@@ -658,8 +677,10 @@ public class BuildManager {
 	/// seedPositionStrategy 을 현재 게임상황에 맞게 seedPosition 으로 바꾸어 리턴합니다
 	private Position getSeedPositionFromSeedLocationStrategy(BuildOrderItem.SeedPositionStrategy seedLocationStrategy) {
 
-		// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
-		// 빌드 실행 유닛 (일꾼/건물) 결정 로직이 seedLocation 이나 seedLocationStrategy 를 잘 반영하도록 수정
+		// BasicBot 1.1 Patch Start
+		// ////////////////////////////////////////////////
+		// 빌드 실행 유닛 (일꾼/건물) 결정 로직이 seedLocation 이나 seedLocationStrategy 를 잘
+		// 반영하도록 수정
 
 		Position seedPosition = null;
 		Chokepoint tempChokePoint;
@@ -685,12 +706,15 @@ public class BuildManager {
 
 			// std::cout << "y";
 
-			// (vx, vy) = BaseLocation 와 ChokePoint 간 차이 벡터 = 거리 d 와 각도 t 벡터. 단위는 position
-			// 스타크래프트 좌표계 : 오른쪽으로 갈수록 x 가 증가 (데카르트 좌표계와 동일). 아래로 갈수록 y가 증가 (y축만 데카르트 좌표계와
+			// (vx, vy) = BaseLocation 와 ChokePoint 간 차이 벡터 = 거리 d 와 각도 t 벡터.
+			// 단위는 position
+			// 스타크래프트 좌표계 : 오른쪽으로 갈수록 x 가 증가 (데카르트 좌표계와 동일). 아래로 갈수록 y가 증가 (y축만
+			// 데카르트 좌표계와
 			// 반대)
 			// 삼각함수 값은 데카르트 좌표계에서 계산하므로, vy를 부호 반대로 해서 각도 t 값을 구함
 
-			// MainBaseLocation 이 null 이거나, ChokePoint 가 null 이면, MainBaseLocation 주위에서 가능한
+			// MainBaseLocation 이 null 이거나, ChokePoint 가 null 이면,
+			// MainBaseLocation 주위에서 가능한
 			// 곳을 리턴한다
 			if (tempBaseLocation != null && tempChokePoint != null) {
 
@@ -699,22 +723,29 @@ public class BuildManager {
 				// std::cout << "vx : " << vx ;
 				vy = (tempChokePoint.getCenter().getY() - tempBaseLocation.getPosition().getY()) * (-1);
 				// std::cout << "vy : " << vy;
-				d = Math.sqrt(vx * vx + vy * vy) * 0.5; // BaseLocation 와 ChokePoint 간 거리보다 조금 짧은 거리로 조정. BaseLocation가
-														// 있는 Region은 대부분 직사각형 형태이기 때문
+				d = Math.sqrt(vx * vx + vy * vy) * 0.5; // BaseLocation 와
+														// ChokePoint 간 거리보다 조금
+														// 짧은 거리로 조정.
+														// BaseLocation가
+														// 있는 Region은 대부분 직사각형
+														// 형태이기 때문
 				// std::cout << "d : " << d;
 				theta = Math.atan2(vy, vx + 0.0001); // 라디안 단위
 				// std::cout << "t : " << t;
 
-				// cos(t+90), sin(t+180) 등 삼각함수 Trigonometric functions of allied angles 을 이용.
+				// cos(t+90), sin(t+180) 등 삼각함수 Trigonometric functions of
+				// allied angles 을 이용.
 				// y축에 대해서는 반대부호로 적용
 
-				// BaseLocation 에서 ChokePoint 반대쪽 방향의 Back Yard : 데카르트 좌표계에서 (cos(t+180) =
+				// BaseLocation 에서 ChokePoint 반대쪽 방향의 Back Yard : 데카르트 좌표계에서
+				// (cos(t+180) =
 				// -cos(t), sin(t+180) = -sin(t))
 				bx = tempBaseLocation.getTilePosition().getX() - (int) (d * Math.cos(theta) / Config.TILE_SIZE);
 				by = tempBaseLocation.getTilePosition().getY() + (int) (d * Math.sin(theta) / Config.TILE_SIZE);
 				// std::cout << "i";
 				tempTilePosition = new TilePosition(bx, by);
-				// std::cout << "ConstructionPlaceFinder MainBaseBackYard tempTilePosition " <<
+				// std::cout << "ConstructionPlaceFinder MainBaseBackYard
+				// tempTilePosition " <<
 				// tempTilePosition.x << "," << tempTilePosition.y << std::endl;
 
 				// std::cout << "k";
@@ -725,24 +756,30 @@ public class BuildManager {
 								.getRegion(new Position(bx * Config.TILE_SIZE, by * Config.TILE_SIZE))) {
 					// std::cout << "l";
 
-					// BaseLocation 에서 ChokePoint 방향에 대해 오른쪽으로 90도 꺾은 방향의 Back Yard : 데카르트 좌표계에서
+					// BaseLocation 에서 ChokePoint 방향에 대해 오른쪽으로 90도 꺾은 방향의 Back
+					// Yard : 데카르트 좌표계에서
 					// (cos(t-90) = sin(t), sin(t-90) = - cos(t))
 					bx = tempBaseLocation.getTilePosition().getX() + (int) (d * Math.sin(theta) / Config.TILE_SIZE);
 					by = tempBaseLocation.getTilePosition().getY() + (int) (d * Math.cos(theta) / Config.TILE_SIZE);
 					tempTilePosition = new TilePosition(bx, by);
-					// std::cout << "ConstructionPlaceFinder MainBaseBackYard tempTilePosition " <<
-					// tempTilePosition.x << "," << tempTilePosition.y << std::endl;
+					// std::cout << "ConstructionPlaceFinder MainBaseBackYard
+					// tempTilePosition " <<
+					// tempTilePosition.x << "," << tempTilePosition.y <<
+					// std::endl;
 					// std::cout << "m";
 
 					if (!tempTilePosition.isValid() || !MyBotModule.Broodwar.isBuildable(tempTilePosition.getX(),
 							tempTilePosition.getY(), false)) {
-						// BaseLocation 에서 ChokePoint 방향에 대해 왼쪽으로 90도 꺾은 방향의 Back Yard : 데카르트 좌표계에서
+						// BaseLocation 에서 ChokePoint 방향에 대해 왼쪽으로 90도 꺾은 방향의
+						// Back Yard : 데카르트 좌표계에서
 						// (cos(t+90) = -sin(t), sin(t+90) = cos(t))
 						bx = tempBaseLocation.getTilePosition().getX() - (int) (d * Math.sin(theta) / Config.TILE_SIZE);
 						by = tempBaseLocation.getTilePosition().getY() - (int) (d * Math.cos(theta) / Config.TILE_SIZE);
 						tempTilePosition = new TilePosition(bx, by);
-						// std::cout << "ConstructionPlaceFinder MainBaseBackYard tempTilePosition " <<
-						// tempTilePosition.x << "," << tempTilePosition.y << std::endl;
+						// std::cout << "ConstructionPlaceFinder
+						// MainBaseBackYard tempTilePosition " <<
+						// tempTilePosition.x << "," << tempTilePosition.y <<
+						// std::endl;
 
 						if (!tempTilePosition.isValid()
 								|| !MyBotModule.Broodwar.isBuildable(tempTilePosition.getX(), tempTilePosition.getY(),
@@ -750,14 +787,17 @@ public class BuildManager {
 								|| tempBaseRegion != BWTA
 										.getRegion(new Position(bx * Config.TILE_SIZE, by * Config.TILE_SIZE))) {
 
-							// BaseLocation 에서 ChokePoint 방향 절반 지점의 Back Yard : 데카르트 좌표계에서 (cos(t), sin(t))
+							// BaseLocation 에서 ChokePoint 방향 절반 지점의 Back Yard :
+							// 데카르트 좌표계에서 (cos(t), sin(t))
 							bx = tempBaseLocation.getTilePosition().getX()
 									+ (int) (d * Math.cos(theta) / Config.TILE_SIZE);
 							by = tempBaseLocation.getTilePosition().getY()
 									- (int) (d * Math.sin(theta) / Config.TILE_SIZE);
 							tempTilePosition = new TilePosition(bx, by);
-							// std::cout << "ConstructionPlaceFinder MainBaseBackYard tempTilePosition " <<
-							// tempTilePosition.x << "," << tempTilePosition.y << std::endl;
+							// std::cout << "ConstructionPlaceFinder
+							// MainBaseBackYard tempTilePosition " <<
+							// tempTilePosition.x << "," << tempTilePosition.y
+							// << std::endl;
 							// std::cout << "m";
 						}
 
@@ -772,7 +812,8 @@ public class BuildManager {
 				}
 			}
 			// std::cout << "w";
-			// std::cout << "ConstructionPlaceFinder MainBaseBackYard desiredPosition " <<
+			// std::cout << "ConstructionPlaceFinder MainBaseBackYard
+			// desiredPosition " <<
 			// desiredPosition.x << "," << desiredPosition.y << std::endl;
 			break;
 
@@ -920,8 +961,8 @@ public class BuildManager {
 						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
 						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 					}
-				}else {
-					
+				} else {
+
 				}
 			}
 			tempTilePosition = new TilePosition(blockx, blocky);
@@ -931,10 +972,12 @@ public class BuildManager {
 
 		return seedPosition;
 
-		// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+		// BasicBot 1.1 Patch End
+		// //////////////////////////////////////////////////
 	}
 
-	/// buildQueue 의 Dead lock 여부를 판단하기 위해, 가장 우선순위가 높은 BuildOrderItem 의 producer 가
+	/// buildQueue 의 Dead lock 여부를 판단하기 위해, 가장 우선순위가 높은 BuildOrderItem 의
+	/// producer 가
 	/// 존재하게될 것인지 여부를 리턴합니다
 	public boolean isProducerWillExist(UnitType producerType) {
 		boolean isProducerWillExist = true;
@@ -1049,10 +1092,12 @@ public class BuildManager {
 					int requiredSupply = unitType.supplyRequired();
 
 					/*
-					 * std::cout + "To make " + unitType.getName() + ", producerType " +
-					 * producerType.getName() + " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * std::cout + "To make " + unitType.getName() +
+					 * ", producerType " + producerType.getName() +
+					 * " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * MyBotModule.Broodwar.self().incompleteUnitCount(
 					 * producerType) + std::endl;
 					 */
 
@@ -1085,14 +1130,16 @@ public class BuildManager {
 								if (u.getType().isRefinery() && u.exists()) {
 									hasAvailableGeyser = false;
 
-									// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
+									// BasicBot 1.1 Patch Start
+									// ////////////////////////////////////////////////
 									// 콘솔 출력 추가. 하지 않아도 됨
 
 									System.out.println(
 											"Build Order Dead lock case -> Refinery Building was built already at "
 													+ testLocation.getX() + ", " + testLocation.getY());
 
-									// BasicBot 1.1 Patch End ////////////////////////////////////////////////
+									// BasicBot 1.1 Patch End
+									// ////////////////////////////////////////////////
 
 									break;
 								}
@@ -1124,18 +1171,25 @@ public class BuildManager {
 							if (requiredUnitType != UnitType.None) {
 
 								/*
-								 * std::cout + "pre requiredUnitType " + requiredUnitType.getName() +
-								 * " completedUnitCount " + MyBotModule.Broodwar.self().
-								 * completedUnitCount(requiredUnitType) + " incompleteUnitCount " +
-								 * MyBotModule.Broodwar.self(). incompleteUnitCount(requiredUnitType) +
+								 * std::cout + "pre requiredUnitType " +
+								 * requiredUnitType.getName() +
+								 * " completedUnitCount " +
+								 * MyBotModule.Broodwar.self().
+								 * completedUnitCount(requiredUnitType) +
+								 * " incompleteUnitCount " +
+								 * MyBotModule.Broodwar.self().
+								 * incompleteUnitCount(requiredUnitType) +
 								 * std::endl;
 								 */
 
-								// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
-								// Zerg_Mutalisk 나 Zerg_Scourge 를 만들려고하는데 Zerg_Greater_Spire 만 있는 경우 deadlock 으로
+								// BasicBot 1.1 Patch Start
+								// ////////////////////////////////////////////////
+								// Zerg_Mutalisk 나 Zerg_Scourge 를 만들려고하는데
+								// Zerg_Greater_Spire 만 있는 경우 deadlock 으로
 								// 판정하는 버그 수정
 
-								// 만들려는 유닛이 Zerg_Mutalisk 이거나 Zerg_Scourge 이고, 선행 유닛이 Zerg_Spire 인 경우,
+								// 만들려는 유닛이 Zerg_Mutalisk 이거나 Zerg_Scourge 이고,
+								// 선행 유닛이 Zerg_Spire 인 경우,
 								// Zerg_Greater_Spire 가 있으면 dead lock 이 아니다
 								if ((unitType == UnitType.Zerg_Mutalisk || unitType == UnitType.Zerg_Scourge)
 										&& requiredUnitType == UnitType.Zerg_Spire
@@ -1143,7 +1197,8 @@ public class BuildManager {
 									isDeadlockCase = false;
 								} else
 
-								// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+								// BasicBot 1.1 Patch End
+								// //////////////////////////////////////////////////
 
 								// 선행 건물 / 유닛이 존재하지 않고, 생산 중이지도 않고
 								if (MyBotModule.Broodwar.self().completedUnitCount(requiredUnitType) == 0
@@ -1192,13 +1247,15 @@ public class BuildManager {
 					}
 
 					// 건물이 아닌 지상/공중 유닛인데, 서플라이가 부족하면 dead lock 상황이 되긴 하지만,
-					// 이 경우는 빌드를 취소하기보다는, StrategyManager 등에서 서플라이 빌드를 추가함으로써 풀도록 한다
+					// 이 경우는 빌드를 취소하기보다는, StrategyManager 등에서 서플라이 빌드를 추가함으로써
+					// 풀도록 한다
 					if (!isDeadlockCase && !unitType.isBuilding() && MyBotModule.Broodwar.self().supplyUsed()
 							+ unitType.supplyRequired() > MyBotModule.Broodwar.self().supplyTotal()) {
 						// isDeadlockCase = true;
 					}
 
-					// Pylon 이 해당 지역 주위에 먼저 지어져야 하는데, Pylon 이 해당 지역 주위에 없고, 예정되어있지도 않으면 dead lock
+					// Pylon 이 해당 지역 주위에 먼저 지어져야 하는데, Pylon 이 해당 지역 주위에 없고,
+					// 예정되어있지도 않으면 dead lock
 					if (!isDeadlockCase && unitType.isBuilding() && unitType.requiresPsi()
 							&& currentItem.seedLocationStrategy == BuildOrderItem.SeedPositionStrategy.SeedPositionSpecified) {
 
@@ -1217,7 +1274,8 @@ public class BuildManager {
 						}
 					}
 
-					// Creep 이 해당 지역 주위에 Hatchery나 Creep Colony 등을 통해 먼저 지어져야 하는데, 해당 지역 주위에 지어지지 않고
+					// Creep 이 해당 지역 주위에 Hatchery나 Creep Colony 등을 통해 먼저 지어져야
+					// 하는데, 해당 지역 주위에 지어지지 않고
 					// 있으면 dead lock
 					if (!isDeadlockCase && unitType.isBuilding() && unitType.requiresCreep()
 							&& currentItem.seedLocationStrategy == BuildOrderItem.SeedPositionStrategy.SeedPositionSpecified) {
@@ -1248,12 +1306,16 @@ public class BuildManager {
 					UnitType requiredUnitType = techType.requiredUnit();
 
 					/*
-					 * System.out.println("To research " + techType.toString() + ", hasResearched "
-					 * + MyBotModule.Broodwar.self().hasResearched(techType) + ", isResearching " +
-					 * MyBotModule.Broodwar.self().isResearching(techType) + ", producerType " +
-					 * producerType.toString() + " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * System.out.println("To research " + techType.toString() +
+					 * ", hasResearched " +
+					 * MyBotModule.Broodwar.self().hasResearched(techType) +
+					 * ", isResearching " +
+					 * MyBotModule.Broodwar.self().isResearching(techType) +
+					 * ", producerType " + producerType.toString() +
+					 * " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * MyBotModule.Broodwar.self().incompleteUnitCount(
 					 * producerType));
 					 */
 
@@ -1303,10 +1365,12 @@ public class BuildManager {
 						}
 					} else if (requiredUnitType != UnitType.None) {
 						/*
-						 * std::cout + "To research " + techType.getName() + ", requiredUnitType " +
-						 * requiredUnitType.getName() + " completedUnitCount " +
-						 * MyBotModule.Broodwar.self().completedUnitCount( requiredUnitType) +
-						 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+						 * std::cout + "To research " + techType.getName() +
+						 * ", requiredUnitType " + requiredUnitType.getName() +
+						 * " completedUnitCount " +
+						 * MyBotModule.Broodwar.self().completedUnitCount(
+						 * requiredUnitType) + " incompleteUnitCount " +
+						 * MyBotModule.Broodwar.self().incompleteUnitCount(
 						 * requiredUnitType) + std::endl;
 						 */
 
@@ -1328,14 +1392,17 @@ public class BuildManager {
 					UnitType requiredUnitType = upgradeType.whatsRequired();
 
 					/*
-					 * std::cout + "To upgrade " + upgradeType.getName() + ", maxLevel " + maxLevel
-					 * + ", currentLevel " + currentLevel + ", isUpgrading " +
-					 * MyBotModule.Broodwar.self().isUpgrading(upgradeType) + ", producerType " +
-					 * producerType.getName() + " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
-					 * producerType) + ", requiredUnitType " + requiredUnitType.getName() +
-					 * std::endl;
+					 * std::cout + "To upgrade " + upgradeType.getName() +
+					 * ", maxLevel " + maxLevel + ", currentLevel " +
+					 * currentLevel + ", isUpgrading " +
+					 * MyBotModule.Broodwar.self().isUpgrading(upgradeType) +
+					 * ", producerType " + producerType.getName() +
+					 * " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * producerType) + ", requiredUnitType " +
+					 * requiredUnitType.getName() + std::endl;
 					 */
 
 					if (currentLevel >= maxLevel || MyBotModule.Broodwar.self().isUpgrading(upgradeType)) {

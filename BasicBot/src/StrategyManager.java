@@ -47,6 +47,8 @@ public class StrategyManager {
 	// 0716 추가
 	private int FactoryCount;
 	// 0721 추가
+	private int CompletedMachineShopCount;
+	// 0721 추가
 	private int CompletedFactoryCount;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
@@ -123,56 +125,59 @@ public class StrategyManager {
 		}
 
 		// 0716 수정
-		if (MachineShopCount > 0) {
+		if (CompletedMachineShopCount > 0) {
 			if (!MyBotModule.Broodwar.self().hasResearched(TechType.Tank_Siege_Mode)) {
 				if (BuildManager.Instance().buildQueue.getItemCount(TechType.Tank_Siege_Mode) == 0
 						&& !MyBotModule.Broodwar.self().isResearching(TechType.Tank_Siege_Mode)) {
 					// 시즈탱크 시즈모드
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType.Tank_Siege_Mode, true);
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(TechType.Tank_Siege_Mode, true);
 				}
 			} else if (!MyBotModule.Broodwar.self().hasResearched(TechType.Spider_Mines)) {
 				if (BuildManager.Instance().buildQueue.getItemCount(TechType.Spider_Mines) == 0
 						&& !MyBotModule.Broodwar.self().isResearching(TechType.Spider_Mines)) {
 					// 벌처 마인
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(TechType.Spider_Mines, true);
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(TechType.Spider_Mines, true);
 				}
 			} else if (MyBotModule.Broodwar.self().getMaxUpgradeLevel(UpgradeType.Ion_Thrusters) != MyBotModule.Broodwar
 					.self().getUpgradeLevel(UpgradeType.Ion_Thrusters)) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Ion_Thrusters) == 0
 						&& !MyBotModule.Broodwar.self().isUpgrading(UpgradeType.Ion_Thrusters)) {
 					// 벌처 스피드
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(UpgradeType.Ion_Thrusters, true);
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Ion_Thrusters, true);
 				}
 			}
 		}
 
 		// 0715 추가 - 머신샵 추가
 		if (CompletedFactoryCount > 0) {
-			if (MachineShopCount < (int) Math.sqrt(CompletedFactoryCount)) {
+			if (MachineShopCount < Math.max(2, (int) Math.sqrt(CompletedFactoryCount))) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Machine_Shop,
 							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+					MachineShopCount++;
 				}
 			}
 		}
 
-		if (FactoryCount > 0 && MachineShopCount > 0) {
-			if (MyBotModule.Broodwar.self().minerals() / FactoryCount >= 300
-					&& MyBotModule.Broodwar.self().gas() / MachineShopCount >= 100) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
-					// 0702 - 최혜진 수정 입구로
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
-							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
-				}
-			}
-		}
-
+		// 0721 수정
 		if (MachineShopCount > 1) {
-			if (MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Command_Center) > MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Refinery)) {
-				if(BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Refinery,
-							BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+			if (FactoryCount > 0) {
+				if (MyBotModule.Broodwar.self().minerals() / FactoryCount >= 300
+						&& MyBotModule.Broodwar.self().gas() / MachineShopCount >= 150) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
+						// 0702 - 최혜진 수정 입구로
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
+								BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+						FactoryCount++;
+					}
+				}
+			}
+			if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Command_Center) > MyBotModule.Broodwar
+					.self().allUnitCount(UnitType.Terran_Refinery)) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
+							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 				}
 			}
 		}
@@ -278,6 +283,8 @@ public class StrategyManager {
 				MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Machine_Shop));
 
 		FactoryCount = Math.max(FactoryCount, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Factory));
+
+		CompletedMachineShopCount = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Machine_Shop);
 
 		CompletedFactoryCount = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Factory);
 
@@ -859,14 +866,10 @@ public class StrategyManager {
 
 		// 기본 병력 추가 훈련
 		if (MyBotModule.Broodwar.self().minerals() >= 200 && MyBotModule.Broodwar.self().supplyUsed() < 390) {
-			for (Unit unit : MyUnits) {
-				if (unit.getType() == UnitType.Terran_Barracks) {
-					if (unit.isTraining() == false || unit.getLarva().size() > 0) {
-						if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Marine, null) == 0) {
-							BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-						}
-					}
+			if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Barracks) > 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Marine, null) == 0) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				}
 			}
 		}
@@ -881,28 +884,20 @@ public class StrategyManager {
 
 		// 고급 병력 추가 훈련
 		if (MyBotModule.Broodwar.self().minerals() >= 200 && MyBotModule.Broodwar.self().supplyUsed() < 390) {
-			for (Unit unit : MyUnits) {
-				if (unit.getType() == UnitType.Terran_Factory) {
-					if (unit.isTraining() == false || unit.getLarva().size() > 0) {
-						// 0628 수정
-						if (MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Machine_Shop) > 0) {
-							if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Siege_Tank_Tank_Mode,
-									null) == 0) {
-								BuildManager.Instance().buildQueue.queueAsLowestPriority(
-										UnitType.Terran_Siege_Tank_Tank_Mode,
-										BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-							}
-						}
-						// if
-						// (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture,
-						// null) == 0) {
-						// BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Vulture,
-						// BuildOrderItem.SeedPositionStrategy.MainBaseLocation,
-						// true);
-						// }
-					}
+			// 0628 수정
+			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture, null) < CompletedFactoryCount
+					- CompletedMachineShopCount) {
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Vulture,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			}
+			if (CompletedMachineShopCount > 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Siege_Tank_Tank_Mode,
+						null) < CompletedMachineShopCount) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Siege_Tank_Tank_Mode,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				}
 			}
+
 		}
 	}
 
@@ -934,13 +929,12 @@ public class StrategyManager {
 							commandUtil.rightClick(unit, bunker);
 						}
 					} else if (!InformationManager.Instance().isEmergency()) {
+						commandUtil.attackMove(unit, secondChokePoint.getCenter());
 						if (!unit.isMoving() && !unit.isAttacking()) {
 							if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode
 									&& MyBotModule.Broodwar.self().hasResearched(TechType.Tank_Siege_Mode)) {
 								unit.useTech(TechType.Tank_Siege_Mode);
 							}
-						} else {
-							commandUtil.attackMove(unit, secondChokePoint.getCenter());
 						}
 					}
 				}
