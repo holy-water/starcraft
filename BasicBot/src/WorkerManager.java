@@ -429,7 +429,6 @@ public class WorkerManager {
 					enemyForcePoint = infoMngr.getForcePoint(BWTA.getRegion(unit.getPosition()),
 							MyBotModule.Broodwar.enemy());
 					if (selfForcePoint < enemyForcePoint) {
-						System.out.println("위험하니까 안갈래");
 						continue;
 					}
 

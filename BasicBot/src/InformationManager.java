@@ -13,7 +13,6 @@ import bwapi.Race;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwapi.Unitset;
 import bwapi.WeaponType;
 import bwta.BWTA;
 import bwta.BaseLocation;
@@ -266,8 +265,6 @@ public class InformationManager {
 				}				
 			}
 		}
-		System.out.println("지금 본진에 있는 적 유닛 수: "+forcePoint);
-		
 		return forcePoint;
 	}
 	
@@ -297,11 +294,9 @@ public class InformationManager {
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
 				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
 						|| unit.getType() == UnitType.Zerg_Overlord) {
-					if(unit.getLoadedUnits().size() > 0) {
-						System.out.println("드랍더빝");
+					if(unit.getSpaceRemaining() < 8) {
 						return "99";	// 위험상황(드랍)
 					} else {
-						System.out.println("정찰임 암것도 아님");
 						return "01";	// 정찰
 					}
 				}
@@ -647,7 +642,8 @@ public class InformationManager {
 
 		// check for various types of combat units
 		if (type.canAttack() || type == UnitType.Terran_Medic || type == UnitType.Protoss_Observer
-				|| type == UnitType.Terran_Bunker || type == UnitType.Zerg_Overlord) {
+				|| type == UnitType.Terran_Bunker || type == UnitType.Zerg_Overlord 
+				|| type == UnitType.Terran_Dropship || type == UnitType.Protoss_Shuttle) {
 			return true;
 		}
 
