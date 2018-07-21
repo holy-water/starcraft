@@ -59,23 +59,32 @@ public class WorkerManager {
 		// Drone 은 건설을 위해 isConstructing = true 상태로 건설장소까지 이동한 후,
 		// 잠깐 getBuildType() == none 가 되었다가, isConstructing = true, isMorphing = true 가
 		// 된 후, 건설을 시작한다
-
+		
+		// 위험도 체크 후 비상일 경우 scv Job > Attack 전환
+		// 본진에 적군 쳐들어온 경우
+		// if 드랍 -> scv 전체 튄다
+		// else -> scv 싸운다
+		if (infoMngr.getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 0) {
+			if (infoMngr.getDropSituation() == "99") {
+				for (Unit worker : workerData.getWorkers()) {
+					if (worker.isCompleted()) {
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
+					}
+				}
+				return;
+			} else if (infoMngr.getDropSituation() == "00") {
+				for (Unit worker : workerData.getWorkers()) {
+					if (worker.isCompleted()) {
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
+					}
+				}
+				return;
+			}
+		}
+		
 		// for each of our Workers
 		for (Unit worker : workerData.getWorkers()) {
 			if (!worker.isCompleted()) {
-				continue;
-			}
-
-			// 본진에 적군 쳐들어온 경우
-			// if 드랍 -> scv 전체 튄다
-			// else -> scv 싸운다
-			if (infoMngr.getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 0) {
-				if (infoMngr.getDropSituation() == "99") {
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway,
-							firstExpansionLocation.getStaticMinerals().get(0));
-				} else if (infoMngr.getDropSituation() == "00") {
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
-				}
 				continue;
 			}
 
