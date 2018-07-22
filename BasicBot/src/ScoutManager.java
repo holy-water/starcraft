@@ -51,14 +51,6 @@ public class ScoutManager {
 
 		// scoutUnit 을 지정하고, scoutUnit 의 이동을 컨트롤함.
 		assignScoutIfNeeded();
-		// // 0710 - 최혜진 추가 정중앙 이동
-		// if (isScoutStarted == false) {
-		// TilePosition center = new TilePosition(64, 64);
-		// System.out.println("move to center");
-		// commandUtil.move(currentScoutUnit, center.toPosition());
-		// isScoutStarted = true;
-		// return;
-		// }
 		moveScoutUnit();
 
 		// 참고로, scoutUnit 의 이동에 의해 발견된 정보를 처리하는 것은 InformationManager.update()
@@ -142,27 +134,12 @@ public class ScoutManager {
 						&& currentScoutStatus == ScoutStatus.NoScout.ordinal()) { 
 					// 초기에 중앙으로 가라고 명령
 					currentScoutStatus = ScoutStatus.MovingToCenter.ordinal();
-					// System.out.println("move to center");
 					commandUtil.move(currentScoutUnit, center.toPosition());
 				} else if (currentScoutStatus == ScoutStatus.MovingToCenter.ordinal()) {
 					// 0712 - 최혜진 수정 중앙에서 멈추지 않고 바로 다른 곳으로 이동할 수 있도록
 					if (currentScoutUnit.getPosition().getDistance(center.toPosition()) < 150) {
-						// if
-						// (currentScoutUnit.getPosition().toTilePosition().getX()
-						// == 64
-						// &&
-						// currentScoutUnit.getPosition().toTilePosition().getY()
-						// == 64) {
 						// 중앙에 도착했다면 다른 baselocation 찾기
 						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
-						// 0712 - 최혜진 추가 isWalkable 테스트
-						// WalkPosition walkposition = new
-						// WalkPosition(currentScoutUnit.getPosition().getX()
-						// /8,
-						// currentScoutUnit.getPosition().getY()/8);
-						//
-						// System.out.println("isWalkable 정찰 " +
-						// System.out.println("arrive in center");
 					} else {
 						// 중앙에 도착하지 않았다면 계속 이동
 						return;
@@ -191,6 +168,7 @@ public class ScoutManager {
 						// assign a scout to go scout it
 						commandUtil.move(currentScoutUnit, closestBaseLocation.getPosition());
 						currentScoutTargetBaseLocation = closestBaseLocation;
+						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
 					}
 				}
 			}
@@ -214,12 +192,15 @@ public class ScoutManager {
 					// ScoutStatus.MoveAroundEnemyBaseLocation.ordinal();
 					// currentScoutTargetPosition =
 					// getScoutFleePositionFromEnemyRegionVertices();
-					// commandUtil.move(currentScoutUnit,
-					// currentScoutTargetPosition);
 
-					WorkerManager.Instance().setIdleWorker(currentScoutUnit);
+					if (currentScoutUnit.getPosition().getDistance(myBaseLocation.getPosition()) < 150) {
+						WorkerManager.Instance().setIdleWorker(currentScoutUnit);
+						currentScoutUnit = null;
+						return;
+					}
 					currentScoutStatus = ScoutStatus.NoScout.ordinal();
 					currentScoutTargetPosition = myBaseLocation.getPosition();
+					commandUtil.move(currentScoutUnit, currentScoutTargetPosition);
 				}
 			}
 
