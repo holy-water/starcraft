@@ -293,7 +293,7 @@ public class BuildManager {
 		// make a set of all candidate producers
 		List<Unit> candidateProducers = new ArrayList<Unit>();
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-			
+
 			if (unit == null)
 				continue;
 
@@ -322,12 +322,19 @@ public class BuildManager {
 				continue;
 			}
 
+			// 0722 추가 - 탱크나 골리앗을 생산할 때 팩토리에 머신샵이 설치되어 있지 않다면 해당 팩토리는 후보에서 제외
+			if (t.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || t.getUnitType() == UnitType.Terran_Goliath) {
+				if (unit.getAddon() == null || !unit.isCompleted() ||unit.getAddon().getType() != UnitType.Terran_Machine_Shop) {
+					continue;
+				}
+			}
+
 			if (t.isUnit()) {
 				// if the type requires an addon and the producer doesn't have
 				// one
 				// C++ : typedef std::pair<BWAPI::UnitType, int> ReqPair;
 				Pair<UnitType, Integer> ReqPair = null;
-
+				
 				Map<UnitType, Integer> requiredUnitsMap = t.getUnitType().requiredUnits();
 				if (requiredUnitsMap != null) {
 					Iterator<UnitType> it = requiredUnitsMap.keySet().iterator();

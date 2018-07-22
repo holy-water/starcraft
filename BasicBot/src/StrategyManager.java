@@ -50,6 +50,10 @@ public class StrategyManager {
 	private int CompletedMachineShopCount;
 	// 0721 추가
 	private int CompletedFactoryCount;
+	// 0722 추가
+	private int EngineeringBayCount;
+	// 0722 추가
+	private int ArmoryCount;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -149,6 +153,7 @@ public class StrategyManager {
 		}
 
 		// 0715 추가 - 머신샵 추가
+		// 0722 추가 - 터렛 및 메카닉 업그레이드 추가
 		if (CompletedFactoryCount > 0) {
 			if (MachineShopCount < Math.max(2, (int) Math.sqrt(CompletedFactoryCount))) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
@@ -158,8 +163,47 @@ public class StrategyManager {
 					MachineShopCount++;
 				}
 			}
+			if (EngineeringBayCount == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Engineering_Bay, null) == 0) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Engineering_Bay,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					EngineeringBayCount++;
+				}
+			} else if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
+				// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
+				if (MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
+						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
+								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+					}
+				}
+			}
 		}
-
+		if (CompletedFactoryCount > 1) {
+			if (ArmoryCount == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Armory, null) == 0) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					ArmoryCount++;
+				}
+			} else if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Armory) > 0) {
+				if (MyBotModule.Broodwar.self().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) == 0) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) == 0
+							&& !MyBotModule.Broodwar.self().isUpgrading(UpgradeType.Terran_Vehicle_Weapons)) {
+						// 메카닉 공격력 업그레이드
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Terran_Vehicle_Weapons,
+								true);
+					}
+				} else if (MyBotModule.Broodwar.self().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) == 0) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) == 0
+							&& !MyBotModule.Broodwar.self().isUpgrading(UpgradeType.Terran_Vehicle_Plating)) {
+						// 메카닉 방어력 업그레이드
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Terran_Vehicle_Plating,
+								true);
+					}
+				}
+			}
+		}
 		// 0721 수정
 		if (MachineShopCount > 1) {
 			if (FactoryCount > 0) {
