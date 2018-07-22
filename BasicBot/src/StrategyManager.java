@@ -516,27 +516,28 @@ public class StrategyManager {
 				TilePosition initialPosition = unit.getTilePosition();
 				TilePosition targetPosition = TilePosition.None;
 				// 0714 - 최혜진 수정 배럭스 드는 위치 수정
+				// 0722 - 최혜진 수정 배럭스 드는 위치 절대값 지정
 				if (BuildManager.Instance().locationOfBase == 1) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(initialPosition.getX() - 2, initialPosition.getY() + 15);
+						targetPosition = new TilePosition(9, 49);
 					} else {
 
 					}
 				} else if (BuildManager.Instance().locationOfBase == 2) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(initialPosition.getX() + 3, initialPosition.getY() + 15);
+						targetPosition = new TilePosition(118, 49);
 					} else {
 
 					}
 				} else if (BuildManager.Instance().locationOfBase == 3) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(initialPosition.getX() - 2, initialPosition.getY() - 15);
+						targetPosition = new TilePosition(9, 77);
 					} else {
 
 					}
 				} else if (BuildManager.Instance().locationOfBase == 4) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(initialPosition.getX() + 3, initialPosition.getY() - 15);
+						targetPosition = new TilePosition(118, 77);
 					} else {
 
 					}

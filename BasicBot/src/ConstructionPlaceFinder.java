@@ -35,10 +35,11 @@ public class ConstructionPlaceFinder {
 	private static boolean isInitialized = false;
 	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
 	private static boolean isSupplyDepotBuild = false;
-	private static int leftcornerX = 21;
-	private static int rightcornerX = 105;
-	private static int uppercornerY = 0;
-	private static int lowercornerY = 125;
+	// 0722 - 최혜진 수정 변수 값 삭제
+	private static int leftcornerX;
+	private static int rightcornerX;
+	private static int uppercornerY;
+	private static int lowercornerY;
 	public static int locationOfBase = 0;
 	private static int numberOfSupply = 0;
 	private static boolean isBarrackBuilt = false; // 0703 - 최혜진 추가
@@ -225,21 +226,22 @@ public class ConstructionPlaceFinder {
 						int dy = tempBaseLocation.getTilePosition().getY()
 								- tempFirstExpansion.getTilePosition().getY();
 						numberOfSupply = 1;
+						// 0722 - 최혜진 수정 초기 좌표 설정
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-							nx = leftcornerX;
-							ny = uppercornerY;
+							nx = 0;
+							ny = 0;
 							locationOfBase = 1;
 						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-							nx = rightcornerX;
-							ny = uppercornerY;
+							nx = 125;
+							ny = 0;
 							locationOfBase = 2;
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-							nx = leftcornerX;
-							ny = lowercornerY;
+							nx = 8;
+							ny = 125;
 							locationOfBase = 3;
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-							nx = rightcornerX;
-							ny = lowercornerY;
+							nx = 120;
+							ny = 125;
 							locationOfBase = 4;
 						}
 					} else {
@@ -251,39 +253,40 @@ public class ConstructionPlaceFinder {
 				} else { // 첫번째가 아닌 경우
 					numberOfSupply++;
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
 						if (locationOfBase == 1) {
-							if (numberOfSupply % 6 == 1) {
-								leftcornerX = leftcornerX - 3;
-								uppercornerY = 0;
-							} else {
+							if (numberOfSupply % 8 == 1) {
 								uppercornerY = uppercornerY + 2;
+								leftcornerX = 0;
+							} else {
+								leftcornerX = leftcornerX + 3;
 							}
 							nx = leftcornerX;
 							ny = uppercornerY;
 						} else if (locationOfBase == 2) {
-							if (numberOfSupply % 6 == 1) {
-								rightcornerX = rightcornerX + 3;
-								uppercornerY = 0;
-							} else {
+							if (numberOfSupply % 8 == 1) {
 								uppercornerY = uppercornerY + 2;
+								rightcornerX = 125;
+							} else {
+								rightcornerX = rightcornerX - 3;
 							}
 							nx = rightcornerX;
 							ny = uppercornerY;
 						} else if (locationOfBase == 3) {
 							if (numberOfSupply % 6 == 1) {
-								leftcornerX = leftcornerX - 3;
-								lowercornerY = 125;
-							} else {
 								lowercornerY = lowercornerY - 2;
+								leftcornerX = 8;
+							} else {
+								leftcornerX = leftcornerX + 3;
 							}
 							nx = leftcornerX;
 							ny = lowercornerY;
 						} else if (locationOfBase == 4) {
 							if (numberOfSupply % 6 == 1) {
-								rightcornerX = rightcornerX + 3;
-								lowercornerY = 125;
-							} else {
 								lowercornerY = lowercornerY - 2;
+								rightcornerX = 120;
+							} else {
+								rightcornerX = rightcornerX - 3;
 							}
 							nx = rightcornerX;
 							ny = lowercornerY;

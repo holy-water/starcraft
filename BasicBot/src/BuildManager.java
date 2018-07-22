@@ -25,11 +25,12 @@ public class BuildManager {
 
 	// 0703 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
 	private static boolean isSupplyDepotBuild = false;
-	private static int leftcornerX = 21;
-	private static int rightcornerX = 105;
-	private static int uppercornerY = 0;
-	private static int lowercornerY = 125;
-	private static int numberOfSupply = 0;
+	// 0722 - 최혜진 수정 변수 값 삭제
+	private static int leftcornerX;
+	private static int rightcornerX;
+	private static int uppercornerY;
+	private static int lowercornerY;
+	private static int numberOfSupply;
 	private static boolean isBarrackBuilt = false;
 	// 0704 - 김성수 수정 StrategyManager에서 사용
 	public int locationOfBase = 0;
@@ -94,10 +95,9 @@ public class BuildManager {
 
 			/*
 			 * if (currentItem.metaType.isUnit() &&
-			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer
-			 * != null) { System.out.println("Build " +
-			 * currentItem.metaType.getName() + " producer : " +
-			 * producer.getType() + " ID : " + producer.getID()); } else {
+			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer != null) {
+			 * System.out.println("Build " + currentItem.metaType.getName() + " producer : "
+			 * + producer.getType() + " ID : " + producer.getID()); } else {
 			 * System.out.println("Build " + currentItem.metaType.getName() +
 			 * " producer null"); } }
 			 */
@@ -115,9 +115,8 @@ public class BuildManager {
 
 				/*
 				 * if (currentItem.metaType.isUnit() &&
-				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout
-				 * + "Build " + currentItem.metaType.getName() +
-				 * " canMakeNow : " + canMake + std::endl; }
+				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout + "Build " +
+				 * currentItem.metaType.getName() + " canMakeNow : " + canMake + std::endl; }
 				 */
 
 				// 프로토스 종족 유닛 중 Protoss_Archon / Protoss_Dark_Archon 은 기존
@@ -324,7 +323,8 @@ public class BuildManager {
 
 			// 0722 추가 - 탱크나 골리앗을 생산할 때 팩토리에 머신샵이 설치되어 있지 않다면 해당 팩토리는 후보에서 제외
 			if (t.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || t.getUnitType() == UnitType.Terran_Goliath) {
-				if (unit.getAddon() == null || !unit.isCompleted() ||unit.getAddon().getType() != UnitType.Terran_Machine_Shop) {
+				if (unit.getAddon() == null || !unit.isCompleted()
+						|| unit.getAddon().getType() != UnitType.Terran_Machine_Shop) {
 					continue;
 				}
 			}
@@ -334,7 +334,7 @@ public class BuildManager {
 				// one
 				// C++ : typedef std::pair<BWAPI::UnitType, int> ReqPair;
 				Pair<UnitType, Integer> ReqPair = null;
-				
+
 				Map<UnitType, Integer> requiredUnitsMap = t.getUnitType().requiredUnits();
 				if (requiredUnitsMap != null) {
 					Iterator<UnitType> it = requiredUnitsMap.keySet().iterator();
@@ -558,8 +558,8 @@ public class BuildManager {
 		// "+desiredPosition.getY());
 		/*
 		 * std::cout +
-		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
-		 * + unitType.getName().c_str() + " strategy " + seedPositionStrategy +
+		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
+		 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
 		 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
 		 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
 		 * std::endl;
@@ -595,11 +595,11 @@ public class BuildManager {
 						.getBuildLocationWithSeedPositionAndStrategy(unitType, seedPosition, seedPositionStrategy);
 				/*
 				 * std::cout +
-				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
-				 * + unitType.getName().c_str() + " strategy " +
-				 * seedPositionStrategy + " seedPosition " + seedPosition.x +
-				 * "," + seedPosition.y + " desiredPosition " +
-				 * desiredPosition.x + "," + desiredPosition.y + std::endl;
+				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
+				 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
+				 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
+				 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
+				 * std::endl;
 				 */
 			}
 			// 다른 곳을 더 찾아보지 않고, 끝낸다
@@ -858,21 +858,22 @@ public class BuildManager {
 					int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
 					int dy = tempBaseLocation.getTilePosition().getY() - tempFirstExpansion.getTilePosition().getY();
 					numberOfSupply = 1;
+					// 0722 - 최혜진 수정 초기 좌표 설정
 					if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-						nx = leftcornerX;
-						ny = uppercornerY;
+						nx = 0;
+						ny = 0;
 						locationOfBase = 1;
 					} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-						nx = rightcornerX;
-						ny = uppercornerY;
+						nx = 125;
+						ny = 0;
 						locationOfBase = 2;
 					} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-						nx = leftcornerX;
-						ny = lowercornerY;
+						nx = 8;
+						ny = 125;
 						locationOfBase = 3;
 					} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-						nx = rightcornerX;
-						ny = lowercornerY;
+						nx = 120;
+						ny = 125;
 						locationOfBase = 4;
 					}
 				} else {
@@ -884,39 +885,40 @@ public class BuildManager {
 			} else { // 첫번째가 아닌 경우
 				numberOfSupply++;
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
 					if (locationOfBase == 1) {
-						if (numberOfSupply % 6 == 1) {
-							leftcornerX = leftcornerX - 3;
-							uppercornerY = 0;
-						} else {
+						if (numberOfSupply % 8 == 1) {
 							uppercornerY = uppercornerY + 2;
+							leftcornerX = 0;
+						} else {
+							leftcornerX = leftcornerX + 3;
 						}
 						nx = leftcornerX;
 						ny = uppercornerY;
 					} else if (locationOfBase == 2) {
-						if (numberOfSupply % 6 == 1) {
-							rightcornerX = rightcornerX + 3;
-							uppercornerY = 0;
-						} else {
+						if (numberOfSupply % 8 == 1) {
 							uppercornerY = uppercornerY + 2;
+							rightcornerX = 125;
+						} else {
+							rightcornerX = rightcornerX - 3;
 						}
 						nx = rightcornerX;
 						ny = uppercornerY;
 					} else if (locationOfBase == 3) {
 						if (numberOfSupply % 6 == 1) {
-							leftcornerX = leftcornerX - 3;
-							lowercornerY = 125;
-						} else {
 							lowercornerY = lowercornerY - 2;
+							leftcornerX = 8;
+						} else {
+							leftcornerX = leftcornerX + 3;	
 						}
 						nx = leftcornerX;
 						ny = lowercornerY;
 					} else if (locationOfBase == 4) {
 						if (numberOfSupply % 6 == 1) {
-							rightcornerX = rightcornerX + 3;
-							lowercornerY = 125;
-						} else {
 							lowercornerY = lowercornerY - 2;
+							rightcornerX = 120;
+						} else {
+							rightcornerX = rightcornerX - 3;
 						}
 						nx = rightcornerX;
 						ny = lowercornerY;
@@ -1099,12 +1101,10 @@ public class BuildManager {
 					int requiredSupply = unitType.supplyRequired();
 
 					/*
-					 * std::cout + "To make " + unitType.getName() +
-					 * ", producerType " + producerType.getName() +
-					 * " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount(
-					 * producerType) + " incompleteUnitCount " +
-					 * MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * std::cout + "To make " + unitType.getName() + ", producerType " +
+					 * producerType.getName() + " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
+					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
 					 * producerType) + std::endl;
 					 */
 
@@ -1178,14 +1178,10 @@ public class BuildManager {
 							if (requiredUnitType != UnitType.None) {
 
 								/*
-								 * std::cout + "pre requiredUnitType " +
-								 * requiredUnitType.getName() +
-								 * " completedUnitCount " +
-								 * MyBotModule.Broodwar.self().
-								 * completedUnitCount(requiredUnitType) +
-								 * " incompleteUnitCount " +
-								 * MyBotModule.Broodwar.self().
-								 * incompleteUnitCount(requiredUnitType) +
+								 * std::cout + "pre requiredUnitType " + requiredUnitType.getName() +
+								 * " completedUnitCount " + MyBotModule.Broodwar.self().
+								 * completedUnitCount(requiredUnitType) + " incompleteUnitCount " +
+								 * MyBotModule.Broodwar.self(). incompleteUnitCount(requiredUnitType) +
 								 * std::endl;
 								 */
 
@@ -1313,16 +1309,12 @@ public class BuildManager {
 					UnitType requiredUnitType = techType.requiredUnit();
 
 					/*
-					 * System.out.println("To research " + techType.toString() +
-					 * ", hasResearched " +
-					 * MyBotModule.Broodwar.self().hasResearched(techType) +
-					 * ", isResearching " +
-					 * MyBotModule.Broodwar.self().isResearching(techType) +
-					 * ", producerType " + producerType.toString() +
-					 * " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount(
-					 * producerType) + " incompleteUnitCount " +
-					 * MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * System.out.println("To research " + techType.toString() + ", hasResearched "
+					 * + MyBotModule.Broodwar.self().hasResearched(techType) + ", isResearching " +
+					 * MyBotModule.Broodwar.self().isResearching(techType) + ", producerType " +
+					 * producerType.toString() + " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
+					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
 					 * producerType));
 					 */
 
@@ -1372,12 +1364,10 @@ public class BuildManager {
 						}
 					} else if (requiredUnitType != UnitType.None) {
 						/*
-						 * std::cout + "To research " + techType.getName() +
-						 * ", requiredUnitType " + requiredUnitType.getName() +
-						 * " completedUnitCount " +
-						 * MyBotModule.Broodwar.self().completedUnitCount(
-						 * requiredUnitType) + " incompleteUnitCount " +
-						 * MyBotModule.Broodwar.self().incompleteUnitCount(
+						 * std::cout + "To research " + techType.getName() + ", requiredUnitType " +
+						 * requiredUnitType.getName() + " completedUnitCount " +
+						 * MyBotModule.Broodwar.self().completedUnitCount( requiredUnitType) +
+						 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
 						 * requiredUnitType) + std::endl;
 						 */
 
@@ -1399,17 +1389,14 @@ public class BuildManager {
 					UnitType requiredUnitType = upgradeType.whatsRequired();
 
 					/*
-					 * std::cout + "To upgrade " + upgradeType.getName() +
-					 * ", maxLevel " + maxLevel + ", currentLevel " +
-					 * currentLevel + ", isUpgrading " +
-					 * MyBotModule.Broodwar.self().isUpgrading(upgradeType) +
-					 * ", producerType " + producerType.getName() +
-					 * " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount(
-					 * producerType) + " incompleteUnitCount " +
-					 * MyBotModule.Broodwar.self().incompleteUnitCount(
-					 * producerType) + ", requiredUnitType " +
-					 * requiredUnitType.getName() + std::endl;
+					 * std::cout + "To upgrade " + upgradeType.getName() + ", maxLevel " + maxLevel
+					 * + ", currentLevel " + currentLevel + ", isUpgrading " +
+					 * MyBotModule.Broodwar.self().isUpgrading(upgradeType) + ", producerType " +
+					 * producerType.getName() + " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
+					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * producerType) + ", requiredUnitType " + requiredUnitType.getName() +
+					 * std::endl;
 					 */
 
 					if (currentLevel >= maxLevel || MyBotModule.Broodwar.self().isUpgrading(upgradeType)) {
