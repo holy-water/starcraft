@@ -12,6 +12,7 @@ import bwapi.WalkPosition;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Region;
+import sun.management.HotspotClassLoadingMBean;
 
 /// 게임 초반에 일꾼 유닛 중에서 정찰 유닛을 하나 지정하고, 정찰 유닛을 이동시켜 정찰을 수행하는 class<br>
 /// 적군의 BaseLocation 위치를 알아내는 것까지만 개발되어있습니다
@@ -25,8 +26,9 @@ public class ScoutManager {
 		MovingToCenter, /// < 0710 - 최혜진 추가 초반에 중앙으로 정찰가는 상태
 		MovingToAnotherBaseLocation, /// < 적군의 BaseLocation 이 미발견된 상태에서 정찰 유닛을
 										/// 이동시키고 있는 상태
-		MoveAroundEnemyBaseLocation /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을
+		MoveAroundEnemyBaseLocation, /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을
 									/// 이동시키고 있는 상태
+		WatingForZerg				/// 저그의 초기 공격 대비 3분간 대기하는 상태
 	};
 
 	private BaseLocation currentScoutTargetBaseLocation = null;
@@ -113,21 +115,40 @@ public class ScoutManager {
 			currentScoutStatus = ScoutStatus.NoScout.ordinal();
 			return;
 		}
-
+		
+		// 상대가 저그이면 일단 앞마당 입구에서 3분 대기 후 출발
+		if (MyBotModule.Broodwar.getFrameCount() / 24 < 180) {
+			if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+				if (currentScoutStatus == ScoutStatus.WatingForZerg.ordinal()) return;
+				// 본진의 방향 세팅
+				int direction = InformationManager.Instance().getDirectionOfStartLocation(MyBotModule.Broodwar.self());
+				TilePosition holdingPos = TilePosition.None;	// 3분간 서있을 위치
+				
+				if (direction == 11) holdingPos = new TilePosition(36, 41);
+				else if (direction == 1) holdingPos = new TilePosition(91, 41);					
+				else if (direction == 5) holdingPos = new TilePosition(85, 85);
+				else if (direction == 7) holdingPos = new TilePosition(37, 85);
+				
+				if (holdingPos != TilePosition.None) {
+					commandUtil.move(currentScoutUnit, holdingPos.toPosition());					
+					currentScoutStatus = ScoutStatus.WatingForZerg.ordinal();
+				}
+			}
+			return;
+		}
+		
 		BaseLocation enemyBaseLocation = InformationManager.Instance()
 				.getMainBaseLocation(InformationManager.Instance().enemyPlayer);
 		BaseLocation myBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
 
 		if (enemyBaseLocation == null) {
-
 			// currentScoutTargetBaseLocation 가 null 이거나 정찰 유닛이
 			// currentScoutTargetBaseLocation 에 도착했으면
 			// 아군 MainBaseLocation 으로부터 가장 가까운 미정찰 BaseLocation 을 새로운 정찰 대상
 			// currentScoutTargetBaseLocation 으로 잡아서 이동
-			if (currentScoutTargetBaseLocation == null || currentScoutUnit
-					.getDistance(currentScoutTargetBaseLocation.getPosition()) < 5 * Config.TILE_SIZE) {
-				// 0711 - 최혜진 수정 NoScout -> MovingToCenter ->
-				// MovingToAnotherBaseLocation
+			if (currentScoutTargetBaseLocation == null || 
+					currentScoutUnit.getDistance(currentScoutTargetBaseLocation.getPosition()) < 5 * Config.TILE_SIZE) {
+				// 0711 - 최혜진 수정 NoScout -> MovingToCenter -> MovingToAnotherBaseLocation
 				TilePosition center = new TilePosition(64, 64);
 				// 0716 추가 - 프로토스일 때만 중앙 정찰
 				if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss
@@ -145,7 +166,6 @@ public class ScoutManager {
 						return;
 					}
 				} else {
-
 					double closestDistance = 1000000000;
 					double tempDistance = 0;
 					BaseLocation closestBaseLocation = null;
