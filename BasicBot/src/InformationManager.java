@@ -596,6 +596,23 @@ public class InformationManager {
 		}
 		return false;
 	}
+	
+	/// 해당 Player의 처음 본진 위치(방향)를 리턴합니다 > 11, 1, 5, 7시로 리턴
+	public int getDirectionOfStartLocation(Player player) {
+		BaseLocation base = BWTA.getStartLocation(player);
+		int x = base.getTilePosition().getX();
+		int y = base.getTilePosition().getY();
+		
+		int direction = 0;	// 방향 리턴값
+		
+		if (x < 64 && y < 64) direction = 11;
+		else if (x > 64 && y < 64) direction = 1;
+		else if (x > 64 && y > 64) direction = 5;
+		else if (x < 64 && y > 64) direction = 7;
+		
+		return direction;
+	}
+	
 
 	/// 해당 Player (아군 or 적군) 의 모든 유닛 목록 (가장 최근값) UnitAndUnitInfoMap 을 리턴합니다<br>	 
 	/// 파악된 정보만을 리턴하기 때문에 적군의 정보는 틀린 값일 수 있습니다
