@@ -434,8 +434,9 @@ public class StrategyManager {
 				if (MyBotModule.Broodwar.enemy().allUnitCount(UnitType.Zerg_Zergling) != 0) {
 					InformationManager.Instance().setIsEmergency(true);
 					BuildManager.Instance().buildQueue.clearAll();
+					// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에 Bunker 건설
 					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
 				}
 			} else if (FrameCount / 24 < 180) {
 				// 9드론

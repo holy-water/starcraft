@@ -12,7 +12,8 @@ import bwapi.UpgradeType;
 /// 빌드 오더 목록 자료구조 class
 public class BuildOrderQueue {
 	
-	private enum SeedPositionStrategy { MainBaseLocation, MainBaseBackYard, FirstChokePoint, FirstExpansionLocation, SecondChokePoint, SeedPositionSpecified };
+	// 0723 - 최혜진 수정 4드론 시 벙커 위치 위한 BunkerForZerg 전략 추가
+	private enum SeedPositionStrategy { MainBaseLocation, MainBaseBackYard, FirstChokePoint, FirstExpansionLocation, SecondChokePoint, SeedPositionSpecified, BunkerForZerg };
 	private SeedPositionStrategy seedLocationStrategy;
 
 	private int highestPriority;

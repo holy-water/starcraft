@@ -23,7 +23,8 @@ public class BuildOrderItem {
 		SecondChokePoint,			///< 아군 두번째 길목
 		SeedPositionSpecified,		///< 별도 지정 위치
 		SupplyDepotPosition,        ///< 0630 최혜진 추가 - SupplyDepot 건설에 대한 전략
-		BlockFirstChokePoint        ///< 0703 최혜진 추가 - 입구 막기 전략
+		BlockFirstChokePoint,       ///< 0703 최혜진 추가 - 입구 막기 전략
+		BunkerForZerg               ///< 0723 최혜진 추가 - 4드론 저그에 대항하기 위한 Bunker 건설 전략
 	};
 	
 	public SeedPositionStrategy seedLocationStrategy;	///< 건설위치 초안 결정 정책

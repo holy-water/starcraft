@@ -36,6 +36,7 @@ public class ConstructionPlaceFinder {
 	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
 	private static boolean isSupplyDepotBuild = false;
 	// 0722 - 최혜진 수정 변수 값 삭제
+	// 0723 - 최혜진 수정 변수 값 복귀
 	private static int leftcornerX;
 	private static int rightcornerX;
 	private static int uppercornerY;
@@ -227,28 +228,29 @@ public class ConstructionPlaceFinder {
 								- tempFirstExpansion.getTilePosition().getY();
 						numberOfSupply = 1;
 						// 0722 - 최혜진 수정 초기 좌표 설정
+						// 0723 - 최혜진 수정 좌표 이상 해결
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-							nx = 0;
-							ny = 0;
+							nx = leftcornerX = 0;
+							ny = uppercornerY = 0;
 							locationOfBase = 1;
 						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-							nx = 125;
-							ny = 0;
+							nx = rightcornerX = 125;
+							ny = uppercornerY = 0;
 							locationOfBase = 2;
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-							nx = 8;
-							ny = 125;
+							nx = leftcornerX = 8;
+							ny = lowercornerY = 125;
 							locationOfBase = 3;
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-							nx = 120;
-							ny = 125;
+							nx = rightcornerX = 120;
+							ny = lowercornerY = 125;
 							locationOfBase = 4;
 						}
 					} else {
 
 					}
 					isSupplyDepotBuild = true;
-					// System.out.println(locationOfBase + " " + nx + " " + ny);
+					//System.out.println(locationOfBase + " " + nx + " " + ny);
 
 				} else { // 첫번째가 아닌 경우
 					numberOfSupply++;
@@ -273,7 +275,7 @@ public class ConstructionPlaceFinder {
 							nx = rightcornerX;
 							ny = uppercornerY;
 						} else if (locationOfBase == 3) {
-							if (numberOfSupply % 6 == 1) {
+							if (numberOfSupply % 7 == 1) {
 								lowercornerY = lowercornerY - 2;
 								leftcornerX = 8;
 							} else {
@@ -282,7 +284,7 @@ public class ConstructionPlaceFinder {
 							nx = leftcornerX;
 							ny = lowercornerY;
 						} else if (locationOfBase == 4) {
-							if (numberOfSupply % 6 == 1) {
+							if (numberOfSupply % 7 == 1) {
 								lowercornerY = lowercornerY - 2;
 								rightcornerX = 120;
 							} else {
@@ -292,7 +294,8 @@ public class ConstructionPlaceFinder {
 							ny = lowercornerY;
 						}
 
-						// System.out.println(nx + " " + ny);
+
+						 //System.out.println(nx + " " + ny);
 					}
 				}
 				tempTilePosition = new TilePosition(nx, ny);
@@ -301,6 +304,7 @@ public class ConstructionPlaceFinder {
 			case BlockFirstChokePoint:
 				int blockx = 0;
 				int blocky = 0;
+				// 0723 - 최혜진 수정 절대값 지정하는 것으로 수정
 				tempFirstExpansion = InformationManager.Instance()
 						.getFirstExpansionLocation(MyBotModule.Broodwar.self());
 				// System.out.println(tempFirstExpansion.getTilePosition().getX()+"
@@ -348,6 +352,31 @@ public class ConstructionPlaceFinder {
 				desiredPosition = tempTilePosition.getPoint();
 				// ConstructionTask b = new ConstructionTask(buildingType, desiredPosition);
 				// b.setFinalPosition(desiredPosition);
+				break;
+				
+				// 0723 - 최혜진 추가 4드론 시 Bunker 건설 전략
+			case BunkerForZerg:
+				int bunkerx = 0;
+				int bunkery = 0;
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (locationOfBase == 1) {
+						bunkerx = 7;
+						bunkery = 12;
+					} else if (locationOfBase == 2) {
+						bunkerx = 117;
+						bunkery = 12;
+					} else if (locationOfBase == 3) {
+						bunkerx = 7;
+						bunkery = 115;
+					} else if (locationOfBase == 4) {
+						bunkerx = 117;
+						bunkery = 115;
+					}
+				} else {
+
+				}
+				tempTilePosition = new TilePosition(bunkerx, bunkery);
+				desiredPosition = tempTilePosition.getPoint();
 				break;
 			}
 		}
