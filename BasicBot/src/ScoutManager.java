@@ -117,8 +117,8 @@ public class ScoutManager {
 		}
 		
 		// 상대가 저그이면 일단 앞마당 입구에서 3분 대기 후 출발
-		if (MyBotModule.Broodwar.getFrameCount() / 24 < 180) {
-			if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+		if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+			if (MyBotModule.Broodwar.getFrameCount() / 24 < 180) {
 				if (currentScoutStatus == ScoutStatus.WatingForZerg.ordinal()) return;
 				// 본진의 방향 세팅
 				int direction = InformationManager.Instance().getDirectionOfStartLocation(MyBotModule.Broodwar.self());
@@ -133,8 +133,8 @@ public class ScoutManager {
 					commandUtil.move(currentScoutUnit, holdingPos.toPosition());					
 					currentScoutStatus = ScoutStatus.WatingForZerg.ordinal();
 				}
+				return;
 			}
-			return;
 		}
 		
 		BaseLocation enemyBaseLocation = InformationManager.Instance()
