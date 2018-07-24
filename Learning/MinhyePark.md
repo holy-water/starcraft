@@ -1,3 +1,14 @@
+## (20180725) 시야에 들어오는 적군이 있는가?
+
+1. 문제 상황 : 적 베이스 기준으로 제일 가까운 우리 유닛을 구하고 > 그 유닛을 기준으로 일정 거리 안에 적 유닛이 있는지 체크
+2. 대안
+    1. 가장 가까운 유닛 > WorkerManager.getClosestEnemyUnitFromWorker() 참고  
+    2. 일정 거리 안에 적 유닛 존재 여부 체크 > getUnitsInRadius 활용 > radius의 단위 문제
+    3. Config.DrawMapGrid = true 로 하면 타일 체크 가능
+    4. 일단 tilePostion 기준 반경 8 tile 이내면 시야인것으로 보인다. 반경 10 tile 정도가 거의 화면 전체
+    5. 일정 거리는 8 tile로 해서 8 * Config.TILE_SIZE 이내로 해서 찾으면 될 것 같다.
+3. 코딩은 내일 해야겠다.
+
 ## (20180721)
 
 1. scv 원하는 위치로 어택땅 가능 > 위치를 지정할 수 있도록 변경할 필요?
