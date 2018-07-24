@@ -250,7 +250,7 @@ public class ConstructionPlaceFinder {
 
 					}
 					isSupplyDepotBuild = true;
-					//System.out.println(locationOfBase + " " + nx + " " + ny);
+					// System.out.println(locationOfBase + " " + nx + " " + ny);
 
 				} else { // 첫번째가 아닌 경우
 					numberOfSupply++;
@@ -294,21 +294,30 @@ public class ConstructionPlaceFinder {
 							ny = lowercornerY;
 						}
 
-
-						 //System.out.println(nx + " " + ny);
+						// System.out.println(nx + " " + ny);
 					}
 				}
 				tempTilePosition = new TilePosition(nx, ny);
-				desiredPosition = tempTilePosition.getPoint();
+				// 0724 - 최혜진 추가 해당 위치에 건설이 불가능할 경우 다음 번으로 넘김
+				if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)) {
+					desiredPosition = tempTilePosition.getPoint();
+				} else {
+					desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
+							seedPositionStrategy);
+				}
+
 				break;
 			case BlockFirstChokePoint:
 				int blockx = 0;
 				int blocky = 0;
-				// 0723 - 최혜진 수정 절대값 지정하는 것으로 수정
 				tempFirstExpansion = InformationManager.Instance()
 						.getFirstExpansionLocation(MyBotModule.Broodwar.self());
 				// System.out.println(tempFirstExpansion.getTilePosition().getX()+"
 				// "+tempFirstExpansion.getTilePosition().getY());
+				// 0724 - 최혜진 추가 상대 종족이 저그일 때 Barracks는 이미 앞마당에 지어졌음
+				if (isBarrackBuilt == false && MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+					isBarrackBuilt = true;
+				}
 				if (isBarrackBuilt == false) {
 					isBarrackBuilt = true;
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
@@ -353,8 +362,8 @@ public class ConstructionPlaceFinder {
 				// ConstructionTask b = new ConstructionTask(buildingType, desiredPosition);
 				// b.setFinalPosition(desiredPosition);
 				break;
-				
-				// 0723 - 최혜진 추가 4드론 시 Bunker 건설 전략
+
+			// 0723 - 최혜진 추가 4드론 시 Bunker 건설 전략
 			case BunkerForZerg:
 				int bunkerx = 0;
 				int bunkery = 0;

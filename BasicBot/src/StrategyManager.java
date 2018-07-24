@@ -605,6 +605,9 @@ public class StrategyManager {
 				// Bunker
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
 						BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+//				// Bunker - 0724 최혜진 테스트용
+//				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
+//						BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);				
 				// 2 Marine
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);

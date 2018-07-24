@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import bwapi.Pair;
+import bwapi.Player;
 import bwapi.Position;
 import bwapi.Race;
 import bwapi.TechType;
@@ -930,13 +931,23 @@ public class BuildManager {
 				}
 			}
 			tempTilePosition = new TilePosition(nx, ny);
-			seedPosition = tempTilePosition.toPosition();
+			// 0724 - 최혜진 추가 해당 위치에 건설이 불가능할 경우 다음 번으로 넘김
+			if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)) {
+				seedPosition = tempTilePosition.toPosition();
+			} else {
+				seedPosition = getSeedPositionFromSeedLocationStrategy(seedLocationStrategy);
+			}
 			break;
 
 		case BlockFirstChokePoint:
 			int blockx = 0;
 			int blocky = 0;
 			tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
+			// 0724 - 최혜진 추가 상대 종족이 저그일 때 Barracks는 이미 앞마당에 지어졌음
+			if (isBarrackBuilt == false && MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+				isBarrackBuilt = true;
+			}
+			// 0723 - 최혜진 수정 UnitType으로 제어
 			if (isBarrackBuilt == false) {
 				isBarrackBuilt = true;
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
