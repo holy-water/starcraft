@@ -57,8 +57,6 @@ public class InformationManager {
 	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 	
-	private boolean isZerglingInMainBaseLocation;
-
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;

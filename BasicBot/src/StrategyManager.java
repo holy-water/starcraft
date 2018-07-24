@@ -385,12 +385,12 @@ public class StrategyManager {
 					if (Enemy.allUnitCount(UnitType.Protoss_Gateway) != 0) {
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-						CountMgr.getBunker();
+						CountMgr.setBunker();
 					}
 				} else {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-					CountMgr.getBunker();
+					CountMgr.setBunker();
 				}
 			}
 			// 초반 빌드를 제외하고 5초에 한번씩 탐색
@@ -432,7 +432,7 @@ public class StrategyManager {
 					}
 				} else {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
-							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 					CountMgr.setBunker();
 				}
 			}
@@ -496,7 +496,6 @@ public class StrategyManager {
 				unit.lift();
 			} else {
 				// 0709 - 최혜진 추가 배럭 이동
-				TilePosition initialPosition = unit.getTilePosition();
 				TilePosition targetPosition = TilePosition.None;
 				// 0714 - 최혜진 수정 배럭스 드는 위치 수정
 				// 0722 - 최혜진 수정 배럭스 드는 위치 절대값 지정
@@ -660,6 +659,9 @@ public class StrategyManager {
 				// 13 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 1 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 14 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -667,9 +669,6 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(
 						InformationMgr.getBasicResourceDepotBuildingType(),
 						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
-				// 1 Marine
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 15 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -685,9 +684,6 @@ public class StrategyManager {
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 17 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				// 2 Marine
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 18 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
@@ -930,7 +926,6 @@ public class StrategyManager {
 		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
 		if (isFullScaleAttackStarted == false) {
 
-			BaseLocation mainBaseLocation = InformationMgr.getMainBaseLocation(InformationMgr.selfPlayer);
 			// 0627 수정 및 추가
 			Chokepoint secondChokePoint = InformationMgr.getSecondChokePoint(InformationMgr.selfPlayer);
 			Unit bunker = null;
@@ -947,11 +942,11 @@ public class StrategyManager {
 			for (Unit unit : MyUnits) {
 				if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
 					if (unit.getType() == UnitType.Terran_Marine) {
-						if (bunker != null && bunker.isCompleted()) {
-							if (Self.allUnitCount(UnitType.Terran_Marine) > 4) {
-								commandUtil.attackMove(unit, bunker.getPosition());
-							} else {
+						if (bunker != null) {
+							if (bunker.isCompleted()) {
 								commandUtil.rightClick(unit, bunker);
+							} else {
+								commandUtil.attackMove(unit, bunker.getPosition());
 							}
 						}
 					} else {
@@ -987,7 +982,9 @@ public class StrategyManager {
 
 		}
 		// 공격 모드가 되면, 모든 전투유닛들을 적군 Main BaseLocation 로 공격 가도록 합니다
-		else {
+		else
+
+		{
 			// std.cout + "enemy OccupiedBaseLocations : " +
 			// InformationMgr.getOccupiedBaseLocations(InformationMgr._enemy).size()
 			// + std.endl;
