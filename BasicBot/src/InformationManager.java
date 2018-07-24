@@ -57,7 +57,6 @@ public class InformationManager {
 	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 	
-	private boolean isEmergency;
 	private boolean isZerglingInMainBaseLocation;
 
 	/// static singleton 객체를 리턴합니다
@@ -105,25 +104,6 @@ public class InformationManager {
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
-		
-		// 4드론 체크는 1초에 한번, 2분 45초 전에만
-		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
-			if (MyBotModule.Broodwar.getFrameCount() / 24 < 165 ) {
-				if (isZerglingInMainBaseLocation()) {
-					// 4드론 위험상황
-					isEmergency = true;
-					isZerglingInMainBaseLocation = true;
-				}
-			}
-			
-			if (isZerglingInMainBaseLocation) {
-				if (!isZerglingInMainBaseLocation()) {
-					// 4드론 위험해제
-					isEmergency = false;
-					// 0718 추가 - 위험이 해제되면 빌드를 다시 지정
-				}
-			}
-		}
 		
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
@@ -845,13 +825,5 @@ public class InformationManager {
 		} else {
 			return UnitType.None;
 		}
-	}
-	
-	public boolean isEmergency() {
-		return isEmergency;
-	}
-	
-	public void setIsEmergency(boolean isEmergency) {
-		this.isEmergency = isEmergency;
 	}
 }

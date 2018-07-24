@@ -341,7 +341,7 @@ public class StrategyManager {
 		executeSupplyManagement();
 
 		// 0627 수정 및 추가
-		executeBasicCombatUnitTraining();
+		// executeBasicCombatUnitTraining();
 
 		executeSeniorityCombatUnitTraining();
 
@@ -376,21 +376,21 @@ public class StrategyManager {
 			return;
 		}
 
-		if (InformationMgr.isEmergency()) {
-			// 0715 추가 - 위험도 체크하여 긴급상황 해제하는 로직 필요
-			return;
-		}
-
 		// 0710 수정
 		// 0712 수정 - 시간에 따라 상대 빌드 탐색
 		if (Enemy.getRace() == Race.Protoss) {
-			// 센터 게이트
-			if (FrameCount / 24 < 120) {
-				if (Enemy.allUnitCount(UnitType.Protoss_Gateway) != 0) {
-					// InformationMgr.setIsEmergency(true);
-					BuildManager.Instance().buildQueue.clearAll();
+			if (CountMgr.getBunker() == 0) {
+				// 센터 게이트
+				if (FrameCount / 24 < 120) {
+					if (Enemy.allUnitCount(UnitType.Protoss_Gateway) != 0) {
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+						CountMgr.getBunker();
+					}
+				} else {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+					CountMgr.getBunker();
 				}
 			}
 			// 초반 빌드를 제외하고 5초에 한번씩 탐색
@@ -419,70 +419,63 @@ public class StrategyManager {
 				}
 			}
 		} else if (Enemy.getRace() == Race.Zerg) {
-			if (FrameCount / 24 < 135) {
-				// 4드론
-				if (Enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
-					InformationMgr.setIsEmergency(true);
-					BuildManager.Instance().buildQueue.clearAll();
-					// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에 Bunker
-					// 건설
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
-							BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
-				}
-			} else if (FrameCount / 24 < 180) {
-				// 9드론
-				if (Enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
-					// InformationMgr.setIsEmergency(true);
-					BuildManager.Instance().buildQueue.clearAll();
+			if (CountMgr.getBunker() == 0) {
+				if (FrameCount / 24 < 155) {
+					// 4드론
+					if (Enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
+						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에
+						// Bunker
+						// 건설
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+								BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
+						CountMgr.setBunker();
+					}
+				} else {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-				}
-			}
-			// 초반 빌드를 제외하고 5초에 한번씩 탐색
-			if (FrameCount % (24 * 5) != 0) {
-				return;
-			}
-			// 러커
-			if (Enemy.allUnitCount(UnitType.Zerg_Lurker) != 0 || Enemy.allUnitCount(UnitType.Zerg_Lurker_Egg) != 0) {
-				if (Self.allUnitCount(UnitType.Terran_Academy) == 0) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Academy) == 0) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					}
-				} else if (Self.allUnitCount(UnitType.Terran_Comsat_Station) == 0) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) == 0) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
-								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					}
-				}
-			}
-			// 뮤탈
-			if (Enemy.allUnitCount(UnitType.Zerg_Spire) != 0 || Enemy.allUnitCount(UnitType.Zerg_Mutalisk) != 0) {
-				if (Self.allUnitCount(UnitType.Terran_Engineering_Bay) == 0) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Engineering_Bay) == 0) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
-								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					}
-				}
-				if (Self.allUnitCount(UnitType.Terran_Armory) == 0) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Armory) == 0) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					}
+					CountMgr.setBunker();
 				}
 			}
 		}
-
+		// 초반 빌드를 제외하고 5초에 한번씩 탐색
+		if (FrameCount % (24 * 5) != 0) {
+			return;
+		}
+		// 러커
+		if (Enemy.allUnitCount(UnitType.Zerg_Lurker) != 0 || Enemy.allUnitCount(UnitType.Zerg_Lurker_Egg) != 0) {
+			if (Self.allUnitCount(UnitType.Terran_Academy) == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Academy) == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				}
+			} else if (Self.allUnitCount(UnitType.Terran_Comsat_Station) == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				}
+			}
+		}
+		// 뮤탈
+		if (Enemy.allUnitCount(UnitType.Zerg_Spire) != 0 || Enemy.allUnitCount(UnitType.Zerg_Mutalisk) != 0) {
+			if (Self.allUnitCount(UnitType.Terran_Engineering_Bay) == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Engineering_Bay) == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				}
+			}
+			if (Self.allUnitCount(UnitType.Terran_Armory) == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Armory) == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				}
+			}
+		}
 	}
 
 	// 0708 - 최혜진 추가 초반 빌드 완료 후 배럭을 들어올림
 	public void executeBarrackControl() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
-			return;
-		}
-
-		if (InformationMgr.isEmergency()) {
 			return;
 		}
 
@@ -576,23 +569,26 @@ public class StrategyManager {
 				// 13 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 1 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 14 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 2 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 15 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Command Center
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(
 						InformationMgr.getBasicResourceDepotBuildingType(),
 						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
-				// 1 Marine
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				// 15 SCV
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Supply Depot - 0704 최혜진 수정
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(
 						InformationMgr.getBasicSupplyProviderUnitType(),
-						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 				// 16 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -602,15 +598,10 @@ public class StrategyManager {
 				// 17 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				// Bunker
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
-						BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-//				// Bunker - 0724 최혜진 테스트용
-//				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
-//						BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);				
-				// 2 Marine
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+
+				// Bunker - 0724 최혜진 테스트용
+				// BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
+				// BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
 				// 18 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -695,9 +686,6 @@ public class StrategyManager {
 				// 17 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				// Bunker
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
-						BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
 				// 2 Marine
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -895,10 +883,6 @@ public class StrategyManager {
 			return;
 		}
 
-		if (!InformationMgr.isEmergency()) {
-			return;
-		}
-
 		// 기본 병력 추가 훈련
 		if (Self.minerals() >= 200 && Self.supplyUsed() < 390) {
 			if (Self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
@@ -962,16 +946,16 @@ public class StrategyManager {
 			// 앞마당 랠리 포인트
 			for (Unit unit : MyUnits) {
 				if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
-					if (bunker != null && bunker.isCompleted() && unit.getType() == UnitType.Terran_Marine) {
-						if (Self.allUnitCount(UnitType.Terran_Marine) > 4) {
-							commandUtil.attackMove(unit, bunker.getPosition());
-						} else {
-							commandUtil.rightClick(unit, bunker);
+					if (unit.getType() == UnitType.Terran_Marine) {
+						if (bunker != null && bunker.isCompleted()) {
+							if (Self.allUnitCount(UnitType.Terran_Marine) > 4) {
+								commandUtil.attackMove(unit, bunker.getPosition());
+							} else {
+								commandUtil.rightClick(unit, bunker);
+							}
 						}
-					} else if (!InformationMgr.isEmergency()) {
-						commandUtil.attackMove(unit, secondChokePoint.getCenter());
 					} else {
-						commandUtil.attackMove(unit, mainBaseLocation.getPosition());
+						commandUtil.attackMove(unit, secondChokePoint.getCenter());
 					}
 				}
 			}

@@ -274,11 +274,6 @@ public class WorkerManager {
 			return;
 		}
 
-		// 4드론 위험 상황에서는 금지
-		if (infoMngr.isEmergency()) {
-			return;
-		}
-
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			// 건물의 경우 아무리 멀어도 무조건 수리. 일꾼 한명이 순서대로 수리
 			if (unit.getType().isBuilding() && unit.isCompleted() == true

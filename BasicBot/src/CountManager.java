@@ -15,6 +15,8 @@ public class CountManager {
 
 	private int refinery;
 
+	private int bunker;
+
 	private int completedFactory;
 
 	private int completedMachineShop;
@@ -26,6 +28,8 @@ public class CountManager {
 		this.factory = Math.max(this.factory, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Factory));
 
 		this.refinery = Math.max(this.refinery, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Refinery));
+		
+		this.bunker = Math.max(this.bunker, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Bunker));
 
 		this.completedMachineShop = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Machine_Shop);
 
@@ -74,6 +78,14 @@ public class CountManager {
 
 	public void setRefinery() {
 		this.refinery++;
+	}
+
+	public int getBunker() {
+		return bunker;
+	}
+
+	public void setBunker() {
+		this.bunker++;
 	}
 
 	public int getCompletedFactory() {
