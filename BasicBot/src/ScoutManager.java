@@ -124,10 +124,17 @@ public class ScoutManager {
 				int direction = InformationManager.Instance().getDirectionOfStartLocation(MyBotModule.Broodwar.self());
 				TilePosition holdingPos = TilePosition.None;	// 3분간 서있을 위치
 				
-				if (direction == 11) holdingPos = new TilePosition(36, 41);
-				else if (direction == 1) holdingPos = new TilePosition(91, 41);					
-				else if (direction == 5) holdingPos = new TilePosition(85, 85);
-				else if (direction == 7) holdingPos = new TilePosition(37, 85);
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (direction == 11) holdingPos = new TilePosition(36, 41);
+					else if (direction == 1) holdingPos = new TilePosition(91, 41);					
+					else if (direction == 5) holdingPos = new TilePosition(85, 85);
+					else if (direction == 7) holdingPos = new TilePosition(37, 85);				
+				} else {
+					if (direction == 11) holdingPos = new TilePosition(24, 38);
+					else if (direction == 1) holdingPos = new TilePosition(92, 23);					
+					else if (direction == 5) holdingPos = new TilePosition(103, 90);
+					else if (direction == 7) holdingPos = new TilePosition(35, 105);
+				}
 				
 				if (holdingPos != TilePosition.None) {
 					commandUtil.move(currentScoutUnit, holdingPos.toPosition());					

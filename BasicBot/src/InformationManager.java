@@ -222,6 +222,46 @@ public class InformationManager {
 		return unitData.get(player);
 	}
 	
+	/// 적의 본진으로부터 아군의 가장 가까운 유닛 리턴
+	public Unit getClosestUnitFromEnemyBaseLocation() {
+		// 적의 본진
+		BaseLocation enemyBaseLocation = getMainBaseLocation(enemyPlayer);
+
+		Unit closestUnit = null;
+		double closestDist = 10000;
+
+		for (Unit unit : enemyPlayer.getUnits()) {
+			double dist = unit.getDistance(enemyBaseLocation.getPosition());
+
+			if ((dist < 400) && (closestUnit == null || (dist < closestDist))) {
+				closestUnit = unit;
+				closestDist = dist;
+			}
+		}
+
+		return closestUnit;
+	}
+	
+	/// 우리 유닛의 일정 거리 이내에 적이 있는가 체크하는 메소드
+	public boolean isEnemyUnitInRadius(Unit unit) {
+		if (unit == null) return false;
+		
+		boolean flag = false;
+		
+		// 반경 8 타일 이내에 있는 unit list
+		List<Unit> list = unit.getUnitsInRadius(8 * Config.TILE_SIZE);
+		
+		// 적 유닛이 있는지 확인
+		for (Unit u: list) {
+			if (u.getPlayer() == enemyPlayer) {
+				flag = true;
+				break;
+			}
+		}
+		
+		return flag;
+	}
+	
 	// 한 지역 내에서 아군 또는 적군의 병력 계산 - 가중치 부여
 	public int getForcePoint(Region region, Player player) {
 			

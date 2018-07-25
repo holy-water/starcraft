@@ -38,6 +38,9 @@ public class WorkerManager {
 	// 공격용 scv 개수 / 최적 공격 유닛 수
 	private int attackScvCnt = 0;
 	private int optimalAttackCnt = 8;
+	
+	// 죄적 수리 scv 유닛 수
+	private int optimalRepairWorkerCnt = 2;
 
 	/// 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트하고, 일꾼 유닛들이 자원 채취 등 임무 수행을 하도록 합니다
 	public void update() {
@@ -75,6 +78,7 @@ public class WorkerManager {
 			} else if (infoMngr.getDropSituation() == "00") {
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
+						//setCombatWorker(worker);
 						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
 					}
 				}
@@ -275,8 +279,12 @@ public class WorkerManager {
 		}
 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			// 벙커의 경우 일꾼이 여러명이 수리하게 설정
+			/*if (unit.getType() == UnitType.Terran_Bunker && unit.isCompleted() == true
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
+			}		
 			// 건물의 경우 아무리 멀어도 무조건 수리. 일꾼 한명이 순서대로 수리
-			if (unit.getType().isBuilding() && unit.isCompleted() == true
+			else */if (unit.getType().isBuilding() && unit.isCompleted() == true
 					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
 				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
 				setRepairWorker(repairWorker, unit);
