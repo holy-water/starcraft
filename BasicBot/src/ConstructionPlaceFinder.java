@@ -247,7 +247,33 @@ public class ConstructionPlaceFinder {
 							locationOfBase = 4;
 						}
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용
+						tempFirstExpansion = InformationManager.Instance()
+								.getFirstExpansionLocation(MyBotModule.Broodwar.self());
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
+						int dy = tempBaseLocation.getTilePosition().getY()
+								- tempFirstExpansion.getTilePosition().getY();
+						numberOfSupply = 1;
+						// 0722 - 최혜진 수정 초기 좌표 설정
+						// 0723 - 최혜진 수정 좌표 이상 해결
+						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
+							nx = leftcornerX = 0;
+							ny = uppercornerY = 0;
+							locationOfBase = 1;
+						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
+							nx = rightcornerX = 125;
+							ny = uppercornerY = 0;
+							locationOfBase = 2;
+						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
+							nx = leftcornerX = 5;
+							ny = lowercornerY = 125;
+							locationOfBase = 3;
+						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
+							nx = rightcornerX = 120;
+							ny = lowercornerY = 125;
+							locationOfBase = 4;
+						}
 					}
 					isSupplyDepotBuild = true;
 					// System.out.println(locationOfBase + " " + nx + " " + ny);
@@ -285,6 +311,48 @@ public class ConstructionPlaceFinder {
 							ny = lowercornerY;
 						} else if (locationOfBase == 4) {
 							if (numberOfSupply % 7 == 1) {
+								lowercornerY = lowercornerY - 2;
+								rightcornerX = 120;
+							} else {
+								rightcornerX = rightcornerX - 3;
+							}
+							nx = rightcornerX;
+							ny = lowercornerY;
+						}
+
+						// System.out.println(nx + " " + ny);
+					} else {
+						// 0726 - 최혜진 추가 투혼 맵 적용
+						// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
+						if (locationOfBase == 1) {
+							if (numberOfSupply % 6 == 1) {
+								uppercornerY = uppercornerY + 2;
+								leftcornerX = 0;
+							} else {
+								leftcornerX = leftcornerX + 3;
+							}
+							nx = leftcornerX;
+							ny = uppercornerY;
+						} else if (locationOfBase == 2) {
+							if (numberOfSupply % 8 == 1) {
+								uppercornerY = uppercornerY + 2;
+								rightcornerX = 125;
+							} else {
+								rightcornerX = rightcornerX - 3;
+							}
+							nx = rightcornerX;
+							ny = uppercornerY;
+						} else if (locationOfBase == 3) {
+							if (numberOfSupply % 8 == 1) {
+								lowercornerY = lowercornerY - 2;
+								leftcornerX = 8;
+							} else {
+								leftcornerX = leftcornerX + 3;
+							}
+							nx = leftcornerX;
+							ny = lowercornerY;
+						} else if (locationOfBase == 4) {
+							if (numberOfSupply % 6 == 1) {
 								lowercornerY = lowercornerY - 2;
 								rightcornerX = 120;
 							} else {
@@ -335,9 +403,21 @@ public class ConstructionPlaceFinder {
 							blocky = tempFirstExpansion.getTilePosition().getY() + 2;
 						}
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용
+						if (locationOfBase == 1) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 1;
+							blocky = tempFirstExpansion.getTilePosition().getY() - 3;
+						} else if (locationOfBase == 2) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 1;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+						} else if (locationOfBase == 3) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+							blocky = tempFirstExpansion.getTilePosition().getY();
+						} else if (locationOfBase == 4) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 1;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+						}
 					}
-					// System.out.println(blockx +" "+blocky);
 				} else {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						if (locationOfBase == 1) {
@@ -354,7 +434,20 @@ public class ConstructionPlaceFinder {
 							blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 						}
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용
+						if (locationOfBase == 1) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 2;
+							blocky = tempFirstExpansion.getTilePosition().getY() - 5;
+						} else if (locationOfBase == 2) {
+							blockx = tempFirstExpansion.getTilePosition().getX() + 5;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 4;
+						} else if (locationOfBase == 3) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 7;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 1;
+						} else if (locationOfBase == 4) {
+							blockx = tempFirstExpansion.getTilePosition().getX() - 2;
+							blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+						}
 					}
 				}
 				tempTilePosition = new TilePosition(blockx, blocky);
@@ -382,7 +475,20 @@ public class ConstructionPlaceFinder {
 						bunkery = 115;
 					}
 				} else {
-
+					// 0726 - 최혜진 추가 투혼 맵 적용
+					if (locationOfBase == 1) {
+						bunkerx = 7;
+						bunkery = 9;
+					} else if (locationOfBase == 2) {
+						bunkerx = 117;
+						bunkery = 10;
+					} else if (locationOfBase == 3) {
+						bunkerx = 7;
+						bunkery = 113;
+					} else if (locationOfBase == 4) {
+						bunkerx = 117;
+						bunkery = 114;
+					}
 				}
 				tempTilePosition = new TilePosition(bunkerx, bunkery);
 				desiredPosition = tempTilePosition.getPoint();

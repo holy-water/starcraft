@@ -503,25 +503,29 @@ public class StrategyManager {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(9, 49);
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						targetPosition = new TilePosition(9, 49);
 					}
 				} else if (BuildManager.Instance().locationOfBase == 2) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(118, 49);
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						targetPosition = new TilePosition(118, 49);
 					}
 				} else if (BuildManager.Instance().locationOfBase == 3) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(9, 77);
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						targetPosition = new TilePosition(9, 77);
 					}
 				} else if (BuildManager.Instance().locationOfBase == 4) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(118, 77);
 					} else {
-
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						targetPosition = new TilePosition(118, 77);
 					}
 				}
 				commandUtil.move(unit, targetPosition.toPosition());
