@@ -50,8 +50,12 @@ public class StrategyManager {
 	private boolean isInitialBuildOrderFinished;
 	// 0709 - 최혜진 추가 배럭 Lifting 여부 체크
 	private boolean isBarrackLifting;
+	// 0721 - 시즈모드 상황 판단
+	private boolean isSiegeMode;
 	// 0709 - FrameCount 저장
 	private int FrameCount;
+	// 0726 - 시즈모드 시간 저장
+	private int SiegeModeCount;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -169,12 +173,12 @@ public class StrategyManager {
 				}
 			} else if (Self.completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
 				// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
-				if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
-						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
-								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-					}
-				}
+//				if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
+//					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
+//						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
+//								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+//					}
+//				}
 			}
 		}
 		if (CountMgr.getCompletedFactory() > 1) {
@@ -256,6 +260,41 @@ public class StrategyManager {
 				}
 			}
 		}
+		if (isFullScaleAttackStarted) {
+			boolean isAttack;
+			if (isSiegeMode) {
+				if (SiegeModeCount++ / 24 < 5) {
+					return;
+				}
+				isAttack = false;
+				for (Unit unit : MyUnits) {
+					if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
+						if (unit.isAttacking() || unit.isUnderAttack()) {
+							isAttack = true;
+							break;
+						}
+					}
+				}
+				if (!isAttack) {
+					isSiegeMode = false;
+				}
+			} else {
+				isAttack = false;
+				for (Unit unit : MyUnits) {
+					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+						if (unit.isAttacking() || unit.isUnderAttack()) {
+							isAttack = true;
+							break;
+						}
+					}
+				}
+				if (isAttack) {
+					isSiegeMode = true;
+					SiegeModeCount = 0;
+				}
+			}
+		}
+
 	}
 
 	// 0712 추가
@@ -911,7 +950,7 @@ public class StrategyManager {
 			// 0628 수정
 			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture,
 					null) < CountMgr.getCompletedFactory() - CountMgr.getCompletedMachineShop()) {
-				BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Vulture,
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Vulture,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			}
 			if (CountMgr.getCompletedMachineShop() > 0) {
@@ -960,7 +999,7 @@ public class StrategyManager {
 			}
 
 			// 0716 수정
-			if (Self.completedUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) > 11) {
+			if (Self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 11) {
 				if (InformationMgr.enemyPlayer != null && InformationMgr.enemyRace != Race.Unknown
 						&& InformationMgr.getOccupiedBaseLocations(InformationMgr.enemyPlayer).size() > 0) {
 					isFullScaleAttackStarted = true;
@@ -986,9 +1025,23 @@ public class StrategyManager {
 
 		}
 		// 공격 모드가 되면, 모든 전투유닛들을 적군 Main BaseLocation 로 공격 가도록 합니다
+		// 0726 추가 - 공격모드가 되면, 모든 시즈탱크가 탱크모드로 변경
 		else
 
 		{
+			if (isSiegeMode) {
+				for (Unit unit : MyUnits) {
+					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+						unit.useTech(TechType.Tank_Siege_Mode);
+					}
+				}
+			} else {
+				for (Unit unit : MyUnits) {
+					if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+						unit.unsiege();
+					}
+				}
+			}
 			// std.cout + "enemy OccupiedBaseLocations : " +
 			// InformationMgr.getOccupiedBaseLocations(InformationMgr._enemy).size()
 			// + std.endl;
@@ -1020,10 +1073,9 @@ public class StrategyManager {
 						if (unit.getType().isWorker()) {
 							continue;
 						}
-
 						// canAttack 유닛은 attackMove Command 로 공격을 보냅니다
 						if (unit.canAttack()) {
-
+							// 0726 추가 - 벌쳐나 골리앗이 먼저 가지 않도록 추가
 							if (unit.isIdle()) {
 								commandUtil.attackMove(unit, targetBaseLocation.getPosition());
 							}
