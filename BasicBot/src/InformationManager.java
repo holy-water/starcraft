@@ -25,38 +25,41 @@ import bwta.Region;
 public class InformationManager {
 	private static InformationManager instance = new InformationManager();
 
-	public Player selfPlayer;		///< 아군 Player		
-	public Player enemyPlayer;		///< 적군 Player		
-	public Race selfRace;			///< 아군 Player의 종족		
-	public Race enemyRace;			///< 적군 Player의 종족
+	public Player selfPlayer; /// < 아군 Player
+	public Player enemyPlayer; /// < 적군 Player
+	public Race selfRace; /// < 아군 Player의 종족
+	public Race enemyRace; /// < 적군 Player의 종족
 
 	/// 해당 Player의 주요 건물들이 있는 BaseLocation. <br>
 	/// 처음에는 StartLocation 으로 지정. mainBaseLocation 내 모든 건물이 파괴될 경우 재지정<br>
-	/// 건물 여부를 기준으로 파악하기 때문에 부적절하게 판단할수도 있습니다 
+	/// 건물 여부를 기준으로 파악하기 때문에 부적절하게 판단할수도 있습니다
 	private Map<Player, BaseLocation> mainBaseLocations = new HashMap<Player, BaseLocation>();
 
-	/// 해당 Player의 mainBaseLocation 이 변경되었는가 (firstChokePoint, secondChokePoint, firstExpansionLocation 를 재지정 했는가)
+	/// 해당 Player의 mainBaseLocation 이 변경되었는가 (firstChokePoint, secondChokePoint,
+	/// firstExpansionLocation 를 재지정 했는가)
 	private Map<Player, Boolean> mainBaseLocationChanged = new HashMap<Player, Boolean>();
 
 	/// 해당 Player가 점령하고 있는 Region 이 있는 BaseLocation<br>
-	/// 건물 여부를 기준으로 파악하기 때문에 부적절하게 판단할수도 있습니다 
+	/// 건물 여부를 기준으로 파악하기 때문에 부적절하게 판단할수도 있습니다
 	private Map<Player, List<BaseLocation>> occupiedBaseLocations = new HashMap<Player, List<BaseLocation>>();
 
 	/// 해당 Player가 점령하고 있는 Region<br>
-	/// 건물 여부를 기준으로 파악하기 때문에 부적절하게 판단할수도 있습니다 
+	/// 건물 여부를 기준으로 파악하기 때문에 부적절하게 판단할수도 있습니다
 	private Map<Player, Set<Region>> occupiedRegions = new HashMap<Player, Set<Region>>();
 
 	/// 해당 Player의 mainBaseLocation 에서 가장 가까운 ChokePoint
 	private Map<Player, Chokepoint> firstChokePoint = new HashMap<Player, Chokepoint>();
 	/// 해당 Player의 mainBaseLocation 에서 가장 가까운 BaseLocation
 	private Map<Player, BaseLocation> firstExpansionLocation = new HashMap<Player, BaseLocation>();
-	/// 해당 Player의 mainBaseLocation 에서 두번째로 가까운 (firstChokePoint가 아닌) ChokePoint<br>
+	/// 해당 Player의 mainBaseLocation 에서 두번째로 가까운 (firstChokePoint가 아닌)
+	/// ChokePoint<br>
 	/// 게임 맵에 따라서, secondChokePoint 는 일반 상식과 다른 지점이 될 수도 있습니다
 	private Map<Player, Chokepoint> secondChokePoint = new HashMap<Player, Chokepoint>();
 
-	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
+	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는
+	/// 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
-	
+
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -70,7 +73,7 @@ public class InformationManager {
 
 		unitData.put(selfPlayer, new UnitData());
 		unitData.put(enemyPlayer, new UnitData());
-		
+
 		occupiedBaseLocations.put(selfPlayer, new ArrayList<BaseLocation>());
 		occupiedBaseLocations.put(enemyPlayer, new ArrayList<BaseLocation>());
 		occupiedRegions.put(selfPlayer, new HashSet());
@@ -82,12 +85,12 @@ public class InformationManager {
 		occupiedBaseLocations.get(selfPlayer).add(mainBaseLocations.get(selfPlayer));
 		if (mainBaseLocations.get(selfPlayer) != null) {
 			updateOccupiedRegions(BWTA.getRegion(mainBaseLocations.get(selfPlayer).getTilePosition()),
-				MyBotModule.Broodwar.self());
+					MyBotModule.Broodwar.self());
 		}
 
 		mainBaseLocations.put(enemyPlayer, null);
 		mainBaseLocationChanged.put(enemyPlayer, new Boolean(false));
-		
+
 		firstChokePoint.put(selfPlayer, null);
 		firstChokePoint.put(enemyPlayer, null);
 		firstExpansionLocation.put(selfPlayer, null);
@@ -96,13 +99,13 @@ public class InformationManager {
 		secondChokePoint.put(enemyPlayer, null);
 
 		updateChokePointAndExpansionLocation();
-		
+
 	}
 
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
-		
+
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
 			updateBaseLocationInfo();
@@ -145,30 +148,35 @@ public class InformationManager {
 	}
 
 	/// Unit 에 대한 정보를 업데이트합니다
-	public void onUnitShow(Unit unit) { 
-		updateUnitInfo(unit); 
+	public void onUnitShow(Unit unit) {
+		updateUnitInfo(unit);
 	}
+
 	/// Unit 에 대한 정보를 업데이트합니다
-	public void onUnitHide(Unit unit) { 
-		updateUnitInfo(unit); 
+	public void onUnitHide(Unit unit) {
+		updateUnitInfo(unit);
 	}
+
 	/// Unit 에 대한 정보를 업데이트합니다
-	public void onUnitCreate(Unit unit) { 
-		updateUnitInfo(unit); 
+	public void onUnitCreate(Unit unit) {
+		updateUnitInfo(unit);
 	}
+
 	/// Unit 에 대한 정보를 업데이트합니다
-	public void onUnitComplete(Unit unit) { 
-		updateUnitInfo(unit); 
+	public void onUnitComplete(Unit unit) {
+		updateUnitInfo(unit);
 	}
+
 	/// Unit 에 대한 정보를 업데이트합니다
-	public void onUnitMorph(Unit unit) { 
-		updateUnitInfo(unit); 
+	public void onUnitMorph(Unit unit) {
+		updateUnitInfo(unit);
 	}
+
 	/// Unit 에 대한 정보를 업데이트합니다
-	public void onUnitRenegade(Unit unit) { 
-		updateUnitInfo(unit); 
+	public void onUnitRenegade(Unit unit) {
+		updateUnitInfo(unit);
 	}
-	
+
 	/// Unit 에 대한 정보를 업데이트합니다 <br>
 	/// 유닛이 파괴/사망한 경우, 해당 유닛 정보를 삭제합니다
 	public void onUnitDestroy(Unit unit) {
@@ -179,7 +187,7 @@ public class InformationManager {
 		unitData.get(unit.getPlayer()).removeUnit(unit);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 position 주위의 유닛 목록을 unitInfo 에 저장합니다		 
+	/// 해당 Player (아군 or 적군) 의 position 주위의 유닛 목록을 unitInfo 에 저장합니다
 	public void getNearbyForce(Vector<UnitInfo> unitInfo, Position p, Player player, int radius) {
 		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
 
@@ -217,94 +225,72 @@ public class InformationManager {
 		return getUnitData(player).getNumUnits(t.toString());
 	}
 
-	/// 해당 Player (아군 or 적군) 의 모든 유닛 통계 UnitData 을 리턴합니다		 
+	/// 해당 Player (아군 or 적군) 의 모든 유닛 통계 UnitData 을 리턴합니다
 	public final UnitData getUnitData(Player player) {
 		return unitData.get(player);
 	}
-	
+
 	/// 적의 본진으로부터 아군의 가장 가까운 유닛 리턴
-	public Unit getClosestUnitFromEnemyBaseLocation() {
+	public Unit getClosestUnitFromEnemyBaseLocation(UnitType unitType) {
 		// 적의 본진
 		BaseLocation enemyBaseLocation = getMainBaseLocation(enemyPlayer);
 
 		Unit closestUnit = null;
 		double closestDist = 10000;
 
-		for (Unit unit : enemyPlayer.getUnits()) {
-			double dist = unit.getDistance(enemyBaseLocation.getPosition());
-
-			if ((dist < 400) && (closestUnit == null || (dist < closestDist))) {
-				closestUnit = unit;
-				closestDist = dist;
+		// 0728 수정 - 적군 유닛이 아니라 아군 유닛으로 변경
+		for (Unit unit : selfPlayer.getUnits()) {
+			if (unitType == null || unit.getType() == unitType) {
+				double dist = unit.getDistance(enemyBaseLocation.getPosition());
+				if (closestUnit == null || (dist < closestDist)) {
+					closestUnit = unit;
+					closestDist = dist;
+				}
 			}
 		}
 
 		return closestUnit;
 	}
-	
+
 	/// 우리 유닛의 일정 거리 이내에 적이 있는가 체크하는 메소드
-	public boolean isEnemyUnitInRadius(Unit unit) {
-		if (unit == null) return false;
-		
-		boolean flag = false;
-		
+	public boolean isEnemyUnitInRadius(Unit targetUnit) {
+		if (targetUnit == null)
+			return false;
+
 		// 반경 8 타일 이내에 있는 unit list
-		List<Unit> list = unit.getUnitsInRadius(8 * Config.TILE_SIZE);
-		
+		List<Unit> list = targetUnit.getUnitsInRadius(8 * Config.TILE_SIZE);
+
 		// 적 유닛이 있는지 확인
-		for (Unit u: list) {
-			if (u.getPlayer() == enemyPlayer) {
-				flag = true;
-				break;
+		for (Unit unit : list) {
+			if (unit.getPlayer() == enemyPlayer) {
+				return true;
 			}
 		}
-		
-		return flag;
+
+		return false;
 	}
-	
+
 	// 한 지역 내에서 아군 또는 적군의 병력 계산 - 가중치 부여
 	public int getForcePoint(Region region, Player player) {
-			
+
 		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
 		int forcePoint = 0;
-		
-		while (it.hasNext())
-		{
+
+		while (it.hasNext()) {
 			UnitInfo ui = getUnitData(player).getUnitAndUnitInfoMap().get(it.next());
-			
+
 			// 유닛이 해당 지역에 들어와있는지 확인
-			if (BWTA.getRegion(ui.getLastPosition()) == region)
-			{
+			if (BWTA.getRegion(ui.getLastPosition()) == region) {
 				// 전투 유닛인 경우만 고려
-				if (isCombatUnitType(ui.getType()) && ui.isCompleted())
-				{
+				if (isCombatUnitType(ui.getType()) && ui.isCompleted()) {
 					// TODO 타입은 나중에 다시 계산
-					forcePoint++; 
-				}				
+					forcePoint++;
+				}
 			}
 		}
 		return forcePoint;
 	}
-	
-	// 본진 내에 적군 저글링이 있는지 체크
-	public boolean isZerglingInMainBaseLocation() {
-		
-		Iterator<Integer> it = getUnitData(enemyPlayer).getUnitAndUnitInfoMap().keySet().iterator();
-		
-		while (it.hasNext())
-		{
-			UnitInfo ui = getUnitData(enemyPlayer).getUnitAndUnitInfoMap().get(it.next());
-			
-			// 유닛이 본진에 들어와있는지 확인
-			if (BWTA.getRegion(ui.getLastPosition()) == mainBaseLocations.get(selfPlayer).getRegion())
-			{
-				if (ui.getType() == UnitType.Zerg_Zergling)	return true;	
-			}
-		}
-		
-		return false;
-	}
-	
+
 	// 드랍 상황인지 체크하는 메소드
 	// 본진에 드랍쉽, 셔틀, 오버로드가 있을 경우에 true 반환
 	public String getDropSituation() {
@@ -312,15 +298,15 @@ public class InformationManager {
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
 				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
 						|| unit.getType() == UnitType.Zerg_Overlord) {
-					if(unit.getSpaceRemaining() < 8) {
-						return "99";	// 위험상황(드랍)
+					if (unit.getSpaceRemaining() < 8) {
+						return "99"; // 위험상황(드랍)
 					} else {
-						return "01";	// 정찰
+						return "01"; // 정찰
 					}
 				}
 			}
 		}
-		return "00";	// 드랍 상황 무관
+		return "00"; // 드랍 상황 무관
 	}
 
 	public void updateBaseLocationInfo() {
@@ -368,11 +354,10 @@ public class InformationManager {
 			if (!enemyStartLocationFound && exploredStartLocations == ((int) BWTA.getStartLocations().size() - 1)) {
 				enemyStartLocationFound = true;
 				mainBaseLocations.put(enemyPlayer, unexplored);
-				mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));				
+				mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
 				// C++ : _occupiedBaseLocations[_enemy].push_back(unexplored);
-				if(occupiedBaseLocations.get(enemyPlayer) == null)
-				{
-					occupiedBaseLocations.put(enemyPlayer, new ArrayList<BaseLocation>()); 
+				if (occupiedBaseLocations.get(enemyPlayer) == null) {
+					occupiedBaseLocations.put(enemyPlayer, new ArrayList<BaseLocation>());
 				}
 				occupiedBaseLocations.get(enemyPlayer).add(unexplored);
 			}
@@ -396,38 +381,43 @@ public class InformationManager {
 		// enemy의 mainBaseLocations을 발견한 후, 그곳에 있는 건물을 모두 파괴한 경우
 		// _occupiedBaseLocations 중에서 _mainBaseLocations 를 선정한다
 		if (mainBaseLocations.get(enemyPlayer) != null) {
-			
-			// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
+
+			// BasicBot 1.1 Patch Start
+			// ////////////////////////////////////////////////
 			// 적 MainBaseLocation 업데이트 로직 버그 수정
 
-			// 적군의 빠른 앞마당 건물 건설 + 아군의 가장 마지막 정찰 방문의 경우, 
-			// enemy의 mainBaseLocations를 방문안한 상태에서는 건물이 하나도 없다고 판단하여 mainBaseLocation 을 변경하는 현상이 발생해서
-			// enemy의 mainBaseLocations을 실제 방문했었던 적이 한번은 있어야 한다라는 조건 추가.  
+			// 적군의 빠른 앞마당 건물 건설 + 아군의 가장 마지막 정찰 방문의 경우,
+			// enemy의 mainBaseLocations를 방문안한 상태에서는 건물이 하나도 없다고 판단하여
+			// mainBaseLocation 을 변경하는 현상이 발생해서
+			// enemy의 mainBaseLocations을 실제 방문했었던 적이 한번은 있어야 한다라는 조건 추가.
 			if (MyBotModule.Broodwar.isExplored(mainBaseLocations.get(enemyPlayer).getTilePosition())) {
-		
-				if (existsPlayerBuildingInRegion(BWTA.getRegion(mainBaseLocations.get(enemyPlayer).getTilePosition()), enemyPlayer) == false) {
+
+				if (existsPlayerBuildingInRegion(BWTA.getRegion(mainBaseLocations.get(enemyPlayer).getTilePosition()),
+						enemyPlayer) == false) {
 					for (BaseLocation loaction : occupiedBaseLocations.get(enemyPlayer)) {
-						if (existsPlayerBuildingInRegion(BWTA.getRegion(loaction.getTilePosition()),enemyPlayer)) {
+						if (existsPlayerBuildingInRegion(BWTA.getRegion(loaction.getTilePosition()), enemyPlayer)) {
 							mainBaseLocations.put(enemyPlayer, loaction);
-							mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));				
+							mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
 							break;
 						}
 					}
 				}
 			}
 
-			// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+			// BasicBot 1.1 Patch End
+			// //////////////////////////////////////////////////
 
 		}
 
 		// self의 mainBaseLocations에 대해, 그곳에 있는 건물이 모두 파괴된 경우
 		// _occupiedBaseLocations 중에서 _mainBaseLocations 를 선정한다
 		if (mainBaseLocations.get(selfPlayer) != null) {
-			if (existsPlayerBuildingInRegion(BWTA.getRegion(mainBaseLocations.get(selfPlayer).getTilePosition()), selfPlayer) == false) {
+			if (existsPlayerBuildingInRegion(BWTA.getRegion(mainBaseLocations.get(selfPlayer).getTilePosition()),
+					selfPlayer) == false) {
 				for (BaseLocation loaction : occupiedBaseLocations.get(selfPlayer)) {
 					if (existsPlayerBuildingInRegion(BWTA.getRegion(loaction.getTilePosition()), selfPlayer)) {
 						mainBaseLocations.put(selfPlayer, loaction);
-						mainBaseLocationChanged.put(selfPlayer, new Boolean(true));				
+						mainBaseLocationChanged.put(selfPlayer, new Boolean(true));
 						break;
 					}
 				}
@@ -468,30 +458,34 @@ public class InformationManager {
 
 	public void updateChokePointAndExpansionLocation() {
 		if (mainBaseLocationChanged.get(selfPlayer).booleanValue() == true) {
-		
+
 			if (mainBaseLocations.get(selfPlayer) != null) {
 				BaseLocation sourceBaseLocation = mainBaseLocations.get(selfPlayer);
-	
+
 				firstChokePoint.put(selfPlayer, BWTA.getNearestChokepoint(sourceBaseLocation.getTilePosition()));
-							
+
 				double tempDistance;
 				double closestDistance = 1000000000;
-				for (BaseLocation targetBaseLocation : BWTA.getBaseLocations())
-				{
-					if (targetBaseLocation.getTilePosition().equals(mainBaseLocations.get(selfPlayer).getTilePosition())) continue;
-	
-					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(), targetBaseLocation.getTilePosition());
+				for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+					if (targetBaseLocation.getTilePosition()
+							.equals(mainBaseLocations.get(selfPlayer).getTilePosition()))
+						continue;
+
+					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(),
+							targetBaseLocation.getTilePosition());
 					if (tempDistance < closestDistance && tempDistance > 0) {
 						closestDistance = tempDistance;
 						firstExpansionLocation.put(selfPlayer, targetBaseLocation);
 					}
 				}
-	
+
 				closestDistance = 1000000000;
-				for(Chokepoint chokepoint : BWTA.getChokepoints() ) {
-					if ( chokepoint.getCenter().equals(firstChokePoint.get(selfPlayer).getCenter())) continue;
-	
-					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(), chokepoint.getCenter().toTilePosition());
+				for (Chokepoint chokepoint : BWTA.getChokepoints()) {
+					if (chokepoint.getCenter().equals(firstChokePoint.get(selfPlayer).getCenter()))
+						continue;
+
+					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(),
+							chokepoint.getCenter().toTilePosition());
 					if (tempDistance < closestDistance && tempDistance > 0) {
 						closestDistance = tempDistance;
 						secondChokePoint.put(selfPlayer, chokepoint);
@@ -500,33 +494,36 @@ public class InformationManager {
 			}
 			mainBaseLocationChanged.put(selfPlayer, new Boolean(false));
 		}
-		
+
 		if (mainBaseLocationChanged.get(enemyPlayer).booleanValue() == true) {
 
-	
 			if (mainBaseLocations.get(enemyPlayer) != null) {
 				BaseLocation sourceBaseLocation = mainBaseLocations.get(enemyPlayer);
-	
+
 				firstChokePoint.put(enemyPlayer, BWTA.getNearestChokepoint(sourceBaseLocation.getTilePosition()));
-				
+
 				double tempDistance;
 				double closestDistance = 1000000000;
-				for (BaseLocation targetBaseLocation : BWTA.getBaseLocations())
-				{
-					if (targetBaseLocation.getTilePosition().equals(mainBaseLocations.get(enemyPlayer).getTilePosition())) continue;
-	
-					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(), targetBaseLocation.getTilePosition());
+				for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+					if (targetBaseLocation.getTilePosition()
+							.equals(mainBaseLocations.get(enemyPlayer).getTilePosition()))
+						continue;
+
+					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(),
+							targetBaseLocation.getTilePosition());
 					if (tempDistance < closestDistance && tempDistance > 0) {
 						closestDistance = tempDistance;
 						firstExpansionLocation.put(enemyPlayer, targetBaseLocation);
 					}
 				}
-	
+
 				closestDistance = 1000000000;
-				for(Chokepoint chokepoint : BWTA.getChokepoints() ) {
-					if ( chokepoint.getCenter().equals(firstChokePoint.get(enemyPlayer).getCenter())) continue;
-	
-					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(), chokepoint.getCenter().toTilePosition());
+				for (Chokepoint chokepoint : BWTA.getChokepoints()) {
+					if (chokepoint.getCenter().equals(firstChokePoint.get(enemyPlayer).getCenter()))
+						continue;
+
+					tempDistance = BWTA.getGroundDistance(sourceBaseLocation.getTilePosition(),
+							chokepoint.getCenter().toTilePosition());
 					if (tempDistance < closestDistance && tempDistance > 0) {
 						closestDistance = tempDistance;
 						secondChokePoint.put(enemyPlayer, chokepoint);
@@ -554,7 +551,8 @@ public class InformationManager {
 	/// @param radius TilePosition 단위
 	public boolean hasBuildingAroundBaseLocation(BaseLocation baseLocation, Player player, int radius) {
 
-		// invalid regions aren't considered the same, but they will both be null
+		// invalid regions aren't considered the same, but they will both be
+		// null
 		if (baseLocation == null) {
 			return false;
 		}
@@ -582,7 +580,7 @@ public class InformationManager {
 		}
 		return false;
 	}
-	
+
 	/// 해당 BaseLocation 주위 10타일 반경 내에 player의 건물이 존재하는지 리턴합니다
 	/// @param baseLocation 대상 BaseLocation
 	/// @param player 아군 / 적군
@@ -592,7 +590,8 @@ public class InformationManager {
 
 	/// 해당 Region 에 해당 Player의 건물이 존재하는지 리턴합니다
 	public boolean existsPlayerBuildingInRegion(Region region, Player player) {
-		// invalid regions aren't considered the same, but they will both be null
+		// invalid regions aren't considered the same, but they will both be
+		// null
 		if (region == null || player == null) {
 			return false;
 		}
@@ -602,10 +601,11 @@ public class InformationManager {
 		// for (const auto & kv : unitData.get(self).getUnits())
 		while (it.hasNext()) {
 			final UnitInfo ui = unitData.get(player).getUnitAndUnitInfoMap().get(it.next());
-			if (ui.getType().isBuilding() ) {
-				
+			if (ui.getType().isBuilding()) {
+
 				// Terran 종족의 Lifted 건물의 경우, BWTA.getRegion 결과가 null 이다
-				if (BWTA.getRegion(ui.getLastPosition()) == null) continue;
+				if (BWTA.getRegion(ui.getLastPosition()) == null)
+					continue;
 
 				if (BWTA.getRegion(ui.getLastPosition()) == region) {
 					return true;
@@ -614,25 +614,28 @@ public class InformationManager {
 		}
 		return false;
 	}
-	
+
 	/// 해당 Player의 처음 본진 위치(방향)를 리턴합니다 > 11, 1, 5, 7시로 리턴
 	public int getDirectionOfStartLocation(Player player) {
 		BaseLocation base = BWTA.getStartLocation(player);
 		int x = base.getTilePosition().getX();
 		int y = base.getTilePosition().getY();
-		
-		int direction = 0;	// 방향 리턴값
-		
-		if (x < 64 && y < 64) direction = 11;
-		else if (x > 64 && y < 64) direction = 1;
-		else if (x > 64 && y > 64) direction = 5;
-		else if (x < 64 && y > 64) direction = 7;
-		
+
+		int direction = 0; // 방향 리턴값
+
+		if (x < 64 && y < 64)
+			direction = 11;
+		else if (x > 64 && y < 64)
+			direction = 1;
+		else if (x > 64 && y > 64)
+			direction = 5;
+		else if (x < 64 && y > 64)
+			direction = 7;
+
 		return direction;
 	}
-	
 
-	/// 해당 Player (아군 or 적군) 의 모든 유닛 목록 (가장 최근값) UnitAndUnitInfoMap 을 리턴합니다<br>	 
+	/// 해당 Player (아군 or 적군) 의 모든 유닛 목록 (가장 최근값) UnitAndUnitInfoMap 을 리턴합니다<br>
 	/// 파악된 정보만을 리턴하기 때문에 적군의 정보는 틀린 값일 수 있습니다
 	public final Map<Integer, UnitInfo> getUnitAndUnitInfoMap(Player player) {
 		return getUnitData(player).getUnitAndUnitInfoMap();
@@ -643,27 +646,29 @@ public class InformationManager {
 		return occupiedRegions.get(player);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 건물을 건설해서 점령한 BaseLocation 목록을 리턴합니다		 
+	/// 해당 Player (아군 or 적군) 의 건물을 건설해서 점령한 BaseLocation 목록을 리턴합니다
 	public List<BaseLocation> getOccupiedBaseLocations(Player player) {
 		return occupiedBaseLocations.get(player);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 을 리턴합니다		 
+	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 을 리턴합니다
 	public BaseLocation getMainBaseLocation(Player player) {
 		return mainBaseLocations.get(player);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 에서 가장 가까운 ChokePoint 를 리턴합니다		 
+	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 에서 가장 가까운 ChokePoint 를 리턴합니다
 	public Chokepoint getFirstChokePoint(Player player) {
 		return firstChokePoint.get(player);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 에서 가장 가까운 Expansion BaseLocation 를 리턴합니다		 
+	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 에서 가장 가까운 Expansion
+	/// BaseLocation 를 리턴합니다
 	public BaseLocation getFirstExpansionLocation(Player player) {
 		return firstExpansionLocation.get(player);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 에서 두번째로 가까운 ChokePoint 를 리턴합니다<br>		 
+	/// 해당 Player (아군 or 적군) 의 Main BaseLocation 에서 두번째로 가까운 ChokePoint 를
+	/// 리턴합니다<br>
 	/// 게임 맵에 따라서, secondChokePoint 는 일반 상식과 다른 지점이 될 수도 있습니다
 	public Chokepoint getSecondChokePoint(Player player) {
 		return secondChokePoint.get(player);
@@ -671,20 +676,23 @@ public class InformationManager {
 
 	/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 	public final boolean isCombatUnitType(UnitType type) {
-		if (type == UnitType.Zerg_Lurker /* || type == UnitType.Protoss_Dark_Templar*/) {
+		if (type == UnitType.Zerg_Lurker /*
+											 * || type ==
+											 * UnitType.Protoss_Dark_Templar
+											 */) {
 			return false;
 		}
 
 		// check for various types of combat units
 		if (type.canAttack() || type == UnitType.Terran_Medic || type == UnitType.Protoss_Observer
-				|| type == UnitType.Terran_Bunker || type == UnitType.Zerg_Overlord 
-				|| type == UnitType.Terran_Dropship || type == UnitType.Protoss_Shuttle) {
+				|| type == UnitType.Terran_Bunker || type == UnitType.Zerg_Overlord || type == UnitType.Terran_Dropship
+				|| type == UnitType.Protoss_Shuttle) {
 			return true;
 		}
 
 		return false;
 	}
-	
+
 	// 해당 종족의 UnitType 중 Basic Combat Unit 에 해당하는 UnitType을 리턴합니다
 	public UnitType getBasicCombatUnitType() {
 		return getBasicCombatUnitType(MyBotModule.Broodwar.self().getRace());

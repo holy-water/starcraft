@@ -16,7 +16,11 @@ public class CountManager {
 	private int refinery;
 
 	private int bunker;
-
+	
+	private int academy;
+	
+	private int comsatStation;
+	
 	private int completedFactory;
 
 	private int completedMachineShop;
@@ -88,6 +92,23 @@ public class CountManager {
 		this.bunker++;
 	}
 
+	public int getAcademy() {
+		return academy;
+	}
+
+	public void setAcademy() {
+		this.academy++;
+	}
+	
+	public int getComsatStation() {
+		return comsatStation;
+	}
+
+	public void setComsatStation() {
+		this.comsatStation++;
+	}
+
+	
 	public int getCompletedFactory() {
 		return completedFactory;
 	}

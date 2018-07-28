@@ -167,29 +167,46 @@ public class StrategyManager {
 					CountMgr.setMachineShop();
 				}
 			}
-			if (CountMgr.getEngineeringBay() == 0) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Engineering_Bay, null) == 0) {
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Engineering_Bay,
+
+			if (CountMgr.getAcademy() == 0) {
+				BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+				CountMgr.setAcademy();
+			} else if (Self.completedUnitCount(UnitType.Terran_Academy) > 0) {
+				if (CountMgr.getComsatStation() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
 							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					CountMgr.setEngineeringBay();
+					CountMgr.setComsatStation();
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+							BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+					CountMgr.setComsatStation();
+				} else {
+					if (CountMgr.getEngineeringBay() == 0) {
+						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Engineering_Bay,
+								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+						CountMgr.setEngineeringBay();
+					} else if (Self.completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
+						// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
+						// if (Self.allUnitCount(UnitType.Terran_Missile_Turret)
+						// ==
+						// 0) {
+						// if
+						// (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret,
+						// null) == 0) {
+						// BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
+						// BuildOrderItem.SeedPositionStrategy.SecondChokePoint,
+						// true);
+						// }
+						// }
+					}
 				}
-			} else if (Self.completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
-				// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
-//				if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
-//					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
-//						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
-//								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-//					}
-//				}
 			}
 		}
-		if (CountMgr.getCompletedFactory() > 1) {
+		if (CountMgr.getCompletedMachineShop() > 1) {
 			if (CountMgr.getArmory() == 0) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Armory, null) == 0) {
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					CountMgr.setArmory();
-				}
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Armory,
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+				CountMgr.setArmory();
 			} else if (Self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 				if (Self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) == 0) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) == 0
@@ -263,34 +280,17 @@ public class StrategyManager {
 			}
 		}
 		if (isFullScaleAttackStarted) {
-			boolean isAttack;
 			if (isSiegeMode) {
-				if (SiegeModeCount++ / 24 < 5) {
-					return;
-				}
-				isAttack = false;
-				for (Unit unit : MyUnits) {
-					if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
-						if (unit.isAttacking() || unit.isUnderAttack()) {
-							isAttack = true;
-							break;
-						}
+				if (SiegeModeCount++ / 24 > 5) {
+					Unit unit = InformationMgr
+							.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Siege_Mode);
+					if (!unit.isAttacking() && !unit.isUnderAttack() && unit.getGroundWeaponCooldown() == 0) {
+						isSiegeMode = false;
 					}
-				}
-				if (!isAttack) {
-					isSiegeMode = false;
 				}
 			} else {
-				isAttack = false;
-				for (Unit unit : MyUnits) {
-					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-						if (unit.isAttacking() || unit.isUnderAttack()) {
-							isAttack = true;
-							break;
-						}
-					}
-				}
-				if (isAttack) {
+				if (InformationMgr.isEnemyUnitInRadius(
+						InformationMgr.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Tank_Mode))) {
 					isSiegeMode = true;
 					SiegeModeCount = 0;
 				}
@@ -397,9 +397,9 @@ public class StrategyManager {
 
 		// 0708 - 최혜진 추가 배럭 컨트롤
 		executeBarrackControl();
-		
+
 		// 0728 - 최혜진 추가 Engineering Bay 컨트롤
-		executeEngineeringBayControl();		
+		executeEngineeringBayControl();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -473,8 +473,7 @@ public class StrategyManager {
 				isngineeringBayLifting = true;
 			}
 		}
-	
-		
+
 	}
 
 	// 0712 수정 - 초반뿐만 아니라 전체적으로 상대 빌드를 분석하는 함수
@@ -831,6 +830,10 @@ public class StrategyManager {
 	// 일꾼 계속 추가 생산
 	public void executeWorkerTraining() {
 
+		if(BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) != 0) {
+			return;
+		}
+		
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
@@ -1021,7 +1024,7 @@ public class StrategyManager {
 		}
 
 		// 고급 병력 추가 훈련
-		if (Self.minerals() >= 200 && Self.supplyUsed() < 390) {
+		if (Self.minerals() >= 150 && Self.supplyUsed() < 390) {
 			// 0628 수정
 			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture,
 					null) < CountMgr.getCompletedFactory() - CountMgr.getCompletedMachineShop()) {
@@ -1035,7 +1038,16 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				}
 			}
-
+			for (Unit unit : MyUnits) {
+				if (unit.getType() == UnitType.Terran_Factory) {
+					if (!unit.isTraining()) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture, null) == 0) {
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Vulture,
+									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -1059,8 +1071,8 @@ public class StrategyManager {
 			// 앞마당 랠리 포인트
 			for (Unit unit : MyUnits) {
 				if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
-					if (unit.getType() == UnitType.Terran_Marine) {
-						if (bunker != null) {
+					if (bunker != null) {
+						if (unit.getType() == UnitType.Terran_Marine) {
 							if (bunker.isCompleted()) {
 								commandUtil.rightClick(unit, bunker);
 							} else {
