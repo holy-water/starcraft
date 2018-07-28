@@ -251,7 +251,21 @@ public class InformationManager {
 
 		return closestUnit;
 	}
-
+	
+	/// 특정 위치로부터 일정 거리 이내에 적이 있는가 체크하는 메소드
+	public boolean isEnemyUnitInRadius(Position pos, int tileCnt) {
+		// 반경 tileCnt 타일 이내에 있는 유닛 리스트
+		List<Unit> list = MyBotModule.Broodwar.getUnitsInRadius(pos, tileCnt * Config.TILE_SIZE);
+		
+		// 적 유닛이 있는지 확인
+		for (Unit unit : list) {
+			if (unit.getPlayer() == enemyPlayer) {
+				return true;
+			}
+		}
+		return false;
+	}
+	 
 	/// 우리 유닛의 일정 거리 이내에 적이 있는가 체크하는 메소드
 	public boolean isEnemyUnitInRadius(Unit targetUnit) {
 		if (targetUnit == null)

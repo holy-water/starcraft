@@ -67,7 +67,7 @@ public class WorkerManager {
 		// 본진에 적군 쳐들어온 경우
 		// if 드랍 -> scv 전체 튄다
 		// else -> scv 싸운다
-		if (infoMngr.getForcePoint(mainBaseLocation.getRegion(), MyBotModule.Broodwar.enemy()) > 0) {
+		if (infoMngr.isEnemyUnitInRadius(mainBaseLocation.getPosition(), 10)) {
 			if (infoMngr.getDropSituation() == "99") {
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
