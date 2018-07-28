@@ -50,6 +50,8 @@ public class StrategyManager {
 	private boolean isInitialBuildOrderFinished;
 	// 0709 - 최혜진 추가 배럭 Lifting 여부 체크
 	private boolean isBarrackLifting;
+	// 0728 - 최혜진 추가 Engineering Bay Lifting 여부 체크
+	private boolean isngineeringBayLifting;
 	// 0721 - 시즈모드 상황 판단
 	private boolean isSiegeMode;
 	// 0709 - FrameCount 저장
@@ -395,6 +397,9 @@ public class StrategyManager {
 
 		// 0708 - 최혜진 추가 배럭 컨트롤
 		executeBarrackControl();
+		
+		// 0728 - 최혜진 추가 Engineering Bay 컨트롤
+		executeEngineeringBayControl();		
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -405,6 +410,71 @@ public class StrategyManager {
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
+	}
+
+	private void executeEngineeringBayControl() {
+
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+
+		if (isngineeringBayLifting) {
+			return;
+		}
+
+		// 1초에 한번만 실행
+		if (FrameCount % 24 != 0) {
+			return;
+		}
+
+		for (Unit unit : MyUnits) {
+			if (unit.getType() != UnitType.Terran_Engineering_Bay) {
+				continue;
+			}
+			if (!unit.isLifted()) {
+				unit.lift();
+			} else {
+				TilePosition targetPosition = TilePosition.None;
+				if (BuildManager.Instance().locationOfBase == 1) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						targetPosition = new TilePosition(9, 49);
+					} else {
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
+						targetPosition = new TilePosition(8, 53);
+					}
+				} else if (BuildManager.Instance().locationOfBase == 2) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						targetPosition = new TilePosition(118, 49);
+					} else {
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
+						targetPosition = new TilePosition(71, 8);
+					}
+				} else if (BuildManager.Instance().locationOfBase == 3) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						targetPosition = new TilePosition(9, 77);
+					} else {
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
+						targetPosition = new TilePosition(54, 121);
+					}
+				} else if (BuildManager.Instance().locationOfBase == 4) {
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						targetPosition = new TilePosition(118, 77);
+					} else {
+						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
+						// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
+						targetPosition = new TilePosition(118, 74);
+					}
+				}
+				commandUtil.move(unit, targetPosition.toPosition());
+				isngineeringBayLifting = true;
+			}
+		}
+	
+		
 	}
 
 	// 0712 수정 - 초반뿐만 아니라 전체적으로 상대 빌드를 분석하는 함수
@@ -538,33 +608,38 @@ public class StrategyManager {
 				TilePosition targetPosition = TilePosition.None;
 				// 0714 - 최혜진 수정 배럭스 드는 위치 수정
 				// 0722 - 최혜진 수정 배럭스 드는 위치 절대값 지정
+				// 0728 - 최혜진 수정 배럭스 드는 위치 수정
 				if (BuildManager.Instance().locationOfBase == 1) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(9, 49);
+						targetPosition = new TilePosition(32, 40);
 					} else {
 						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
-						targetPosition = new TilePosition(9, 49);
+						// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
+						targetPosition = new TilePosition(28, 45);
 					}
 				} else if (BuildManager.Instance().locationOfBase == 2) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(118, 49);
+						targetPosition = new TilePosition(95, 40);
 					} else {
 						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
-						targetPosition = new TilePosition(118, 49);
+						// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
+						targetPosition = new TilePosition(82, 26);
 					}
 				} else if (BuildManager.Instance().locationOfBase == 3) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(9, 77);
+						targetPosition = new TilePosition(33, 89);
 					} else {
 						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
-						targetPosition = new TilePosition(9, 77);
+						// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
+						targetPosition = new TilePosition(45, 102);
 					}
 				} else if (BuildManager.Instance().locationOfBase == 4) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						targetPosition = new TilePosition(118, 77);
+						targetPosition = new TilePosition(94, 89);
 					} else {
 						// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
-						targetPosition = new TilePosition(118, 77);
+						// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
+						targetPosition = new TilePosition(98, 83);
 					}
 				}
 				commandUtil.move(unit, targetPosition.toPosition());
