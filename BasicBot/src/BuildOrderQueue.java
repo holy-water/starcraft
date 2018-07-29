@@ -13,7 +13,8 @@ import bwapi.UpgradeType;
 public class BuildOrderQueue {
 	
 	// 0723 - 최혜진 수정 4드론 시 벙커 위치 위한 BunkerForZerg 전략 추가
-	private enum SeedPositionStrategy { MainBaseLocation, MainBaseBackYard, FirstChokePoint, FirstExpansionLocation, SecondChokePoint, SeedPositionSpecified, BunkerForZerg };
+	// 0729 - 최혜진 수정 본진과 앞마당 둘러싸기 위한 TurretAround 전략 추가
+	private enum SeedPositionStrategy { MainBaseLocation, MainBaseBackYard, FirstChokePoint, FirstExpansionLocation, SecondChokePoint, SeedPositionSpecified, BunkerForZerg,TurretAround };
 	private SeedPositionStrategy seedLocationStrategy;
 
 	private int highestPriority;

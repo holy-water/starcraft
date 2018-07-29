@@ -3,6 +3,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.plaf.synth.SynthSpinnerUI;
+
 import bwapi.Pair;
 import bwapi.Player;
 import bwapi.Position;
@@ -35,6 +37,13 @@ public class BuildManager {
 	private static boolean isBarrackBuilt = false;
 	// 0704 - 김성수 수정 StrategyManager에서 사용
 	public int locationOfBase = 0;
+
+	// 0729 - 최혜진 추가
+	public static int numberOfTurretBuilt = 0;
+	private static int[] turretXLocationForCircuit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
+	private static int[] turretYLocationForCircuit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
+	private static int[] turretXLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] turretYLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	/// BuildOrderItem 들의 목록을 저장하는 buildQueue
 	public BuildOrderQueue buildQueue = new BuildOrderQueue();
@@ -1068,10 +1077,10 @@ public class BuildManager {
 						blockx = tempFirstExpansion.getTilePosition().getX() + 2;
 						blocky = tempFirstExpansion.getTilePosition().getY() - 5;
 					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() +5;
-						blocky = tempFirstExpansion.getTilePosition().getY() +4;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 5;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() -7;
+						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
 						blocky = tempFirstExpansion.getTilePosition().getY() + 1;
 					} else if (locationOfBase == 4) {
 						blockx = tempFirstExpansion.getTilePosition().getX() - 2;
@@ -1120,6 +1129,81 @@ public class BuildManager {
 			tempTilePosition = new TilePosition(bunkerx, bunkery);
 			seedPosition = tempTilePosition.toPosition();
 			break;
+
+		// 0729 - 최혜진 추가 본진 및 앞마당 방어를 위한 Turret 건설 전략
+		case TurretAround:
+			TilePosition desiredPosition = TilePosition.None;
+			int turretx = 0;
+			int turrety = 0;
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				if (locationOfBase == 1) {
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForCircuit[numberOfTurretBuilt % 4];
+						turrety = turretYLocationForCircuit[numberOfTurretBuilt % 4];
+					}
+				} else if (locationOfBase == 2) {
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
+						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
+					}
+				} else if (locationOfBase == 3) {
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
+						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
+					}
+				} else if (locationOfBase == 4) {
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
+						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
+					}
+					
+				}
+			} else {
+				if (locationOfBase == 1) {
+
+				} else if (locationOfBase == 2) {
+
+				} else if (locationOfBase == 3) {
+
+				} else if (locationOfBase == 4) {
+
+				}
+			}
+			tempTilePosition = new TilePosition(turretx, turrety);
+			seedPosition = tempTilePosition.toPosition();
+			//System.out.println(MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Missile_Turret));
+			//System.out.println(tempTilePosition.getX()+" "+tempTilePosition.getY());
+			numberOfTurretBuilt++;
+			break;
+
 		}
 
 		return seedPosition;

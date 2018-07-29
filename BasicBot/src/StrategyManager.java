@@ -58,6 +58,8 @@ public class StrategyManager {
 	private int FrameCount;
 	// 0726 - 시즈모드 시간 저장
 	private int SiegeModeCount;
+	// 0729 - 최혜진 추가 Turret 건설 개수
+	private int numberOfTurretBuilt;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -187,15 +189,20 @@ public class StrategyManager {
 						CountMgr.setEngineeringBay();
 					} else if (Self.completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
 						// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
-						// if (Self.allUnitCount(UnitType.Terran_Missile_Turret)
-						// ==
-						// 0) {
+						// 0729 - 최혜진 테스트
+						if (numberOfTurretBuilt < 4) {
+							if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
+								BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
+										BuildOrderItem.SeedPositionStrategy.TurretAround, true);
+								numberOfTurretBuilt++;
+							}
+						}
+						// if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
 						// if
 						// (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret,
 						// null) == 0) {
 						// BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
-						// BuildOrderItem.SeedPositionStrategy.SecondChokePoint,
-						// true);
+						// BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
 						// }
 						// }
 					}
@@ -830,10 +837,10 @@ public class StrategyManager {
 	// 일꾼 계속 추가 생산
 	public void executeWorkerTraining() {
 
-		if(BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) != 0) {
+		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) != 0) {
 			return;
 		}
-		
+
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;

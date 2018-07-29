@@ -45,6 +45,13 @@ public class ConstructionPlaceFinder {
 	private static int numberOfSupply = 0;
 	private static boolean isBarrackBuilt = false; // 0703 - 최혜진 추가
 
+	// 0729 - 최혜진 추가
+	public static int numberOfTurretBuilt = 0;
+	private static int[] turretXLocationForCircuit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
+	private static int[] turretYLocationForCircuit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
+	private static int[] turretXLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] turretYLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
 		if (isInitialized == false) {
@@ -492,6 +499,85 @@ public class ConstructionPlaceFinder {
 				}
 				tempTilePosition = new TilePosition(bunkerx, bunkery);
 				desiredPosition = tempTilePosition.getPoint();
+				break;
+			// 0729 - 최혜진 추가 본진 및 앞마당 방어를 위한 Turret 건설 전략
+			case TurretAround:
+				int turretx = 0;
+				int turrety = 0;
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (locationOfBase == 1) {
+						if (numberOfTurretBuilt % 4 == 1) {
+							tempChokePoint = InformationManager.Instance()
+									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							if (tempChokePoint != null) {
+								desiredPosition = getBuildLocationNear(buildingType,
+										tempChokePoint.getCenter().toTilePosition());
+								turretx = desiredPosition.getX();
+								turrety = desiredPosition.getY();
+							}
+						} else {
+							turretx = turretXLocationForCircuit[numberOfTurretBuilt % 4];
+							turrety = turretYLocationForCircuit[numberOfTurretBuilt % 4];
+						}
+					} else if (locationOfBase == 2) {
+						if (numberOfTurretBuilt % 4 == 1) {
+							tempChokePoint = InformationManager.Instance()
+									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							if (tempChokePoint != null) {
+								desiredPosition = getBuildLocationNear(buildingType,
+										tempChokePoint.getCenter().toTilePosition());
+								turretx = desiredPosition.getX();
+								turrety = desiredPosition.getY();
+							}
+						} else {
+							turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
+							turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
+						}
+					} else if (locationOfBase == 3) {
+						if (numberOfTurretBuilt % 4 == 1) {
+							tempChokePoint = InformationManager.Instance()
+									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							if (tempChokePoint != null) {
+								desiredPosition = getBuildLocationNear(buildingType,
+										tempChokePoint.getCenter().toTilePosition());
+								turretx = desiredPosition.getX();
+								turrety = desiredPosition.getY();
+							}
+						} else {
+							turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
+							turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
+						}
+					} else if (locationOfBase == 4) {
+						if (numberOfTurretBuilt % 4 == 1) {
+							tempChokePoint = InformationManager.Instance()
+									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							if (tempChokePoint != null) {
+								desiredPosition = getBuildLocationNear(buildingType,
+										tempChokePoint.getCenter().toTilePosition());
+								turretx = desiredPosition.getX();
+								turrety = desiredPosition.getY();
+							}
+						} else {
+							turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
+							turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
+						}
+					}
+				} else {
+					if (locationOfBase == 1) {
+
+					} else if (locationOfBase == 2) {
+
+					} else if (locationOfBase == 3) {
+
+					} else if (locationOfBase == 4) {
+
+					}
+				}
+
+				tempTilePosition = new TilePosition(turretx, turrety);
+				desiredPosition = tempTilePosition.getPoint();
+				//System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
+				numberOfTurretBuilt++;
 				break;
 			}
 		}
