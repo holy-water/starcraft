@@ -2,13 +2,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Vector;
-
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Race;
@@ -58,8 +53,6 @@ public class StrategyManager {
 	private int FrameCount;
 	// 0726 - 시즈모드 시간 저장
 	private int SiegeModeCount;
-	// 0729 - 최혜진 추가 Turret 건설 개수
-	private int numberOfTurretBuilt;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -190,21 +183,14 @@ public class StrategyManager {
 					} else if (Self.completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
 						// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
 						// 0729 - 최혜진 테스트
-						if (numberOfTurretBuilt < 4) {
-							if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
+						if (CountMgr.getTurret() < 4) {
+							if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret,
+									null) == 0) {
 								BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
 										BuildOrderItem.SeedPositionStrategy.TurretAround, true);
-								numberOfTurretBuilt++;
+								CountMgr.setTurret();
 							}
 						}
-						// if (Self.allUnitCount(UnitType.Terran_Missile_Turret) == 0) {
-						// if
-						// (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret,
-						// null) == 0) {
-						// BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
-						// BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
-						// }
-						// }
 					}
 				}
 			}
@@ -215,27 +201,48 @@ public class StrategyManager {
 						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 				CountMgr.setArmory();
 			} else if (Self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-				if (Self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) == 0) {
+				if (Self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) < 3) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) == 0
 							&& !Self.isUpgrading(UpgradeType.Terran_Vehicle_Weapons)) {
 						// 메카닉 공격력 업그레이드
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Terran_Vehicle_Weapons,
 								true);
+					} else {
+						if (CountMgr.getStarport() == 0) {
+							BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Starport,
+									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							CountMgr.setStarport();
+						} else if (Self.completedUnitCount(UnitType.Terran_Starport) > 0) {
+							if (CountMgr.getArmory() < 2) {
+								BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Armory,
+										BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+								CountMgr.setArmory();
+							}
+							if (CountMgr.getScienceFacility() == 0) {
+								BuildManager.Instance().buildQueue.queueAsLowestPriority(
+										UnitType.Terran_Science_Facility,
+										BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+								CountMgr.setScienceFacility();
+							}
+						}
 					}
-				} else if (Self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) == 0) {
-					if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) == 0
-							&& !Self.isUpgrading(UpgradeType.Terran_Vehicle_Plating)) {
-						// 메카닉 방어력 업그레이드
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Terran_Vehicle_Plating,
-								true);
+				}
+				if (Self.completedUnitCount(UnitType.Terran_Armory) > 1) {
+					if (Self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) < 3) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) == 0
+								&& !Self.isUpgrading(UpgradeType.Terran_Vehicle_Plating)) {
+							// 메카닉 방어력 업그레이드
+							BuildManager.Instance().buildQueue
+									.queueAsHighestPriority(UpgradeType.Terran_Vehicle_Plating, true);
+						}
 					}
 				}
 			}
 		}
 		// 0721 수정
 		if (CountMgr.getMachineShop() > 1) {
-			if (CountMgr.getFactory() > 0) {
-				if (Self.minerals() / CountMgr.getFactory() >= 300 && Self.gas() / CountMgr.getMachineShop() >= 150) {
+			if (CountMgr.getFactory() < Self.completedUnitCount(UnitType.Terran_Command_Center) * 4) {
+				if (Self.minerals() >= 600 && Self.gas() >= 200) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 						// 0702 - 최혜진 수정 입구로
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
@@ -286,9 +293,15 @@ public class StrategyManager {
 				}
 			}
 		}
+
+		// 1초에 한번만 실행
+		if (FrameCount % 24 != 0) {
+			return;
+		}
+
 		if (isFullScaleAttackStarted) {
 			if (isSiegeMode) {
-				if (SiegeModeCount++ / 24 > 5) {
+				if (SiegeModeCount++ > 5) {
 					Unit unit = InformationMgr
 							.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Siege_Mode);
 					if (!unit.isAttacking() && !unit.isUnderAttack() && unit.getGroundWeaponCooldown() == 0) {
@@ -867,35 +880,7 @@ public class StrategyManager {
 			if (workerCount < 50) {
 				for (Unit unit : MyUnits) {
 					if (unit.getType().isResourceDepot()) {
-						// 0628 최혜진 수정 - 기존에 빌드큐에 하나씩 무조건 넣어놓는 로직 삭제 후 직접 명령을
-						// 내리는 방식으로 소스 추가
-						// if (unit.isTraining() == false ||
-						// unit.getLarva().size() > 0) {
-						// 빌드큐에 일꾼 생산이 1개는 있도록 한다
-						// if (BuildManager.Instance().buildQueue
-						// .getItemCount(UnitType.Terran_SCV,
-						// null) == 0) {
-						// // std.cout + "worker enqueue" + std.endl;
-						// BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						// new
-						// MetaType(UnitType.Terran_SCV),
-						// false);
-						// }
-
-						// for (Unit unit :
-						// Self.getUnits()) {
-						//
-						// // 건물이고 트레이닝 할 수 있는 경우
-						// if (unit.getType().isBuilding()) {
-						// if(unit.canTrain()) {
-						// System.out.println(unit.getTrainingQueue().size());
 						unit.train(UnitType.Terran_SCV);
-						// }
-						// }
-						//
-						// }
-
-						// }
 					}
 				}
 			}
@@ -939,13 +924,10 @@ public class StrategyManager {
 		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
 		if (Self.supplyTotal() <= 400) {
 
-			// 0710 추가
-			int barracksCount = Self.allUnitCount(UnitType.Terran_Barracks);
-
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
 			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
-			int supplyMargin = 8 + (barracksCount * 4) + (CountMgr.getFactory() * 8);
+			int supplyMargin = 10 + (CountMgr.getFactory() * 4);
 
 			// currentSupplyShortage 를 계산한다
 			int currentSupplyShortage = Self.supplyUsed() + supplyMargin - Self.supplyTotal();
@@ -962,14 +944,7 @@ public class StrategyManager {
 						.getConstructionQueueItemCount(InformationMgr.getBasicSupplyProviderUnitType(), null)
 						* InformationMgr.getBasicSupplyProviderUnitType().supplyProvided();
 
-				// 주석처리
-				// System.out.println("currentSupplyShortage : " +
-				// currentSupplyShortage + " onBuildingSupplyCount : " +
-				// onBuildingSupplyCount);
-
 				if (currentSupplyShortage > onBuildingSupplyCount) {
-
-					// BuildQueue 최상단에 SupplyProvider 가 있지 않으면 enqueue 한다
 					boolean isToEnqueue = true;
 					if (!BuildManager.Instance().buildQueue.isEmpty()) {
 						BuildOrderItem currentItem = BuildManager.Instance().buildQueue.getHighestPriorityItem();
@@ -979,15 +954,6 @@ public class StrategyManager {
 						}
 					}
 					if (isToEnqueue) {
-						// 주석처리
-						// System.out.println("enqueue supply provider "
-						// +
-						// 0702 - 최혜진 수정 Supply Depot을 정렬하여 짓기 위해 기존 소스 수정
-						// InformationMgr.getBasicSupplyProviderUnitType());
-						// BuildManager.Instance().buildQueue.queueAsHighestPriority(
-						// new
-						// MetaType(InformationMgr.getBasicSupplyProviderUnitType()),
-						// true);
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(
 								InformationMgr.getBasicSupplyProviderUnitType(),
 								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
@@ -1031,26 +997,15 @@ public class StrategyManager {
 		}
 
 		// 고급 병력 추가 훈련
-		if (Self.minerals() >= 150 && Self.supplyUsed() < 390) {
-			// 0628 수정
-			if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture,
-					null) < CountMgr.getCompletedFactory() - CountMgr.getCompletedMachineShop()) {
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Vulture,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-			}
-			if (CountMgr.getCompletedMachineShop() > 0) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Siege_Tank_Tank_Mode,
-						null) < CountMgr.getCompletedMachineShop()) {
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Siege_Tank_Tank_Mode,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				}
-			}
+		if (Self.minerals() >= 200 && Self.supplyUsed() < 390) {
 			for (Unit unit : MyUnits) {
 				if (unit.getType() == UnitType.Terran_Factory) {
-					if (!unit.isTraining()) {
-						if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Vulture, null) == 0) {
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Vulture,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					unit.setRallyPoint(InformationMgr.getSecondChokePoint(InformationMgr.selfPlayer).getCenter());
+					if (unit.isCompleted() && !unit.isTraining()) {
+						if (Self.gas() >= 100 && unit.getAddon() != null) {
+							unit.train(UnitType.Terran_Siege_Tank_Tank_Mode);
+						} else {
+							unit.train(UnitType.Terran_Vulture);
 						}
 					}
 				}
@@ -1078,16 +1033,16 @@ public class StrategyManager {
 			// 앞마당 랠리 포인트
 			for (Unit unit : MyUnits) {
 				if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
-					if (bunker != null) {
-						if (unit.getType() == UnitType.Terran_Marine) {
+					if (unit.getType() == UnitType.Terran_Marine) {
+						if (bunker != null) {
 							if (bunker.isCompleted()) {
 								commandUtil.rightClick(unit, bunker);
 							} else {
 								commandUtil.attackMove(unit, bunker.getPosition());
 							}
+						} else {
+							commandUtil.attackMove(unit, secondChokePoint.getCenter());
 						}
-					} else {
-						commandUtil.attackMove(unit, secondChokePoint.getCenter());
 					}
 				}
 			}

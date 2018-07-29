@@ -105,9 +105,10 @@ public class BuildManager {
 
 			/*
 			 * if (currentItem.metaType.isUnit() &&
-			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer != null) {
-			 * System.out.println("Build " + currentItem.metaType.getName() + " producer : "
-			 * + producer.getType() + " ID : " + producer.getID()); } else {
+			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer
+			 * != null) { System.out.println("Build " +
+			 * currentItem.metaType.getName() + " producer : " +
+			 * producer.getType() + " ID : " + producer.getID()); } else {
 			 * System.out.println("Build " + currentItem.metaType.getName() +
 			 * " producer null"); } }
 			 */
@@ -125,8 +126,9 @@ public class BuildManager {
 
 				/*
 				 * if (currentItem.metaType.isUnit() &&
-				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout + "Build " +
-				 * currentItem.metaType.getName() + " canMakeNow : " + canMake + std::endl; }
+				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout
+				 * + "Build " + currentItem.metaType.getName() +
+				 * " canMakeNow : " + canMake + std::endl; }
 				 */
 
 				// 프로토스 종족 유닛 중 Protoss_Archon / Protoss_Dark_Archon 은 기존
@@ -305,7 +307,7 @@ public class BuildManager {
 
 			if (unit == null)
 				continue;
-
+			
 			// reasons a unit can not train the desired type
 			if (unit.getType() != producerType) {
 				continue;
@@ -331,6 +333,11 @@ public class BuildManager {
 				continue;
 			}
 
+			// 0729 추가 - 업그레이드 진행 중인 아모리는 후보에서 제외
+			if (unit.isUpgrading()) {
+				continue;
+			}
+			
 			// 0722 추가 - 탱크나 골리앗을 생산할 때 팩토리에 머신샵이 설치되어 있지 않다면 해당 팩토리는 후보에서 제외
 			if (t.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || t.getUnitType() == UnitType.Terran_Goliath) {
 				if (unit.getAddon() == null || !unit.isCompleted()
@@ -568,8 +575,8 @@ public class BuildManager {
 		// "+desiredPosition.getY());
 		/*
 		 * std::cout +
-		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
-		 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
+		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
+		 * + unitType.getName().c_str() + " strategy " + seedPositionStrategy +
 		 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
 		 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
 		 * std::endl;
@@ -605,11 +612,11 @@ public class BuildManager {
 						.getBuildLocationWithSeedPositionAndStrategy(unitType, seedPosition, seedPositionStrategy);
 				/*
 				 * std::cout +
-				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
-				 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
-				 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
-				 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
-				 * std::endl;
+				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
+				 * + unitType.getName().c_str() + " strategy " +
+				 * seedPositionStrategy + " seedPosition " + seedPosition.x +
+				 * "," + seedPosition.y + " desiredPosition " +
+				 * desiredPosition.x + "," + desiredPosition.y + std::endl;
 				 */
 			}
 			// 다른 곳을 더 찾아보지 않고, 끝낸다
@@ -1140,7 +1147,8 @@ public class BuildManager {
 					if (numberOfTurretBuilt % 4 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1152,7 +1160,8 @@ public class BuildManager {
 					if (numberOfTurretBuilt % 4 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1164,7 +1173,8 @@ public class BuildManager {
 					if (numberOfTurretBuilt % 4 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1176,7 +1186,8 @@ public class BuildManager {
 					if (numberOfTurretBuilt % 4 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1184,7 +1195,7 @@ public class BuildManager {
 						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
 						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
 					}
-					
+
 				}
 			} else {
 				if (locationOfBase == 1) {
@@ -1199,8 +1210,10 @@ public class BuildManager {
 			}
 			tempTilePosition = new TilePosition(turretx, turrety);
 			seedPosition = tempTilePosition.toPosition();
-			//System.out.println(MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Missile_Turret));
-			//System.out.println(tempTilePosition.getX()+" "+tempTilePosition.getY());
+			// System.out.println(MyBotModule.Broodwar.canBuildHere(tempTilePosition,
+			// UnitType.Terran_Missile_Turret));
+			// System.out.println(tempTilePosition.getX()+"
+			// "+tempTilePosition.getY());
 			numberOfTurretBuilt++;
 			break;
 
@@ -1328,10 +1341,12 @@ public class BuildManager {
 					int requiredSupply = unitType.supplyRequired();
 
 					/*
-					 * std::cout + "To make " + unitType.getName() + ", producerType " +
-					 * producerType.getName() + " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * std::cout + "To make " + unitType.getName() +
+					 * ", producerType " + producerType.getName() +
+					 * " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * MyBotModule.Broodwar.self().incompleteUnitCount(
 					 * producerType) + std::endl;
 					 */
 
@@ -1405,10 +1420,14 @@ public class BuildManager {
 							if (requiredUnitType != UnitType.None) {
 
 								/*
-								 * std::cout + "pre requiredUnitType " + requiredUnitType.getName() +
-								 * " completedUnitCount " + MyBotModule.Broodwar.self().
-								 * completedUnitCount(requiredUnitType) + " incompleteUnitCount " +
-								 * MyBotModule.Broodwar.self(). incompleteUnitCount(requiredUnitType) +
+								 * std::cout + "pre requiredUnitType " +
+								 * requiredUnitType.getName() +
+								 * " completedUnitCount " +
+								 * MyBotModule.Broodwar.self().
+								 * completedUnitCount(requiredUnitType) +
+								 * " incompleteUnitCount " +
+								 * MyBotModule.Broodwar.self().
+								 * incompleteUnitCount(requiredUnitType) +
 								 * std::endl;
 								 */
 
@@ -1536,12 +1555,16 @@ public class BuildManager {
 					UnitType requiredUnitType = techType.requiredUnit();
 
 					/*
-					 * System.out.println("To research " + techType.toString() + ", hasResearched "
-					 * + MyBotModule.Broodwar.self().hasResearched(techType) + ", isResearching " +
-					 * MyBotModule.Broodwar.self().isResearching(techType) + ", producerType " +
-					 * producerType.toString() + " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * System.out.println("To research " + techType.toString() +
+					 * ", hasResearched " +
+					 * MyBotModule.Broodwar.self().hasResearched(techType) +
+					 * ", isResearching " +
+					 * MyBotModule.Broodwar.self().isResearching(techType) +
+					 * ", producerType " + producerType.toString() +
+					 * " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * MyBotModule.Broodwar.self().incompleteUnitCount(
 					 * producerType));
 					 */
 
@@ -1591,10 +1614,12 @@ public class BuildManager {
 						}
 					} else if (requiredUnitType != UnitType.None) {
 						/*
-						 * std::cout + "To research " + techType.getName() + ", requiredUnitType " +
-						 * requiredUnitType.getName() + " completedUnitCount " +
-						 * MyBotModule.Broodwar.self().completedUnitCount( requiredUnitType) +
-						 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
+						 * std::cout + "To research " + techType.getName() +
+						 * ", requiredUnitType " + requiredUnitType.getName() +
+						 * " completedUnitCount " +
+						 * MyBotModule.Broodwar.self().completedUnitCount(
+						 * requiredUnitType) + " incompleteUnitCount " +
+						 * MyBotModule.Broodwar.self().incompleteUnitCount(
 						 * requiredUnitType) + std::endl;
 						 */
 
@@ -1616,14 +1641,17 @@ public class BuildManager {
 					UnitType requiredUnitType = upgradeType.whatsRequired();
 
 					/*
-					 * std::cout + "To upgrade " + upgradeType.getName() + ", maxLevel " + maxLevel
-					 * + ", currentLevel " + currentLevel + ", isUpgrading " +
-					 * MyBotModule.Broodwar.self().isUpgrading(upgradeType) + ", producerType " +
-					 * producerType.getName() + " completedUnitCount " +
-					 * MyBotModule.Broodwar.self().completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + MyBotModule.Broodwar.self().incompleteUnitCount(
-					 * producerType) + ", requiredUnitType " + requiredUnitType.getName() +
-					 * std::endl;
+					 * std::cout + "To upgrade " + upgradeType.getName() +
+					 * ", maxLevel " + maxLevel + ", currentLevel " +
+					 * currentLevel + ", isUpgrading " +
+					 * MyBotModule.Broodwar.self().isUpgrading(upgradeType) +
+					 * ", producerType " + producerType.getName() +
+					 * " completedUnitCount " +
+					 * MyBotModule.Broodwar.self().completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * MyBotModule.Broodwar.self().incompleteUnitCount(
+					 * producerType) + ", requiredUnitType " +
+					 * requiredUnitType.getName() + std::endl;
 					 */
 
 					if (currentLevel >= maxLevel || MyBotModule.Broodwar.self().isUpgrading(upgradeType)) {

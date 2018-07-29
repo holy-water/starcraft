@@ -16,11 +16,17 @@ public class CountManager {
 	private int refinery;
 
 	private int bunker;
-	
+
 	private int academy;
-	
+
+	private int starport;
+
+	private int turret;
+
+	private int scienceFacility;
+
 	private int comsatStation;
-	
+
 	private int completedFactory;
 
 	private int completedMachineShop;
@@ -32,7 +38,7 @@ public class CountManager {
 		this.factory = Math.max(this.factory, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Factory));
 
 		this.refinery = Math.max(this.refinery, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Refinery));
-		
+
 		this.bunker = Math.max(this.bunker, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Bunker));
 
 		this.completedMachineShop = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Machine_Shop);
@@ -99,7 +105,23 @@ public class CountManager {
 	public void setAcademy() {
 		this.academy++;
 	}
-	
+
+	public int getStarport() {
+		return starport;
+	}
+
+	public void setStarport() {
+		this.starport++;
+	}
+
+	public int getScienceFacility() {
+		return scienceFacility;
+	}
+
+	public void setScienceFacility() {
+		this.scienceFacility++;
+	}
+
 	public int getComsatStation() {
 		return comsatStation;
 	}
@@ -108,7 +130,14 @@ public class CountManager {
 		this.comsatStation++;
 	}
 
-	
+	public int getTurret() {
+		return turret;
+	}
+
+	public void setTurret() {
+		this.turret++;
+	}
+
 	public int getCompletedFactory() {
 		return completedFactory;
 	}
