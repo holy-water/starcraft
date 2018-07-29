@@ -25,6 +25,14 @@
  - 잉여 자원을 활용하는 추가 로직이 필요
 
 
+BasicBot v1.4.1
+1. UXManager에 Turret의 공격 범위 보여주는 메서드 추가 
+ - 추후 기능 끄기 가능
+2. 서킷 맵 Turret으로 본진 및 앞마당 방어 전략 지정
+ - 4개의 Turret으로 넓게 방어하는 것으로 위치 지정
+ 
+ 
+
 BasicBot v1.4.0
 1. getClosestUnitFromEnemyBaseLocation 함수 수정
  - 적군 유닛이 아니라 아군 유닛으로 변경
