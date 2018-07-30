@@ -52,6 +52,12 @@ public class ConstructionPlaceFinder {
 	private static int[] turretXLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	private static int[] turretYLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+	// 0730 - 최혜진 추가
+	public static int numberOfFactoryBuilt = 0;
+	private static int fx;
+	private static int fy;
+	private static boolean isFirstBuilt;
+
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
 		if (isInitialized == false) {
@@ -576,8 +582,153 @@ public class ConstructionPlaceFinder {
 
 				tempTilePosition = new TilePosition(turretx, turrety);
 				desiredPosition = tempTilePosition.getPoint();
-				//System.out.println(desiredPosition.getX()+" "+desiredPosition.getY());
 				numberOfTurretBuilt++;
+				break;
+
+			// 0730 - 최혜진 추가 본진 Factory 효율적 배치를 위한 건설 전략
+			case FactoryInMainBaseLocation:
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (locationOfBase == 1) {
+						if (numberOfFactoryBuilt == 0) {
+							fx = 0;
+							fy = 21;
+						} else if (numberOfFactoryBuilt < 4) {
+							if (numberOfFactoryBuilt % 2 == 0) {
+								fx = fx + 6;
+								fy = 21;
+							} else if (numberOfFactoryBuilt % 2 == 1) {
+								fy = fy - 4;
+							}
+						} else if (numberOfFactoryBuilt % 2 == 0) {
+							fx = fx + 4;
+							fy = 21;
+						} else if (numberOfFactoryBuilt % 2 == 1) {
+							fy = fy - 4;
+						}
+					} else if (locationOfBase == 2) {
+						if (numberOfFactoryBuilt == 0) {
+							fx = 122;
+							fy = 21;
+						} else if (numberOfFactoryBuilt < 2) {
+							if (numberOfFactoryBuilt % 2 == 0) {
+								fx = fx - 6;
+								fy = 21;
+							} else if (numberOfFactoryBuilt % 2 == 1) {
+								fy = fy - 4;
+							}
+						} else if (numberOfFactoryBuilt % 2 == 0) {
+							fx = fx - 4;
+							fy = 21;
+						} else if (numberOfFactoryBuilt % 2 == 1) {
+							fy = fy - 4;
+						}
+					} else if (locationOfBase == 3) {
+						if (numberOfFactoryBuilt == 0) {
+							fx = 0;
+							fy = 104;
+						} else if (numberOfFactoryBuilt < 4) {
+							if (numberOfFactoryBuilt % 2 == 0) {
+								fx = fx + 6;
+								fy = 104;
+							} else if (numberOfFactoryBuilt % 2 == 1) {
+								fy = fy + 4;
+							}
+						} else if (numberOfFactoryBuilt % 2 == 0) {
+							fx = fx + 4;
+							fy = 104;
+						} else if (numberOfFactoryBuilt % 2 == 1) {
+							fy = fy + 4;
+						}
+					} else if (locationOfBase == 4) {
+						if (numberOfFactoryBuilt == 0) {
+							fx = 122;
+							fy = 104;
+						} else if (numberOfFactoryBuilt < 2) {
+							if (numberOfFactoryBuilt % 2 == 0) {
+								fx = fx - 6;
+								fy = 104;
+							} else if (numberOfFactoryBuilt % 2 == 1) {
+								fy = fy + 4;
+							}
+						} else if (numberOfFactoryBuilt % 2 == 0) {
+							fx = fx - 4;
+							fy = 104;
+						} else if (numberOfFactoryBuilt % 2 == 1) {
+							fy = fy + 4;
+						}
+					}
+				} else {
+					if (locationOfBase == 1) {
+
+					} else if (locationOfBase == 2) {
+
+					} else if (locationOfBase == 3) {
+
+					} else if (locationOfBase == 4) {
+
+					}
+				}
+				tempTilePosition = new TilePosition(fx, fy);
+				desiredPosition = tempTilePosition.getPoint();
+				numberOfFactoryBuilt++;
+				break;
+
+				// 0730 - 최혜진 추가 본진 Factory와 Supply Depot 피해서 건설하기 위한 전략
+			case OtherInMainBaseLocation:
+				tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
+				int ox = 0;
+				int oy = 0;
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (locationOfBase == 1) {
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
+					} else if (locationOfBase == 2) {
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
+					} else if (locationOfBase == 3) {
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
+					} else if (locationOfBase == 4) {
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
+					}
+				} else {
+					if (locationOfBase == 1) {
+
+					} else if (locationOfBase == 2) {
+
+					} else if (locationOfBase == 3) {
+
+					} else if (locationOfBase == 4) {
+
+					}
+				}
+				tempTilePosition = new TilePosition(ox, oy);
+				desiredPosition = tempTilePosition.getPoint();
 				break;
 			}
 		}

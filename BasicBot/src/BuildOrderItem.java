@@ -25,7 +25,9 @@ public class BuildOrderItem {
 		SupplyDepotPosition,        ///< 0630 최혜진 추가 - SupplyDepot 건설에 대한 전략
 		BlockFirstChokePoint,       ///< 0703 최혜진 추가 - 입구 막기 전략
 		BunkerForZerg,              ///< 0723 최혜진 추가 - 4드론 저그에 대항하기 위한 Bunker 건설 전략
-		TurretAround                ///< 0729 최혜진 추가 - Turret으로 본진과 앞마당 둘러싸기
+		TurretAround,               ///< 0729 최혜진 추가 - Turret으로 본진과 앞마당 둘러싸기
+		FactoryInMainBaseLocation,  ///< 0730 최혜진 추가 - Factory 건설 효율화
+		OtherInMainBaseLocation     ///< 0730 최혜진 추가 - Factory와 Supply Depot 피해서 건설하기 위한 전략
 	};
 	
 	public SeedPositionStrategy seedLocationStrategy;	///< 건설위치 초안 결정 정책

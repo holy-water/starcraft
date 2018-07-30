@@ -157,8 +157,9 @@ public class StrategyManager {
 			if (CountMgr.getMachineShop() < Math.max(2, (int) Math.sqrt(CountMgr.getCompletedFactory()))) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
+					// 0730 - 최혜진 수정 Factory 건설 전략 적용
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Machine_Shop,
-							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+							BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 					CountMgr.setMachineShop();
 				}
 			}
@@ -209,8 +210,9 @@ public class StrategyManager {
 								true);
 					} else {
 						if (CountMgr.getStarport() == 0) {
+							// 0730 - 최혜진 수정 Other 건설 전략 적용
 							BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Starport,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+									BuildOrderItem.SeedPositionStrategy.OtherInMainBaseLocation, true);
 							CountMgr.setStarport();
 						} else if (Self.completedUnitCount(UnitType.Terran_Starport) > 0) {
 							if (CountMgr.getArmory() < 2) {
@@ -219,9 +221,10 @@ public class StrategyManager {
 								CountMgr.setArmory();
 							}
 							if (CountMgr.getScienceFacility() == 0) {
+								// 0730 - 최혜진 수정 Other 건설 전략 적용
 								BuildManager.Instance().buildQueue.queueAsLowestPriority(
 										UnitType.Terran_Science_Facility,
-										BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+										BuildOrderItem.SeedPositionStrategy.OtherInMainBaseLocation, true);
 								CountMgr.setScienceFacility();
 							}
 						}
@@ -245,8 +248,9 @@ public class StrategyManager {
 				if (Self.minerals() >= 600 && Self.gas() >= 200) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 						// 0702 - 최혜진 수정 입구로
+						// 0730 - 최혜진 수정 Factory 건설 전략 적용
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
-								BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+								BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 						CountMgr.setFactory();
 					}
 				}
@@ -748,8 +752,9 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
+				// 0730 - 최혜진 수정 Factory 건설 전략 적용
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 				// 21 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -757,8 +762,9 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
+				// 0730 - 최혜진 수정 Factory 건설 전략 적용
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 
 			} else {
 				// 0628 수정
@@ -832,8 +838,9 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
+				// 0730 - 최혜진 수정 Factory 건설 전략 적용
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 				// 21 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -841,8 +848,9 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
+				// 0730 - 최혜진 수정 Factory 건설 전략 적용
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
-						BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 			}
 		}
 	}
