@@ -1,9 +1,10 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import bwapi.Color;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -36,6 +37,11 @@ public class UnitData {
 
 	/// unitAndUnitInfoMap 에서 제거해야할 데이터들
 	Vector<Integer> badUnitstoRemove = new Vector<Integer>();
+	
+	/// 특정 목적을 지닌 유닛 리스트 Map으로 관리
+	/// key: Integer (ex) 중심 유닛 ID
+	/// value: List<Integer> (ex) 유닛 ID 리스트
+	Map<Integer, List<Integer>> unitListMap = new HashMap<>();
 	
 	public UnitData() 
 	{
@@ -91,6 +97,31 @@ public class UnitData {
 			//numCreatedUnits[unit.getType().getID()]++;
 			//numUnits[unit.getType().getID()]++;
 		}
+	}
+	
+	/// 특정 유닛으로부터 일정 거리 내에 있는 아군 유닛들은 같은 List 에 묶여 Map 안에 들어간다
+	public void updateUnitListMap(Unit mainUnit) {
+		if (mainUnit == null) return;
+		
+		// 해당 유닛을 중심으로 하는 List 없으면 생성 먼저
+		if (unitListMap.get(mainUnit.getID()) == null) {
+			List<Integer> list = new ArrayList<>();
+			unitListMap.put(mainUnit.getID(), list);
+		}
+		
+		// 해당 유닛을 중심으로 하는 List 새로 생성
+		List<Integer> newUnitList = new ArrayList<>();
+		
+		// 반경 10타일 이내에 있는 Unit List - 너무 멀면 8로 수정해볼 것
+		List<Unit> nearList = mainUnit.getUnitsInRadius(10 * Config.TILE_SIZE);
+	
+		// 아군 유닛이면 리스트에 넣기
+		for (Unit unit: nearList) {
+			if (unit.getPlayer() == MyBotModule.Broodwar.self()) {
+				newUnitList.add(unit.getID());
+			}
+		}
+		unitListMap.put(mainUnit.getID(), newUnitList);
 	}
 
 	/// 파괴/사망한 유닛을 자료구조에서 제거합니다
@@ -232,5 +263,9 @@ public class UnitData {
 
 	public Map<String, Integer> getNumUnits() {
 		return numUnits;
+	}
+	
+	public Map<Integer, List<Integer>> getUnitListMap() {
+		return unitListMap;
 	}
 }
