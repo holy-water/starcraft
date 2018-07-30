@@ -276,7 +276,7 @@ public class InformationManager {
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
-			if (unit.getPlayer() == enemyPlayer) {
+			if (unit.getPlayer() == enemyPlayer && isCombatUnitType(unit.getType())) {
 				return true;
 			}
 		}
