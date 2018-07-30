@@ -30,6 +30,15 @@
  - 스캔 or 터렛 타이밍 수정이 필요
 
 
+
+BasicBot v1.4.3
+1. Factory 본진 내 건설 전략 적용
+ - 최대 8개 건설 가능 
+ - Machine shop은 첫 2개에만 건설
+2. 기타 건물 Factory와 Supply Depot과 위치 중복되지 않도록 지정
+
+
+
 BasicBot v1.4.2
 1. CountManager로 Turret 개수 관리
 2. 팩토리 추가 건설 조건 변경
