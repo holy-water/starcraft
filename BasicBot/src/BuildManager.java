@@ -3,8 +3,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.plaf.synth.SynthSpinnerUI;
-
 import bwapi.Pair;
 import bwapi.Player;
 import bwapi.Position;
@@ -47,9 +45,13 @@ public class BuildManager {
 
 	// 0730 - 최혜진 추가
 	public static int numberOfFactoryBuilt = 0;
-	private static int fx;
-	private static int fy;
 	private static boolean isFirstBuilt;
+
+	// 0801 - 최혜진 추가 Factory 좌표 지정
+	private static int[] FactoryXLocationForCircuit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
+	private static int[] FactoryYLocationForCircuit = { 21, 17, 104, 108, 0 };
+	private static int[] FactoryXLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] FactoryYLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	/// BuildOrderItem 들의 목록을 저장하는 buildQueue
 	public BuildOrderQueue buildQueue = new BuildOrderQueue();
@@ -1053,18 +1055,19 @@ public class BuildManager {
 					}
 				} else {
 					// 0726 - 최혜진 추가 투혼 맵 적용
+					// 0801 - 최혜진 수정 좌표 변경
 					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 1;
+						blockx = tempFirstExpansion.getTilePosition().getX();
 						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
 					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 1;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
 						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
 					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
-						blocky = tempFirstExpansion.getTilePosition().getY();
+						blockx = tempFirstExpansion.getTilePosition().getX() - 5;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 4;
 					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 1;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
+						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
+						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 					}
 				}
 			} else {
@@ -1084,18 +1087,16 @@ public class BuildManager {
 					}
 				} else {
 					// 0726 - 최혜진 추가 투혼 맵 적용
+					// 0801 - 최혜진 수정 좌표 변경
 					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 2;
+						blockx = tempFirstExpansion.getTilePosition().getX() + 3;
 						blocky = tempFirstExpansion.getTilePosition().getY() - 5;
-					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 5;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
 					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 1;
+						blockx = tempFirstExpansion.getTilePosition().getX() - 1;
+						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
 					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 2;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 6;
+						blockx = tempFirstExpansion.getTilePosition().getX();
+						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
 					}
 				}
 			}
@@ -1218,75 +1219,34 @@ public class BuildManager {
 			break;
 
 		// 0730 - 최혜진 추가 본진 Factory 효율적 배치를 위한 건설 전략
+		// 0801 - 최혜진 수정 Factory 좌표 값 지정 및 코드 단순화
 		case FactoryInMainBaseLocation:
+			int fx = 0;
+			int fy = 0;
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				if (locationOfBase == 1) {
-					if (numberOfFactoryBuilt == 0) {
-						fx = 0;
-						fy = 21;
-					} else if (numberOfFactoryBuilt < 4) {
-						if (numberOfFactoryBuilt % 2 == 0) {
-							fx = fx + 6;
-							fy = 21;
-						} else if (numberOfFactoryBuilt % 2 == 1) {
-							fy = fy - 4;
-						}
-					} else if (numberOfFactoryBuilt % 2 == 0) {
-						fx = fx + 4;
-						fy = 21;
-					} else if (numberOfFactoryBuilt % 2 == 1) {
-						fy = fy - 4;
+					int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForCircuit[numberOfFactoryBuilt % 2];
 					}
 				} else if (locationOfBase == 2) {
-					if (numberOfFactoryBuilt == 0) {
-						fx = 122;
-						fy = 21;
-					} else if (numberOfFactoryBuilt < 2) {
-						if (numberOfFactoryBuilt % 2 == 0) {
-							fx = fx - 6;
-							fy = 21;
-						} else if (numberOfFactoryBuilt % 2 == 1) {
-							fy = fy - 4;
-						}
-					} else if (numberOfFactoryBuilt % 2 == 0) {
-						fx = fx - 4;
-						fy = 21;
-					} else if (numberOfFactoryBuilt % 2 == 1) {
-						fy = fy - 4;
+					int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForCircuit[numberOfFactoryBuilt % 2];
 					}
 				} else if (locationOfBase == 3) {
-					if (numberOfFactoryBuilt == 0) {
-						fx = 0;
-						fy = 104;
-					} else if (numberOfFactoryBuilt < 4) {
-						if (numberOfFactoryBuilt % 2 == 0) {
-							fx = fx + 6;
-							fy = 104;
-						} else if (numberOfFactoryBuilt % 2 == 1) {
-							fy = fy + 4;
-						}
-					} else if (numberOfFactoryBuilt % 2 == 0) {
-						fx = fx + 4;
-						fy = 104;
-					} else if (numberOfFactoryBuilt % 2 == 1) {
-						fy = fy + 4;
+					int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForCircuit[(numberOfFactoryBuilt % 2) + 2];
 					}
 				} else if (locationOfBase == 4) {
-					if (numberOfFactoryBuilt == 0) {
-						fx = 122;
-						fy = 104;
-					} else if (numberOfFactoryBuilt < 2) {
-						if (numberOfFactoryBuilt % 2 == 0) {
-							fx = fx - 6;
-							fy = 104;
-						} else if (numberOfFactoryBuilt % 2 == 1) {
-							fy = fy + 4;
-						}
-					} else if (numberOfFactoryBuilt % 2 == 0) {
-						fx = fx - 4;
-						fy = 104;
-					} else if (numberOfFactoryBuilt % 2 == 1) {
-						fy = fy + 4;
+					int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForCircuit[(numberOfFactoryBuilt % 2) + 2];
 					}
 				}
 			} else {

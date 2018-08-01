@@ -4,6 +4,8 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.BrokenBarrierException;
+
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Race;
@@ -13,6 +15,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwapi.WalkPosition;
+import bwapi.WeaponType;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
@@ -53,6 +56,12 @@ public class StrategyManager {
 	private int FrameCount;
 	// 0726 - 시즈모드 시간 저장
 	private int SiegeModeCount;
+	// 0801 - 최혜진 추가 적 본진 및 적 길목 스캔 스위치
+	private boolean enemyBaseLocationScanned;
+	// 0801 - 최혜진 추가
+	private Unit vultureForMine;
+	private int numberOfVulture;
+	private boolean goForMine;
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -249,9 +258,12 @@ public class StrategyManager {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 						// 0702 - 최혜진 수정 입구로
 						// 0730 - 최혜진 수정 Factory 건설 전략 적용
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
-								BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
-						CountMgr.setFactory();
+						// 0801 - 최혜진 수정 Factory 8개 이하만 건설, Exception 발생 예방 차원
+						if (CountMgr.getFactory() < 8) {
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Factory,
+									BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
+							CountMgr.setFactory();
+						}
 					}
 				}
 			}
@@ -425,6 +437,12 @@ public class StrategyManager {
 		// 0728 - 최혜진 추가 Engineering Bay 컨트롤
 		executeEngineeringBayControl();
 
+		// 0801 - 최혜진 추가 주기적 스캔
+		executeScan();
+
+		// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
+		excuteSpiderMine();
+
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
 		// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가
@@ -434,6 +452,57 @@ public class StrategyManager {
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
+	}
+
+	// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
+	private void excuteSpiderMine() {
+
+		if (!Self.hasResearched(TechType.Spider_Mines)) {
+			return;
+		}
+
+		if (goForMine == false) {
+			for (Unit unit : MyUnits) {
+				if (unit.getType() == UnitType.Terran_Vulture) {
+					numberOfVulture++;
+					if (numberOfVulture >= 3 && Self.hasResearched(TechType.Spider_Mines)) {
+						goForMine = true;
+						vultureForMine = unit;
+						break;
+					}
+				}
+			}
+		} else {
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				//System.out.println(InformationMgr.getSecondChokePoint(Enemy).getPoint());
+				TilePosition tempTileposition = new TilePosition(65, 65);
+				vultureForMine.useTech(TechType.Spider_Mines, tempTileposition.toPosition());
+			}
+		}
+
+	}
+
+	// 0801 - 최혜진 추가 주기적 스캔
+	private void executeScan() {
+
+		if (CountMgr.getComsatStation() == 0) {
+			return;
+		}
+		for (Unit unit : MyUnits) {
+			if (unit.getType() != UnitType.Terran_Comsat_Station) {
+				continue;
+			}
+			if (unit.getEnergy() >= 100) {
+				Position enemyBaseLocation = InformationMgr.getMainBaseLocation(Enemy).getPosition();
+				if (enemyBaseLocationScanned == false) {
+					unit.useTech(TechType.Scanner_Sweep, enemyBaseLocation);
+					enemyBaseLocationScanned = true;
+				} else {
+					unit.useTech(TechType.Scanner_Sweep, InformationMgr.getSecondChokePoint(Enemy).getPoint());
+					enemyBaseLocationScanned = false;
+				}
+			}
+		}
 	}
 
 	private void executeEngineeringBayControl() {
