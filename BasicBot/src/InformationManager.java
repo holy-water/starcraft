@@ -305,22 +305,27 @@ public class InformationManager {
 		return forcePoint;
 	}
 
-	// 드랍 상황인지 체크하는 메소드
-	// 본진에 드랍쉽, 셔틀, 오버로드가 있을 경우에 true 반환
-	public String getDropSituation() {
+	// 현재 어떤 상황인지 체크
+	// Drop / Attack / Scout 
+	public String getReasonForEnemysAppearance() {
 		for (Unit unit : enemyPlayer.getUnits()) {
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
 				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
 						|| unit.getType() == UnitType.Zerg_Overlord) {
 					if (unit.getSpaceRemaining() < 8) {
-						return "99"; // 위험상황(드랍)
+						return "Drop"; // 위험상황(드랍)
 					} else {
-						return "01"; // 정찰
+						return "Scout"; // 정찰
 					}
+				} else if (unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
+					if(unit.isConstructing()) {
+						return "Attack";	// 본진 내 적군이 건물 짓는 상황 
+					}
+					return "Scout";	// 정찰
 				}
 			}
 		}
-		return "00"; // 드랍 상황 무관
+		return "Attack"; // 드랍 상황 무관, 공격 타이밍
 	}
 
 	public void updateBaseLocationInfo() {
