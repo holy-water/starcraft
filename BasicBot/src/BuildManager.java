@@ -37,21 +37,23 @@ public class BuildManager {
 	public int locationOfBase = 0;
 
 	// 0729 - 최혜진 추가
+	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
 	public static int numberOfTurretBuilt = 0;
 	private static int[] turretXLocationForCircuit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
 	private static int[] turretYLocationForCircuit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
-	private static int[] turretXLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	private static int[] turretYLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] turretXLocationForSpirit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
+	private static int[] turretYLocationForSpirit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
 
 	// 0730 - 최혜진 추가
 	public static int numberOfFactoryBuilt = 0;
 	private static boolean isFirstBuilt;
 
 	// 0801 - 최혜진 추가 Factory 좌표 지정
+	// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
 	private static int[] FactoryXLocationForCircuit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
 	private static int[] FactoryYLocationForCircuit = { 21, 17, 104, 108, 0 };
-	private static int[] FactoryXLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	private static int[] FactoryYLocationForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
+	private static int[] FactoryYLocationForSpirit = { 20, 16, 104, 108, 0 };
 
 	/// BuildOrderItem 들의 목록을 저장하는 buildQueue
 	public BuildOrderQueue buildQueue = new BuildOrderQueue();
@@ -1203,13 +1205,59 @@ public class BuildManager {
 
 				}
 			} else {
+				// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 지정
 				if (locationOfBase == 1) {
-
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForSpirit[numberOfTurretBuilt % 4];
+						turrety = turretYLocationForSpirit[numberOfTurretBuilt % 4];
+					}
 				} else if (locationOfBase == 2) {
-
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 4) + 4];
+						turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 4) + 4];
+					}
 				} else if (locationOfBase == 3) {
-
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 4) + 8];
+						turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 4) + 8];
+					}
 				} else if (locationOfBase == 4) {
+					if (numberOfTurretBuilt % 4 == 1) {
+						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						if (tempChokePoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							turretx = desiredPosition.getX();
+							turrety = desiredPosition.getY();
+						}
+					} else {
+						turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 4) + 12];
+						turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 4) + 12];
+					}
 
 				}
 			}
@@ -1250,14 +1298,31 @@ public class BuildManager {
 					}
 				}
 			} else {
+				// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
 				if (locationOfBase == 1) {
-
+					int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
+					}
 				} else if (locationOfBase == 2) {
-
+					int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
+					}
 				} else if (locationOfBase == 3) {
-
+					int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
+					}
 				} else if (locationOfBase == 4) {
-
+					int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+					if (numberOfFactoryBuiltInt < 8) {
+						fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+						fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
+					}
 				}
 			}
 			tempTilePosition = new TilePosition(fx, fy);

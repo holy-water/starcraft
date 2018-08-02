@@ -461,22 +461,15 @@ public class StrategyManager {
 			return;
 		}
 
-		if (goForMine == false) {
-			for (Unit unit : MyUnits) {
-				if (unit.getType() == UnitType.Terran_Vulture) {
-					numberOfVulture++;
-					if (numberOfVulture >= 3 && Self.hasResearched(TechType.Spider_Mines)) {
-						goForMine = true;
-						vultureForMine = unit;
-						break;
-					}
+		for (Unit unit : MyUnits) {
+			if (unit.getType() == UnitType.Terran_Vulture) {
+				numberOfVulture++;
+				if (numberOfVulture >= 3 && Self.hasResearched(TechType.Spider_Mines)) {
+					// 0802 - Vulture Mine Manager로 관리
+					// System.out.println("Strategy Manager");
+					VultureMineManager.Instance().update();
+					return;
 				}
-			}
-		} else {
-			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-				//System.out.println(InformationMgr.getSecondChokePoint(Enemy).getPoint());
-				TilePosition tempTileposition = new TilePosition(65, 65);
-				vultureForMine.useTech(TechType.Spider_Mines, tempTileposition.toPosition());
 			}
 		}
 
