@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Map;
 
 import bwapi.Color;
 import bwapi.Position;
@@ -60,21 +61,23 @@ public class WorkerManager {
 		// 본진에 적군 쳐들어온 경우
 		// if 드랍 -> scv 전체 튄다
 		// else -> scv 싸운다
+		Map<String, Position> reasonMap;
 		if (infoMngr.isEnemyUnitInRadius(mainBaseLocation.getPosition(), 10)) {
-			if (infoMngr.getReasonForEnemysAppearance().equals("Drop")) {
+			reasonMap = infoMngr.getReasonForEnemysAppearance();
+			if (reasonMap.containsKey("Drop")) {
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
 						workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
 					}
 				}
 				return;
-			} else if (infoMngr.getReasonForEnemysAppearance().equals("Attack")) {
+			} else if (reasonMap.containsKey("Attack")) {
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
 					}
 				}
-				return;
+				return;					
 			}
 		}
 		

@@ -364,7 +364,7 @@ public class WorkerData {
 		}
 	}
 	
-	public void setWorkerJob(Unit unit, WorkerJob job)
+	public void setWorkerJob(Unit unit, WorkerJob job, Position pos)
 	{
 		if (unit == null) { return; }
 
@@ -373,10 +373,15 @@ public class WorkerData {
 
 		if (job == WorkerJob.Attack)
 		{
-			// 본진 - 입구 중간 지점으로 Attack Move
-			Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-			Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
-			Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
+			Position targetPos;
+			if (pos == null) {
+				// 본진 - 입구 중간 지점으로 Attack Move
+				Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+				Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
+				targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
+			} else {
+				targetPos = pos;
+			}
 			commandUtil.attackMove(unit, targetPos);
 		}
 	}
