@@ -321,7 +321,7 @@ public class InformationManager {
 					}
 				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
 					reasonMap.put("Scout", null);		// 정찰
-				} else if (unit.getType() == UnitType.Buildings) {
+				} else if (unit.getType().isBuilding()) {
 					reasonMap.put("Attack", unit);		// 적 건물 건설
 					break;
 				} else {
