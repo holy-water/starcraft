@@ -32,9 +32,10 @@ public class BuildManager {
 	private static int uppercornerY;
 	private static int lowercornerY;
 	private static int numberOfSupply = 0;
-	private static boolean isBarrackBuilt = false;
 	// 0704 - 김성수 수정 StrategyManager에서 사용
-	public int locationOfBase = 0;
+	// 0805 - 김성수 수정 Getter 등록
+	private static int locationOfBase = 0;
+	private static boolean isBarrackBuilt = false;
 
 	// 0729 - 최혜진 추가
 	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
@@ -63,6 +64,10 @@ public class BuildManager {
 	/// static singleton 객체를 리턴합니다
 	public static BuildManager Instance() {
 		return instance;
+	}
+	
+	public int getLocationOfBase() {
+		return locationOfBase;
 	}
 
 	/// buildQueue 에 대해 Dead lock 이 있으면 제거하고, 가장 우선순위가 높은 BuildOrderItem 를 실행되도록
