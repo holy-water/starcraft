@@ -278,6 +278,7 @@ public class WorkerManager {
 				if (unit.getType() == UnitType.Terran_Bunker) {
 					if (workerData.getBunkerRepairCount(unit) > 0) continue;
 					if (workerData.getBunkerMapSize() > 0) continue;
+					// 공격하고 있는 적군 수만큼 수리병 붙이기
 					int tempCnt = 0;
 					for (Unit enemyUnit: MyBotModule.Broodwar.enemy().getUnits()) {
 						if (enemyUnit != null && enemyUnit.isAttacking() && enemyUnit.getTarget() == unit) {

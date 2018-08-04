@@ -305,7 +305,7 @@ public class InformationManager {
 		return forcePoint;
 	}
 
-	// 현재 어떤 상황인지 체크
+	// 적군이 있는 게 현재 어떤 상황인지 체크
 	// Drop / Attack / Scout 
 	public Map<String, Unit> getReasonForEnemysAppearance() {
 		Map<String, Unit> reasonMap = new HashMap<>();

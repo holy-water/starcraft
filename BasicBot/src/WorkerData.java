@@ -51,6 +51,7 @@ public class WorkerData {
 	private Map<Integer, Unit> workerRefineryMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRepairMap = new HashMap<Integer, Unit>();
 	
+	// 수리 관련 
 	private Map<Integer, Integer> bunkerRepairCount = new HashMap<>();
 	private int optimalBunkerRepairCnt = 4;
 	private int generalRepairCount = 0;
