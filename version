@@ -31,6 +31,14 @@
 
 
 
+BasicBot v1.4.6
+1. Strategy Manager Vulture 갯수 세는 방식 변경
+2. Idle 상태인 Vulture 여러마리 선택되도록 Map 구조로 관리
+3. Spider Mine을 해당 위치에 설치하도록 하는 메서드 추가
+4. 추후 개발 사항
+ - 사용자가 플레이 하는 것처럼 자동으로 마인 심지 못함 각각 모든 좌표를 지정해 줘야할 필요성
+
+
 BasicBot v1.4.5
 1. 투혼 맵 Factory 건설 위치 적용 완료
 2. Spider Mines 기능은 확장성 고려하여 VultureMineManager 클래스로 따로 관리

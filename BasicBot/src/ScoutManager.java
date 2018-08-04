@@ -176,6 +176,8 @@ public class ScoutManager {
 					double tempDistance = 0;
 					BaseLocation closestBaseLocation = null;
 					for (BaseLocation startLocation : BWTA.getStartLocations()) {
+						// 우리 진영 빼기
+						if (myBaseLocation == startLocation) continue;
 						// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
 						if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
 							// GroundDistance 를 기준으로 가장 가까운 곳으로 선정

@@ -460,17 +460,9 @@ public class StrategyManager {
 		if (!Self.hasResearched(TechType.Spider_Mines)) {
 			return;
 		}
-
-		for (Unit unit : MyUnits) {
-			if (unit.getType() == UnitType.Terran_Vulture) {
-				numberOfVulture++;
-				if (numberOfVulture >= 3 && Self.hasResearched(TechType.Spider_Mines)) {
-					// 0802 - Vulture Mine Manager로 관리
-					// System.out.println("Strategy Manager");
-					VultureMineManager.Instance().update();
-					return;
-				}
-			}
+		// 0804 - 최혜진 수정 Vulture 갯수 세는 로직 수정
+		if (Self.completedUnitCount(UnitType.Terran_Vulture) >= 3) {
+			VultureMineManager.Instance().update();
 		}
 
 	}
