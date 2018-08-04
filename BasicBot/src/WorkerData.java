@@ -51,11 +51,6 @@ public class WorkerData {
 	private Map<Integer, Unit> workerRefineryMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRepairMap = new HashMap<Integer, Unit>();
 	
-	// 수리 관련 
-	private Map<Integer, Integer> bunkerRepairCount = new HashMap<>();
-	private int optimalBunkerRepairCnt = 4;
-	private int generalRepairCount = 0;
-	
 	private CommandUtil commandUtil = new CommandUtil();
 	
 	public WorkerData() 
@@ -316,16 +311,6 @@ public class WorkerData {
 				if (!unit.isRepairing())
 				{
 					commandUtil.repair(unit, jobUnit);
-					if (jobUnit.getType() == UnitType.Terran_Bunker) {
-						if (bunkerRepairCount.containsKey(jobUnit.getID())) {
-							bunkerRepairCount.put(jobUnit.getID(), bunkerRepairCount.get(jobUnit.getID())+1);
-						} else {
-							bunkerRepairCount.clear();
-							bunkerRepairCount.put(jobUnit.getID(), 1);
-						}
-					} else {
-						generalRepairCount++;
-					}
 				}
 			}
 	    }
@@ -336,18 +321,6 @@ public class WorkerData {
 			// right click the mineral to start mining
 	        commandUtil.rightClick(unit, jobUnit);
 	    }
-	    else if (job == WorkerJob.Attack)
-		{
-			if (jobUnit == null) {
-				// 본진 - 입구 중간 지점으로 Attack Move
-				Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-				Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
-				Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
-				commandUtil.attackMove(unit, targetPos);
-			} else {
-				commandUtil.attackUnit(unit, jobUnit);
-			}
-		}
 		else if (job == WorkerJob.Scout)
 		{
 
@@ -390,6 +363,23 @@ public class WorkerData {
 			//BWAPI::Broodwar->printf("Something went horribly wrong");
 		}
 	}
+	
+	public void setWorkerJob(Unit unit, WorkerJob job)
+	{
+		if (unit == null) { return; }
+
+		clearPreviousJob(unit);
+		workerJobMap.put(unit.getID(), job);
+
+		if (job == WorkerJob.Attack)
+		{
+			// 본진 - 입구 중간 지점으로 Attack Move
+			Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+			Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
+			Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
+			commandUtil.attackMove(unit, targetPos);
+		}
+	}
 
 	public void clearPreviousJob(Unit unit)
 	{
@@ -425,12 +415,6 @@ public class WorkerData {
 		}
 		else if (previousJob == WorkerJob.Repair)
 		{
-			if(workerRepairMap.get(unit.getID()).getType() == UnitType.Terran_Bunker) {
-				bunkerRepairCount.put(unit.getID(), bunkerRepairCount.get(unit.getID())-1);
-				if (bunkerRepairCount.get(unit.getID()) <= 0) bunkerRepairCount.clear();
-			} else {
-				generalRepairCount--;
-			}
 			workerRepairMap.remove(unit.getID()); // C++ : workerRepairMap.erase(unit);
 		}
 		else if (previousJob == WorkerJob.Move)
@@ -768,22 +752,5 @@ public class WorkerData {
 		if (j == WorkerData.WorkerJob.Move) return 'O';
 		if (j == WorkerData.WorkerJob.Scout) return 'S';
 		return 'X';
-	}
-	
-	public int getBunkerMapSize() {
-		return bunkerRepairCount.size();
-	}
-	
-	public int getBunkerRepairCount(Unit unit) {
-		if (bunkerRepairCount.containsKey(unit.getID())) return bunkerRepairCount.get(unit.getID());
-		else return -1;
-	}
-	
-	public int getGeneralRepairCount() {
-		return generalRepairCount;
-	}
-	
-	public int getOptimalBunkerRepairCnt() {
-		return optimalBunkerRepairCnt;
 	}
 }

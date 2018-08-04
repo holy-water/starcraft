@@ -305,32 +305,27 @@ public class InformationManager {
 		return forcePoint;
 	}
 
-	// 적군이 있는 게 현재 어떤 상황인지 체크
+	// 현재 어떤 상황인지 체크
 	// Drop / Attack / Scout 
-	public Map<String, Unit> getReasonForEnemysAppearance() {
-		Map<String, Unit> reasonMap = new HashMap<>();
+	public String getReasonForEnemysAppearance() {
 		for (Unit unit : enemyPlayer.getUnits()) {
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
 				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
 						|| unit.getType() == UnitType.Zerg_Overlord) {
 					if (unit.getSpaceRemaining() < 8) {
-						reasonMap.put("Drop", null);		// 위험상황(드랍)
-						break;
+						return "Drop"; // 위험상황(드랍)
 					} else {
-						reasonMap.put("Scout", null);	// 정찰
+						return "Scout"; // 정찰
 					}
-				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
-					reasonMap.put("Scout", null);		// 정찰
-				} else if (unit.getType() == UnitType.Buildings) {
-					reasonMap.put("Attack", unit);		// 적 건물 건설
-					break;
-				} else {
-					reasonMap.put("Attack", null);	// 드랍 상황 무관 / 공격 타이밍
-					break;
+				} else if (unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
+					if(unit.isConstructing()) {
+						return "Attack";	// 본진 내 적군이 건물 짓는 상황 
+					}
+					return "Scout";	// 정찰
 				}
 			}
 		}
-		return reasonMap;
+		return "Attack"; // 드랍 상황 무관, 공격 타이밍
 	}
 
 	public void updateBaseLocationInfo() {
