@@ -19,8 +19,6 @@ public class WorkerManager {
 	private CommandUtil commandUtil = new CommandUtil();
 
 	/// 일꾼 중 한명을 Repair Worker 로 정해서, 전체 수리 대상을 하나씩 순서대로 수리합니다
-	private Unit currentRepairWorker = null;
-	private Unit bunkerRepairWorker = null;
 
 	private static WorkerManager instance = new WorkerManager();
 
@@ -35,7 +33,7 @@ public class WorkerManager {
 	private BaseLocation mainBaseLocation = infoMngr.getMainBaseLocation(MyBotModule.Broodwar.self());
 	private BaseLocation firstExpansionLocation = infoMngr.getFirstExpansionLocation(MyBotModule.Broodwar.self());
 	private List<BaseLocation> occupiedBaseLocations = infoMngr.getOccupiedBaseLocations(MyBotModule.Broodwar.self());
-
+	
 	/// 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트하고, 일꾼 유닛들이 자원 채취 등 임무 수행을 하도록 합니다
 	public void update() {
 
@@ -61,7 +59,7 @@ public class WorkerManager {
 		// 본진에 적군 쳐들어온 경우
 		// if 드랍 -> scv 전체 튄다
 		// else -> scv 싸운다
-		Map<String, Position> reasonMap;
+		Map<String, Unit> reasonMap;
 		if (infoMngr.isEnemyUnitInRadius(mainBaseLocation.getPosition(), 10)) {
 			reasonMap = infoMngr.getReasonForEnemysAppearance();
 			if (reasonMap.containsKey("Drop")) {
@@ -273,24 +271,42 @@ public class WorkerManager {
 			return;
 		}
 
+		Unit repairWorker;
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit.getType().isBuilding() && unit.isCompleted() == true
-					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
-				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
-				setRepairWorker(repairWorker, unit);
-				// 벙커의 경우 일꾼이 여러명이 수리하게 설정
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
 				if (unit.getType() == UnitType.Terran_Bunker) {
-					Unit bunkerRepairWorker = chooseRepairWorkerClosestToBunker(unit.getPosition(), 1000000000);
-					setRepairWorker(bunkerRepairWorker, unit);
+					if (workerData.getBunkerRepairCount(unit) > 0) continue;
+					if (workerData.getBunkerMapSize() > 0) continue;
+					int tempCnt = 0;
+					for (Unit enemyUnit: MyBotModule.Broodwar.enemy().getUnits()) {
+						if (enemyUnit != null && enemyUnit.isAttacking() && enemyUnit.getTarget() == unit) {
+							tempCnt++;
+						}
+					}
+					if (tempCnt == 0) tempCnt++;
+					for (int i=0; i<Math.min(tempCnt, workerData.getOptimalBunkerRepairCnt()); i++) {
+						repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000, workerData.getOptimalBunkerRepairCnt());
+						setRepairWorker(repairWorker, unit);						
+					}
+					break;
+				} else {
+					if (unit.isBeingHealed()) continue;
+					if (workerData.getGeneralRepairCount() > 0) continue;
+					repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000, 1);
+					if (repairWorker != null) {
+						setRepairWorker(repairWorker, unit);							
+					}
+					break;
 				}
-				break;
 			}
 			// 메카닉 유닛 (SCV, 시즈탱크, 레이쓰 등)의 경우 근처에 SCV가 있는 경우 수리. 일꾼 한명이 순서대로 수리
 			else if (unit.getType().isMechanical() && unit.isCompleted() == true
-					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()){
+				if (workerData.getGeneralRepairCount() > 0) continue;
 				// SCV 는 수리 대상에서 제외. 전투 유닛만 수리하도록 한다
 				if (unit.getType() != UnitType.Terran_SCV) {
-					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10 * Config.TILE_SIZE);
+					repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10 * Config.TILE_SIZE, 1);
 					if (repairWorker != null) {
 						setRepairWorker(repairWorker, unit);
 					}
@@ -304,11 +320,12 @@ public class WorkerManager {
 	/// position 에서 가장 가까운 Mineral 혹은 Idle 혹은 Move 일꾼 유닛들 중에서 Repair 임무를 수행할 일꾼
 	/// 유닛을 정해서 리턴합니다
 	// 0712 수정 - 거리가 멀 경우 수리할 일꾼을 리턴하지 않음
-	public Unit chooseRepairWorkerClosestTo(Position p, int maxRange) {
+	public Unit chooseRepairWorkerClosestTo(Position p, int maxRange, int maxSCV) {
 		if (!p.isValid())
 			return null;
 
 		Unit closestWorker = null;
+		Unit optimalWorker = null;
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -318,11 +335,7 @@ public class WorkerManager {
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
-
-		if (currentRepairWorker != null && currentRepairWorker.exists() && currentRepairWorker.getHitPoints() > 0) {
-			return currentRepairWorker;
-		}
-
+		
 		// for each of our workers
 		for (Unit worker : workerData.getWorkers()) {
 			if (worker == null) {
@@ -341,62 +354,27 @@ public class WorkerManager {
 				}
 			}
 		}
-
-		if (maxRange > closestDist || currentRepairWorker == null || currentRepairWorker.exists() == false
-				|| currentRepairWorker.getHitPoints() <= 0) {
-			currentRepairWorker = closestWorker;
+		
+		if (maxRange > closestDist) {
+			// 벙커
+			if (maxSCV == workerData.getOptimalBunkerRepairCnt()) {
+				
+			}
+			else {
+				if (workerData.getGeneralRepairCount() > maxSCV) {
+					
+				}
+			}
+		}
+		
+		// 수리병 거리 체크
+		if (maxRange > closestDist) {
+			optimalWorker = closestWorker;
 		}
 
-		return closestWorker;
+		return optimalWorker;
 	}
 	
-	/// 벙커 수리용 유닛 따로 뽑기
-	public Unit chooseRepairWorkerClosestToBunker(Position p, int maxRange) {
-		if (!p.isValid())
-			return null;
-
-		Unit closestWorker = null;
-
-		// BasicBot 1.1 Patch Start
-		// ////////////////////////////////////////////////
-		// 변수 기본값 수정
-
-		double closestDist = 1000000000;
-
-		// BasicBot 1.1 Patch End
-		// //////////////////////////////////////////////////
-
-		if (bunkerRepairWorker != null && bunkerRepairWorker.exists() && bunkerRepairWorker.getHitPoints() > 0) {
-			return bunkerRepairWorker;
-		}
-
-		// for each of our workers
-		for (Unit worker : workerData.getWorkers()) {
-			if (worker == null) {
-				continue;
-			}
-
-			if (worker.isCompleted() && (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Minerals
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move)) {
-				double dist = worker.getDistance(p);
-
-				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false
-						&& worker.isCarryingGas() == false)) {
-					closestWorker = worker;
-					closestDist = dist;
-				}
-			}
-		}
-
-		if (maxRange > closestDist || bunkerRepairWorker == null || bunkerRepairWorker.exists() == false
-				|| bunkerRepairWorker.getHitPoints() <= 0) {
-			bunkerRepairWorker = closestWorker;
-		}
-
-		return closestWorker;
-	}
-
 	/// 해당 일꾼 유닛 unit 의 WorkerJob 값를 Mineral 로 변경합니다
 	public void setMineralWorker(Unit unit) {
 		if (unit == null)
