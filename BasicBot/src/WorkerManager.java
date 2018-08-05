@@ -253,7 +253,6 @@ public class WorkerManager {
 
 				// Mineral에 도착하여 Mineral을 캐고 있는 상태가 되면, Mineral을 Job으로 세팅
 				if (worker.getPosition().getDistance(data.getPosition()) < 4 && worker.isCarryingMinerals()) {
-					System.out.println(worker.getID() + "번 도망 완료! 이제 미네랄을 캐자");
 					setMineralWorker(worker);
 				}
 			}
@@ -947,7 +946,6 @@ public class WorkerManager {
 		// ResourceDepot 건물이 파괴되면, 자료구조 삭제 처리를 한 후, 일꾼들을 Idle 상태로 만들어
 		// rebalanceWorkers 한 효과가 나게 한다
 		if (unit.getType().isResourceDepot() && unit.getPlayer() == MyBotModule.Broodwar.self()) {
-			System.out.println("ResourceDepot 건물 파괴!");
 			workerData.removeDepot(unit);
 		}
 
