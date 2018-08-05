@@ -1188,8 +1188,8 @@ public class StrategyManager {
 				}
 			}
 
-			// 5초에 한번만 실행
-			if (frameCount % (24 * 5) != 0) {
+			// 1초에 한번만 실행
+			if (frameCount % 24 != 0) {
 				return;
 			}
 
