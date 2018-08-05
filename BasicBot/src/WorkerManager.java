@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Map;
 
 import bwapi.Color;
 import bwapi.Position;
@@ -20,6 +21,9 @@ public class WorkerManager {
 	/// 일꾼 중 한명을 Repair Worker 로 정해서, 전체 수리 대상을 하나씩 순서대로 수리합니다
 	private Unit currentRepairWorker = null;
 	private Unit bunkerRepairWorker = null;
+	
+	/// 일꾼 중 한마리를 우리 진영에 건설된 건물 파괴자로 임명합니다.
+	private Unit currentAttackWorker = null;
 
 	private static WorkerManager instance = new WorkerManager();
 
@@ -60,18 +64,28 @@ public class WorkerManager {
 		// 본진에 적군 쳐들어온 경우
 		// if 드랍 -> scv 전체 튄다
 		// else -> scv 싸운다
+		Map<String, Unit> reasonMap;
 		if (infoMngr.isEnemyUnitInRadius(mainBaseLocation.getPosition(), 10)) {
-			if (infoMngr.getReasonForEnemysAppearance().equals("Drop")) {
+			reasonMap = infoMngr.getReasonForEnemysAppearance();
+			if (reasonMap.containsKey("Drop")) {
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
 						workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
 					}
 				}
 				return;
-			} else if (infoMngr.getReasonForEnemysAppearance().equals("Attack")) {
+			} else if (reasonMap.containsKey("Attack")) {
+				// 공격 대상 존재 - 건물 - 한 놈만 뽑아서 보내고 싶다
+				if (reasonMap.get("Attack") != null) {
+					Unit targetUnit = reasonMap.get("Attack");
+					Unit worker = getClosestAttackWorkerTo(targetUnit.getPosition());
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
+					return;
+				}
+				// 입구쪽 어택땅
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
 					}
 				}
 				return;
@@ -409,6 +423,34 @@ public class WorkerManager {
 		}
 	}
 
+	/// 타겟 건물로부터 가장 가까운 / 혹은 이미 배정된 worker 리턴
+	public Unit getClosestAttackWorkerTo(Position target) {
+		Unit closestUnit = null;
+		double closestDist = 1000000000;
+
+		if (currentAttackWorker != null && currentAttackWorker.exists() && currentAttackWorker.getHitPoints() > 0) {
+			return currentAttackWorker;
+		}
+		
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit.isCompleted() && unit.getHitPoints() > 0 && unit.exists() && unit.getType().isWorker()
+					&& WorkerManager.Instance().isMineralWorker(unit)) {
+				double dist = unit.getDistance(target);
+				if (closestUnit == null || dist < closestDist) {
+					closestUnit = unit;
+					closestDist = dist;
+				}
+			}
+		}
+
+		if (currentAttackWorker == null || currentAttackWorker.exists() == false
+				|| currentAttackWorker.getHitPoints() <= 0) {
+			currentAttackWorker = closestUnit;
+		}
+		
+		return currentAttackWorker;	
+	}
+	
 	/// target 으로부터 가장 가까운 Mineral 일꾼 유닛을 리턴합니다
 	public Unit getClosestMineralWorkerTo(Position target) {
 		Unit closestUnit = null;

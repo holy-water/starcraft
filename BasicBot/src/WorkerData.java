@@ -321,6 +321,22 @@ public class WorkerData {
 			// right click the mineral to start mining
 	        commandUtil.rightClick(unit, jobUnit);
 	    }
+	    else if (job == WorkerJob.Attack)
+		{	
+	    	if (jobUnit == null) {
+	    		// 본진 - 입구 중간 지점으로 Attack Move
+	    		Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+	    		Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
+	    		Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
+	    		commandUtil.attackMove(unit, targetPos);	    		
+	    	} else {
+	    		// 공격 중이 아닐때만
+				if (!unit.isAttacking())
+				{
+					commandUtil.attackUnit(unit, jobUnit);
+				}
+	    	}
+		} 
 		else if (job == WorkerJob.Scout)
 		{
 
@@ -361,23 +377,6 @@ public class WorkerData {
 		if (workerJobMap.get(unit.getID()) != WorkerJob.Move)
 		{
 			//BWAPI::Broodwar->printf("Something went horribly wrong");
-		}
-	}
-	
-	public void setWorkerJob(Unit unit, WorkerJob job)
-	{
-		if (unit == null) { return; }
-
-		clearPreviousJob(unit);
-		workerJobMap.put(unit.getID(), job);
-
-		if (job == WorkerJob.Attack)
-		{
-			// 본진 - 입구 중간 지점으로 Attack Move
-			Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-			Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
-			Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
-			commandUtil.attackMove(unit, targetPos);
 		}
 	}
 
