@@ -104,7 +104,8 @@ public class Config {
 	public static boolean DrawMouseCursorInfo = true;
 	
 	// 0729 - 최혜진 추가
-	public static boolean DrawTurretRange = true;
+	// 0805 - 최혜진 수정 Turret 범위 표시 삭제
+	public static boolean DrawTurretRange = false;
 
 	public static final Color ColorLineTarget = Color.White;
 	public static final Color ColorLineMineral = Color.Cyan;

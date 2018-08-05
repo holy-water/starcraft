@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
@@ -22,29 +23,30 @@ public class VultureMineManager {
 	// 0804 - 최혜진 수정 적군의 다리 앞으로 가는 Vulture의 unit과 각각의 상태를 관리하는 map 구조로 변경
 	public static Map<Unit, Integer> vultureForMine = new HashMap<Unit, Integer>();
 
-	// 0804 - 최혜진 추가 Vulture가 가지고 있는 Mine의 갯수를 관리하는 map
-	public static Map<Unit, Integer> vultureMineCount = new HashMap<Unit, Integer>();
-
 	private Map<Unit, Integer> duringWar;
 
-	private static int[] mineXLocationForCircuit = { 38, 88, 34, 91 };
-	private static int[] mineYLocationForCircuit = { 39, 40, 84, 84 };
-	private static int[] mineXLocationForSpirit = { 0, 0, 0, 0 };
-	private static int[] mineYLocationForSpirit = { 0, 0, 0, 0 };
+	private static int[] mineXLocationForCircuit = { 36, 90, 36, 90 };
+	private static int[] mineYLocationForCircuit = { 41, 41, 85, 85 };
+	private static int[] mineXLocationForSpirit = { 36, 83, 44, 89 };
+	private static int[] mineYLocationForSpirit = { 44, 32, 95, 82 };
 
 	private static Position targetPosition = Position.None;
+	private static Position minePlacementPosition = Position.None;
 
 	public static int enemyLocationOfBase;
 
-	private static int numberOfMineBuiltInEnemyBridge;
+	public static int doneWithMinePlacement;
+
+	public static int complete;
 
 	public enum VultureStatus {
-		NoVulture, /// < 벌쳐 유닛을 미지정한 상태
+		TargetNotAssigned, /// < 벌쳐 유닛의 target 위치 지정이 안된 상태
 		MovingToEnemyBridge, /// < 적군의 다리 앞으로 마인을 심으러 가는 상태
-		UseSpiderMine, /// < 다리 앞에 도착하여 다수의 마인을 심는 상태
+		PlaceSpiderMine, /// < 적군 다리에 마인 심는 상태
 		ComingBacktoMainBaseLocation, /// < 마인 심은 후 아군 BaseLocation으로 돌아오는 상태
 		RunningAwayFromEnemy, /// < 마인 심지 못하여 아군 진영으로 돌아오는 상태
-		AttackEnemy /// < 마인 심으러 이동 중 적군을 공격하는 상태
+		AttackEnemy, /// < 마인 심으러 이동 중 적군을 공격하는 상태
+		MissionComplete /// < 마인 심고 복귀 완료한 상태
 	};
 
 	private CommandUtil commandUtil = new CommandUtil();
@@ -70,16 +72,16 @@ public class VultureMineManager {
 	private void assignVultureIfNeeded() {
 
 		// 0804 - 최혜진 수정 적군으로 가는 Vulture가 없는 경우 idle 상태인 vulture 지정
-		if (vultureForMine.size() == 0) {
+		// 0805 - 최혜진 수정 idle 상태가 아닌 attack/move가 아닌 것으로 변경
+		if (vultureForMine.size() < 6) {
 			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 				if (unit.getType() == UnitType.Terran_Vulture) {
-					if (unit.isIdle() == true) {
-						vultureForMine.put(unit, VultureStatus.MovingToEnemyBridge.ordinal());
-						vultureMineCount.put(unit, 3);
+					if (vultureForMine.containsKey(unit)) {
+						continue;
 					}
-					// if (unit.isAttacking() == false && unit.isMoving() == false) {
-					// vultureForMine.put(unit, VultureStatus.MovingToEnemyBridge.ordinal());
-					// }
+					if (unit.isAttacking() == false && unit.isMoving() == false) {
+						vultureForMine.put(unit, VultureStatus.TargetNotAssigned.ordinal());
+					}
 				}
 			}
 		}
@@ -122,23 +124,73 @@ public class VultureMineManager {
 			targetPosition = tempTargetTilePosition.toPosition();
 			for (Unit vulture : vultureForMine.keySet()) {
 				vulture.move(targetPosition);
-				//useSpiderMineTech(vulture, targetPosition);
-				//vultureMineCount.replace(vulture, 2);
+				vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
 			}
 		} else {
-			for (Unit vulture : vultureForMine.keySet()) {
-				if(vulture.getPosition().getDistance(targetPosition)<100) {
-					vulture.useTech(TechType.Spider_Mines);
-					
-					//vultureMineCount.replace(vulture, 2);
-				}
+			if (vultureForMine.size() == 0 || vultureForMine.isEmpty() == true) {
+				return;
 			}
+			for (Unit vulture : vultureForMine.keySet()) {
+				if (vultureForMine.get(vulture) == VultureStatus.TargetNotAssigned.ordinal()) {
+					vulture.move(targetPosition);
+					vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
+				} else if (vultureForMine.get(vulture) == VultureStatus.MovingToEnemyBridge.ordinal()) {
+					if (vulture.getPosition().getDistance(targetPosition) < 10) {
+						// vulture가 Mine을 심을 장소에 도착
+						vultureForMine.replace(vulture, VultureStatus.PlaceSpiderMine.ordinal());
+					} else if (vulture.isIdle()) {
+						vulture.move(targetPosition);
+					}
+				} else if (vultureForMine.get(vulture) == VultureStatus.PlaceSpiderMine.ordinal()) {
+					if (vulture.isAttacking() == false && vulture.isMoving() == false) {
+						if (vulture.getSpiderMineCount() > 0) {
+							findTargetPostion(vulture);
+							useSpiderMineTech(vulture, targetPosition);
+						} else {
+							vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
+									.getCenter());
+							vultureForMine.replace(vulture, VultureStatus.ComingBacktoMainBaseLocation.ordinal());
+						}
+					}
+				} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
+					if (vulture.getPosition().getDistance(InformationManager.Instance()
+							.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()) < 50) {
+						vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
+					} else if (vulture.isIdle()) {
+						vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
+								.getCenter());
+					}
+
+				} else if (vultureForMine.get(vulture) == VultureStatus.MissionComplete.ordinal()) {
+					complete++;
+				}
+
+			}
+
+//			if (vultureForMine.size() == complete) {
+//				vultureForMine.clear();
+//			}
 		}
+	}
+
+	// 0805 - 최혜진 추가 Vulture가 Sprider Mine을 심을 위치를 찾아주는 메서드
+	private void findTargetPostion(Unit vulture) {
+
+		int lowerlimit = -4;
+		int upperlimit = 4;
+
+		int plusX = (int) (Math.random() * (upperlimit - lowerlimit + 1)) + lowerlimit;
+		int plusY = (int) (Math.random() * (upperlimit - lowerlimit + 1)) + lowerlimit;
+
+		int currentX = targetPosition.toTilePosition().getX();
+		int currentY = targetPosition.toTilePosition().getY();
+		TilePosition resultPosition = new TilePosition(currentX + plusX, currentY + plusY);
+		minePlacementPosition = resultPosition.toPosition();
 
 	}
 
 	// 0804 - 최혜진 추가 원하는 위치에 해당 vulture가 Spider Mine을 심는 메서드
-	public void useSpiderMineTech(Unit vulture, Position position) {
-		vulture.useTech(TechType.Spider_Mines, targetPosition);
+	private void useSpiderMineTech(Unit vulture, Position position) {
+		vulture.useTech(TechType.Spider_Mines, minePlacementPosition);
 	}
 }

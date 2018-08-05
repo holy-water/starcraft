@@ -47,12 +47,14 @@ public class ConstructionPlaceFinder {
 
 	// 0729 - 최혜진 추가
 	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
+	// 0805 - 최혜진 수정 투혼 맵 Turret 좌표
 	public static int numberOfTurretBuilt = 0;
 	private static int[] turretXLocationForCircuit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
 	private static int[] turretYLocationForCircuit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
-	private static int[] turretXLocationForSpirit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
-	private static int[] turretYLocationForSpirit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
-
+	private static int[] turretXLocationForSpirit = { 2, 8, 0, 26, 22, 94, 80, 0, 106, 120, 32, 46, 0, 21, 6, 124, 115,
+			0, 101, 102 };
+	private static int[] turretYLocationForSpirit = { 30, 44, 0, 19, 6, 3, 12, 0, 20, 29, 125, 113, 0, 104, 97, 95, 82,
+			0, 107, 120 };
 	// 0730 - 최혜진 추가
 	public static int numberOfFactoryBuilt = 0;
 	private static boolean isFirstBuilt;
@@ -63,6 +65,9 @@ public class ConstructionPlaceFinder {
 	private static int[] FactoryYLocationForCircuit = { 21, 17, 104, 108, 0 };
 	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
 	private static int[] FactoryYLocationForSpirit = { 20, 16, 104, 108, 0 };
+
+	// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
+	public static boolean zergNot4Drone;
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
@@ -257,11 +262,13 @@ public class ConstructionPlaceFinder {
 							ny = uppercornerY = 0;
 							locationOfBase = 2;
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-							nx = leftcornerX = 8;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = leftcornerX = 9;
 							ny = lowercornerY = 125;
 							locationOfBase = 3;
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-							nx = rightcornerX = 120;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = rightcornerX = 119;
 							ny = lowercornerY = 125;
 							locationOfBase = 4;
 						}
@@ -285,11 +292,13 @@ public class ConstructionPlaceFinder {
 							ny = uppercornerY = 0;
 							locationOfBase = 2;
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-							nx = leftcornerX = 5;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = leftcornerX = 6;
 							ny = lowercornerY = 125;
 							locationOfBase = 3;
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-							nx = rightcornerX = 120;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = rightcornerX = 119;
 							ny = lowercornerY = 125;
 							locationOfBase = 4;
 						}
@@ -322,7 +331,8 @@ public class ConstructionPlaceFinder {
 						} else if (locationOfBase == 3) {
 							if (numberOfSupply % 7 == 1) {
 								lowercornerY = lowercornerY - 2;
-								leftcornerX = 8;
+								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+								leftcornerX = 9;
 							} else {
 								leftcornerX = leftcornerX + 3;
 							}
@@ -331,7 +341,8 @@ public class ConstructionPlaceFinder {
 						} else if (locationOfBase == 4) {
 							if (numberOfSupply % 7 == 1) {
 								lowercornerY = lowercornerY - 2;
-								rightcornerX = 120;
+								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+								rightcornerX = 119;
 							} else {
 								rightcornerX = rightcornerX - 3;
 							}
@@ -364,7 +375,8 @@ public class ConstructionPlaceFinder {
 						} else if (locationOfBase == 3) {
 							if (numberOfSupply % 8 == 1) {
 								lowercornerY = lowercornerY - 2;
-								leftcornerX = 8;
+								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+								leftcornerX = 6;
 							} else {
 								leftcornerX = leftcornerX + 3;
 							}
@@ -373,7 +385,8 @@ public class ConstructionPlaceFinder {
 						} else if (locationOfBase == 4) {
 							if (numberOfSupply % 6 == 1) {
 								lowercornerY = lowercornerY - 2;
-								rightcornerX = 120;
+								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+								rightcornerX = 119;
 							} else {
 								rightcornerX = rightcornerX - 3;
 							}
@@ -459,6 +472,21 @@ public class ConstructionPlaceFinder {
 						if (locationOfBase == 1) {
 							blockx = tempFirstExpansion.getTilePosition().getX() + 3;
 							blocky = tempFirstExpansion.getTilePosition().getY() - 5;
+						} else if (locationOfBase == 2) {
+							// 0805 - 최혜진 추가
+							if (zergNot4Drone == false) {
+								desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType,
+										seedPosition, BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition);
+							} else {
+								desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType,
+										seedPosition, BuildOrderItem.SeedPositionStrategy.SecondChokePoint);
+								desiredPosition = ConstructionPlaceFinder.Instance()
+										.getBuildLocationNear(UnitType.Terran_Bunker,
+												InformationManager.Instance()
+														.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()
+														.toTilePosition());
+							}
+							break;
 						} else if (locationOfBase == 3) {
 							blockx = tempFirstExpansion.getTilePosition().getX() - 1;
 							blocky = tempFirstExpansion.getTilePosition().getY() - 2;
@@ -573,65 +601,66 @@ public class ConstructionPlaceFinder {
 					}
 				} else {
 					// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 지정
+					// 0805 - 최혜진 수정
 					if (locationOfBase == 1) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 5 == 2) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
-								desiredPosition = getBuildLocationNear(buildingType,
-										tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[numberOfTurretBuilt % 4];
-							turrety = turretYLocationForSpirit[numberOfTurretBuilt % 4];
+							turretx = turretXLocationForSpirit[numberOfTurretBuilt % 5];
+							turrety = turretYLocationForSpirit[numberOfTurretBuilt % 5];
 						}
 					} else if (locationOfBase == 2) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 5 == 2) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
-								desiredPosition = getBuildLocationNear(buildingType,
-										tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 4) + 4];
-							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 4) + 4];
+							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 5) + 5];
+							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 5];
 						}
 					} else if (locationOfBase == 3) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 5 == 2) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
-								desiredPosition = getBuildLocationNear(buildingType,
-										tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 4) + 8];
-							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 4) + 8];
+							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 5) + 10];
+							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 10];
 						}
 					} else if (locationOfBase == 4) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 5 == 2) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
-								desiredPosition = getBuildLocationNear(buildingType,
-										tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
+										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 4) + 12];
-							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 4) + 12];
+							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 5) + 15];
+							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 15];
 						}
+
 					}
 				}
-
 				tempTilePosition = new TilePosition(turretx, turrety);
 				desiredPosition = tempTilePosition.getPoint();
 				numberOfTurretBuilt++;
@@ -745,14 +774,43 @@ public class ConstructionPlaceFinder {
 						}
 					}
 				} else {
+					// 0805 - 최혜진 추가 투혼 맵도 동일하게 적용
 					if (locationOfBase == 1) {
-
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
 					} else if (locationOfBase == 2) {
-
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
 					} else if (locationOfBase == 3) {
-
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() + 8;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
 					} else if (locationOfBase == 4) {
-
+						if (isFirstBuilt == false) {
+							isFirstBuilt = true;
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() - 2;
+						} else {
+							ox = tempBaseLocation.getTilePosition().getX() - 10;
+							oy = tempBaseLocation.getTilePosition().getY() + 2;
+						}
 					}
 				}
 				tempTilePosition = new TilePosition(ox, oy);

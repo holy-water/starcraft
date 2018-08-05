@@ -189,7 +189,9 @@ public class StrategyManager {
 			} else if (self.completedUnitCount(UnitType.Terran_Engineering_Bay) > 0) {
 				// 최소한의 터렛으로 모든 위치를 막을 수 있게 정해진 위치에 터렛 짓기
 				// 0729 - 최혜진 테스트
-				if (countMgr.getTurret() < 4) {
+				// 0805 - 최혜진 추가 Turret 최대 갯수 서킷 맵 4개 투혼 맵 5개
+				int limit = MyBotModule.Broodwar.mapFileName().contains("Circuit") ? 4 : 5;
+				if (countMgr.getTurret() < limit) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
 						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
 								BuildOrderItem.SeedPositionStrategy.TurretAround, true);
@@ -505,7 +507,12 @@ public class StrategyManager {
 				continue;
 			}
 			if (unit.getEnergy() >= 100) {
-				Position enemyBaseLocation = informationMgr.getMainBaseLocation(enemy).getPosition();
+				// 0805 - 최혜진 수정 enemyBaseLocation이 어딘지 모를 경우에는 scan 시행하지 않음
+				BaseLocation enemyBase = informationMgr.getMainBaseLocation(enemy);
+				if (enemyBase == null) {
+					return;
+				}
+				Position enemyBaseLocation = enemyBase.getPosition();
 				if (enemyBaseLocationScanned == false) {
 					unit.useTech(TechType.Scanner_Sweep, enemyBaseLocation);
 					enemyBaseLocationScanned = true;
@@ -637,14 +644,15 @@ public class StrategyManager {
 				if (frameCount / 24 < 155) {
 					// 4드론
 					if (enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
-						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에
-						// Bunker
-						// 건설
+						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에 Bunker 건설
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 								BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
 						countMgr.setBunker();
 					}
 				} else {
+					// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
+					BuildManager.zergNot4Drone = true;
+					ConstructionPlaceFinder.zergNot4Drone = true;
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 					countMgr.setBunker();
@@ -669,7 +677,8 @@ public class StrategyManager {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
 								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
 							// 골리앗 사정거리 업그레이드
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters, true);
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
+									true);
 						}
 
 					}
@@ -1145,6 +1154,10 @@ public class StrategyManager {
 						commandUtil.attackMove(unit, bunker.getPosition());
 					}
 				} else {
+					// 0805 - 최혜진 추가 Mine 심으러 간다고 지정된 Vulture의 경우에는 해당 명령을 받지 않는다.
+					if(unit.getType() == UnitType.Terran_Vulture&&VultureMineManager.Instance().vultureForMine.containsKey(unit)) {
+						continue;
+					}
 					commandUtil.attackMove(unit, secondChokePoint.getCenter());
 				}
 			}
