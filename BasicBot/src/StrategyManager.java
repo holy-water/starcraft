@@ -15,7 +15,6 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwapi.WalkPosition;
-import bwapi.WeaponType;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
@@ -644,7 +643,8 @@ public class StrategyManager {
 				if (frameCount / 24 < 155) {
 					// 4드론
 					if (enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
-						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에 Bunker 건설
+						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에
+						// Bunker 건설
 						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 								BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
 						countMgr.setBunker();
@@ -762,7 +762,7 @@ public class StrategyManager {
 			// 0728 - 최혜진 수정 배럭스 드는 위치 수정
 			if (BuildManager.Instance().getLocationOfBase() == 1) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					targetPosition = new TilePosition(32, 40);
+					targetPosition = new TilePosition(23, 43);
 				} else {
 					// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
 					// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
@@ -770,7 +770,7 @@ public class StrategyManager {
 				}
 			} else if (BuildManager.Instance().getLocationOfBase() == 2) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					targetPosition = new TilePosition(95, 40);
+					targetPosition = new TilePosition(104, 43);
 				} else {
 					// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
 					// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
@@ -778,7 +778,7 @@ public class StrategyManager {
 				}
 			} else if (BuildManager.Instance().getLocationOfBase() == 3) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					targetPosition = new TilePosition(33, 89);
+					targetPosition = new TilePosition(23, 83);
 				} else {
 					// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
 					// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
@@ -786,7 +786,7 @@ public class StrategyManager {
 				}
 			} else if (BuildManager.Instance().getLocationOfBase() == 4) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					targetPosition = new TilePosition(94, 89);
+					targetPosition = new TilePosition(104, 83);
 				} else {
 					// 0726 - 최혜진 추가 투혼 맵 적용 일단 서킷과 동일하게
 					// 0728 - 최혜진 수정 투혼 맵 배럭스 드는 위치 수정
@@ -1114,7 +1114,7 @@ public class StrategyManager {
 		}
 
 		// 고급 병력 추가 훈련
-		if (self.minerals() >= 200 && self.supplyUsed() < 390) {
+		if (self.minerals() >= 150 && self.supplyUsed() < 390) {
 			for (Unit unit : myUnits) {
 				if (unit.getType() == UnitType.Terran_Factory) {
 					if (unit.isCompleted() && !unit.isTraining()) {
@@ -1147,6 +1147,9 @@ public class StrategyManager {
 				if (unit.getType().isWorker() || unit.getType().isBuilding()) {
 					continue;
 				}
+				if (unit.equals(tank)) {
+					continue;
+				}
 				if (unit.getType() == UnitType.Terran_Marine && bunker != null) {
 					if (bunker.isCompleted()) {
 						commandUtil.rightClick(unit, bunker);
@@ -1154,8 +1157,10 @@ public class StrategyManager {
 						commandUtil.attackMove(unit, bunker.getPosition());
 					}
 				} else {
-					// 0805 - 최혜진 추가 Mine 심으러 간다고 지정된 Vulture의 경우에는 해당 명령을 받지 않는다.
-					if(unit.getType() == UnitType.Terran_Vulture&&VultureMineManager.Instance().vultureForMine.containsKey(unit)) {
+					// 0805 - 최혜진 추가 Mine 심으러 간다고 지정된 Vulture의 경우에는 해당 명령을 받지
+					// 않는다.
+					if (unit.getType() == UnitType.Terran_Vulture
+							&& VultureMineManager.Instance().vultureForMine.containsKey(unit)) {
 						continue;
 					}
 					commandUtil.attackMove(unit, secondChokePoint.getCenter());
@@ -1168,25 +1173,25 @@ public class StrategyManager {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(17, 25);
 					} else {
-						targetPosition = new TilePosition(17, 25);
+						targetPosition = new TilePosition(21, 30);
 					}
 				} else if (BuildManager.Instance().getLocationOfBase() == 2) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(109, 25);
 					} else {
-						targetPosition = new TilePosition(109, 25);
+						targetPosition = new TilePosition(100, 19);
 					}
 				} else if (BuildManager.Instance().getLocationOfBase() == 3) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(18, 102);
 					} else {
-						targetPosition = new TilePosition(18, 102);
+						targetPosition = new TilePosition(27, 105);
 					}
 				} else if (BuildManager.Instance().getLocationOfBase() == 4) {
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 						targetPosition = new TilePosition(109, 102);
 					} else {
-						targetPosition = new TilePosition(109, 102);
+						targetPosition = new TilePosition(104, 97);
 					}
 				}
 				commandUtil.move(tank, targetPosition.toPosition());
@@ -1223,10 +1228,18 @@ public class StrategyManager {
 		else
 
 		{
+			// 1초에 한번만 실행
+			if (frameCount % 24 != 0) {
+				return;
+			}
+
 			if (isSiegeMode) {
 				for (Unit unit : myUnits) {
 					if (unit.getType().isWorker() || unit.getType().isBuilding()) {
 						continue;
+					}
+					if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+						break;
 					}
 					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 						unit.useTech(TechType.Tank_Siege_Mode);
@@ -1237,6 +1250,9 @@ public class StrategyManager {
 					if (unit.getType().isWorker() || unit.getType().isBuilding()) {
 						continue;
 					}
+					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+						break;
+					}
 					if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
 						unit.unsiege();
 					}
@@ -1245,11 +1261,6 @@ public class StrategyManager {
 			// std.cout + "enemy OccupiedBaseLocations : " +
 			// InformationMgr.getOccupiedBaseLocations(InformationMgr._enemy).size()
 			// + std.endl;
-
-			// 5초에 한번만 실행
-			if (frameCount % (24 * 1) != 0) {
-				return;
-			}
 
 			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {

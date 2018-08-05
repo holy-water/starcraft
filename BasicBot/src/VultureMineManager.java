@@ -21,9 +21,7 @@ import bwta.Region;
 public class VultureMineManager {
 
 	// 0804 - 최혜진 수정 적군의 다리 앞으로 가는 Vulture의 unit과 각각의 상태를 관리하는 map 구조로 변경
-	public static Map<Unit, Integer> vultureForMine = new HashMap<Unit, Integer>();
-
-	private Map<Unit, Integer> duringWar;
+	public Map<Unit, Integer> vultureForMine = new HashMap<Unit, Integer>();
 
 	private static int[] mineXLocationForCircuit = { 36, 90, 36, 90 };
 	private static int[] mineYLocationForCircuit = { 41, 41, 85, 85 };
