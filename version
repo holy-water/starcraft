@@ -20,6 +20,24 @@
  - 기본적으로 공격하는 드라군 수만큼 SCV가 벙커를 고치지 않으면 벙커는 파괴
 
 
+
+BasicBot v1.4.9
+1. 투혼 맵 Turret 위치 지정
+ - 서킷 4대, 투혼 5대
+2. 5시 7시 방향 Supply Depot 시작 X 좌표 미네랄과 여유 있도록 이동
+3. 투혼 맵 Starport, Science Facility 위치 지정
+4. 투혼 맵 1시 방향 상대팀 저그(4드론X)일 시 Bunker 위치 오류 수정, 두번째 길목 지정
+5. 적군 본진 위치 모를 때 Scan 사용 시 발생하는 NullPointer 에러 핸들링
+6. Turret 공격 가능 범위 표시선 기능 off
+7. 적 본진 입구 위치에 Spider Mine 심기 기능 기본 구현
+ - 최대 6마리까지 가능
+ - 총공격 모드가 아니며, attacking이나 moving 상태가 아닌 Vulture 대상
+ - findTargetPostion(Unit vulture) : 특정 지점 주위에 랜덤으로 심을 장소 찾는 메서드
+ - useSpiderMineTech(Unit vulture, Position position) : 해당 Vulture가 해당 지점에 마인 심도록 하는 메서드
+ - 심으러 가는 도중에 적을 만나도 무시하고 지나가는 상태
+
+
+
 BasicBot v1.4.8
 1. 공격 모드 전환 시 타임아웃 현상 해결
  - ExecuteCombat 함수에서 해당 문제 발생 (공격 모드 전환 시 해당 함수에서 35 ~ 45ms 소요) * 나머지 함수는 0 ~ 1ms
