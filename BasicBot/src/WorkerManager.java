@@ -75,17 +75,43 @@ public class WorkerManager {
 				}
 				return;
 			} else if (reasonMap.containsKey("Attack")) {
-				// 공격 대상 존재 - 건물 - 한 놈만 뽑아서 보내고 싶다
 				if (reasonMap.get("Attack") != null) {
 					Unit targetUnit = reasonMap.get("Attack");
-					Unit worker = getClosestAttackWorkerTo(targetUnit.getPosition());
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
+					// 공격 대상 존재 - 건물 - 한 놈만 뽑아서 보내고 싶다
+					if (targetUnit.getType().isBuilding()) {
+						Unit worker = getClosestAttackWorkerTo(targetUnit.getPosition());
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));						
+					}
+					// 공격 대상 존재 - 일꾼 - 공격 당한 놈이 복수한다
+					else {
+						workerData.setWorkerJob(targetUnit.getOrderTarget(), WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
+					}
 					return;
 				}
+			} else if (reasonMap.containsKey("AttackAll")) {
 				// 입구쪽 어택땅
 				for (Unit worker : workerData.getWorkers()) {
 					if (worker.isCompleted()) {
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.AttackAll);
+					}
+				}
+				return;				
+			}
+		}
+		
+		Map<String, Unit> reasonMapForMulti;
+		if (infoMngr.isEnemyUnitInRadius(firstExpansionLocation.getPosition(), 10)) {
+			reasonMapForMulti = infoMngr.getReasonForEnemysAppearanceAtMulti();
+			if (reasonMapForMulti.containsKey("Attack")) {
+				Unit targetUnit = reasonMapForMulti.get("Attack");
+				if (targetUnit != null) {
+					workerData.setWorkerJob(targetUnit.getOrderTarget(), WorkerData.WorkerJob.Attack, reasonMapForMulti.get("Attack"));
+					return;
+				}
+			} else if (reasonMapForMulti.containsKey("RunAway")) {
+				for (Unit worker : workerData.getWorkers()) {
+					if (worker.isCompleted() && BWTA.getRegion(worker.getPosition()) == firstExpansionLocation.getRegion()) {
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, mainBaseLocation.getStaticMinerals().get(0));
 					}
 				}
 				return;
@@ -98,33 +124,9 @@ public class WorkerManager {
 				continue;
 			}
 
-			// 4드론 공격시 scv 전체 공격 태세 전환
-			/*if (infoMngr.isEmergency()) {
-				// 벙커가 완성되기 전까지는 저글링과 싸운다
-				if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Bunker) == 0) {
-					while (attackScvCnt < optimalAttackCnt) {
-						if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Build
-								&& workerData.getWorkerBuildingType(worker) == UnitType.Terran_Bunker) {
-							continue;
-						}
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack);
-						attackScvCnt++;
-					}
-				}
-				// 벙커가 완성되면 벙커 수리 (이때 벙커가 체력이 풀이라 수리가 되지않으면 우클릭시 벙커안으로 들어갈 수있으니 주의)
-				else {
-					for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-						if (unit.getType() == UnitType.Terran_Bunker) {
-							workerData.setWorkerJob(worker, WorkerData.WorkerJob.Repair, unit);
-							break;
-						}
-					}
-				}
-			}*/
-
 			// worker가 공격을 받으면 다른 진영으로 도망가도록 설정
 			// 테스트 아직 못한 상태
-			if (worker.isUnderAttack()) {
+			/*if (worker.isUnderAttack()) {
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
 				if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion()) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway,
@@ -146,7 +148,7 @@ public class WorkerManager {
 					}
 				}
 				continue;
-			}
+			}*/
 
 			// 게임상에서 worker가 isIdle 상태가 되었으면 (새로 탄생했거나, 그전 임무가 끝난 경우),
 			// WorkerData 도 Idle 로 맞춘 후, handleGasWorkers, handleIdleWorkers 등에서
@@ -664,11 +666,10 @@ public class WorkerManager {
 			}
 
 			// Move / Idle Worker 가 없을때, 다른 Worker 중에서 차출한다
-			// 0806 - 최혜진 수정 정찰 SCV가 건설에 동원되지 않도록 수정
 			if (unit.isCompleted() && (workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Move
 					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Idle
-					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Build&&
-					workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Scout)) {
+					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Build
+					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Scout)) {
 				// if it is a new closest distance, set the pointer
 				double distance = unit.getDistance(buildingPosition.toPosition());
 				if (closestMiningWorker == null || (distance < closestMiningWorkerDistance

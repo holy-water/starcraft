@@ -305,8 +305,8 @@ public class InformationManager {
 		return forcePoint;
 	}
 
-	// 현재 어떤 상황인지 체크
-	// Drop / Attack / Scout 
+	// 현재 본진이 어떤 상황인지 체크
+	// Drop / Attack / Scout / AttackAll
 	public Map<String, Unit> getReasonForEnemysAppearance() {
 		Map<String, Unit> reasonMap = new HashMap<>();
 		for (Unit unit : enemyPlayer.getUnits()) {
@@ -320,15 +320,44 @@ public class InformationManager {
 						reasonMap.put("Scout", null);		// 정찰
 					}
 				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
-					reasonMap.put("Scout", null);			// 정찰
+					if (unit.isAttacking()) {
+						if (unit.getOrderTarget().getType() == UnitType.Terran_SCV) {
+							reasonMap.put("Attack", unit);		// 일꾼이 일꾼 공격
+							break;							
+						}
+					} else {
+						reasonMap.put("Scout", null);		// 정찰						
+					}
 				} else if (unit.getType().isBuilding() && unit.isCompleted() && unit.getHitPoints() == unit.getType().maxHitPoints()) {
 					reasonMap.put("Attack", unit);			// 적 건물 건설
 					break;
 				} else if (unit.getType().isBuilding()) {
 					reasonMap.put("Scout", null);
 				} else {
-					reasonMap.put("Attack", null);			// 드랍 상황 무관 / 공격 타이밍
+					reasonMap.put("AttackAll", null);		// 드랍 상황 무관 / 공격 타이밍
 					break;
+				}
+			}
+		}
+		return reasonMap;
+	}
+	
+	// 현재 본진이 어떤 상황인지 체크
+	// RunAway / Attack
+	public Map<String, Unit> getReasonForEnemysAppearanceAtMulti() {
+		Map<String, Unit> reasonMap = new HashMap<>();
+		for (Unit unit : enemyPlayer.getUnits()) {
+			if (BWTA.getRegion(unit.getPosition()) == getFirstExpansionLocation(selfPlayer).getRegion()) {
+				if (unit.isAttacking()) {
+					if (unit.getOrderTarget().getType() == UnitType.Terran_SCV) {
+						if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
+							reasonMap.put("Attack", unit);		// 일꾼이 일꾼 공격
+							break;
+						} else {
+							reasonMap.put("RunAway", null);		// 도망
+							break;
+						}						
+					}
 				}
 			}
 		}

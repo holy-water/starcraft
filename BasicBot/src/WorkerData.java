@@ -24,6 +24,7 @@ public class WorkerData {
 		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨.
 		RunAway,		///< 도망. Move와 다름.
 		Attack,			///< 공격. 4드론 전략에 대응할 때
+		AttackAll,		///< 총공격. 본진 위기
 		Default 		///< 기본. 미설정 상태. 
 	};
 	
@@ -323,13 +324,7 @@ public class WorkerData {
 	    }
 	    else if (job == WorkerJob.Attack)
 		{	
-	    	if (jobUnit == null) {
-	    		// 본진 - 입구 중간 지점으로 Attack Move
-	    		Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-	    		Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
-	    		Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
-	    		commandUtil.attackMove(unit, targetPos);	    		
-	    	} else {
+	    	if (jobUnit != null) {
 	    		// 공격 중이 아닐때만
 				if (!unit.isAttacking())
 				{
@@ -378,6 +373,23 @@ public class WorkerData {
 		{
 			//BWAPI::Broodwar->printf("Something went horribly wrong");
 		}
+	}
+	
+	public void setWorkerJob(Unit unit, WorkerJob job)
+	{
+		if (unit == null) { return; }
+
+		clearPreviousJob(unit);
+		workerJobMap.put(unit.getID(), job);
+
+		if (job == WorkerJob.AttackAll)
+		{	
+    		// 본진 - 입구 중간 지점으로 Attack Move
+    		Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
+    		Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
+    		Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
+    		commandUtil.attackMove(unit, targetPos);
+		} 
 	}
 
 	public void clearPreviousJob(Unit unit)
