@@ -166,6 +166,16 @@ public class StrategyManager {
 		// //////////////////////////////////////////////////
 	}
 
+	private boolean isConstructEngineeringBay(Race race) {
+		if (race == Race.Terran) {
+			return countMgr.getFactory() > 2;
+		} else if (race == Race.Zerg) {
+			return countMgr.getFactory() > 0;
+		}
+		return true;
+
+	}
+
 	// 0702 수정
 	private void executeBuildingManagement() {
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
@@ -178,9 +188,7 @@ public class StrategyManager {
 			return;
 		}
 
-		int count = enemy.getRace() == Race.Terran ? 2 : 0;
-
-		if (countMgr.getFactory() > count) {
+		if (isConstructEngineeringBay(enemy.getRace())) {
 			if (countMgr.getEngineeringBay() == 0) {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Engineering_Bay,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -190,7 +198,13 @@ public class StrategyManager {
 				// 0729 - 최혜진 테스트
 				// 0805 - 최혜진 추가 Turret 최대 갯수 서킷 맵 4개 투혼 맵 5개
 				int limit = MyBotModule.Broodwar.mapFileName().contains("Circuit") ? 4 : 5;
-				if (countMgr.getTurret() < limit) {
+				if (countMgr.getTurret() == 0) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
+						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
+								BuildOrderItem.SeedPositionStrategy.TurretAround, true);
+						countMgr.setTurret();
+					}
+				} else if (self.minerals() >= 500 && countMgr.getTurret() < limit) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
 						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
 								BuildOrderItem.SeedPositionStrategy.TurretAround, true);
@@ -203,7 +217,8 @@ public class StrategyManager {
 		// 0715 추가 - 머신샵 추가
 		// 0722 추가 - 터렛 및 메카닉 업그레이드 추가
 		if (countMgr.getCompletedFactory() > 0) {
-			if (countMgr.getMachineShop() < Math.max(2, (int) Math.sqrt(countMgr.getCompletedFactory()))) {
+			int count = enemy.getRace() == Race.Protoss ? 1 : 2;
+			if (countMgr.getMachineShop() < Math.max(count, (int) Math.sqrt(countMgr.getCompletedFactory()))) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					// 0730 - 최혜진 수정 Factory 건설 전략 적용
@@ -213,16 +228,18 @@ public class StrategyManager {
 				}
 			}
 
-			if (countMgr.getAcademy() == 0) {
-				BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-				countMgr.setAcademy();
-			} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
-				if (countMgr.getComsatStation() == 0) {
-					for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
-								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-						countMgr.setComsatStation();
+			if (self.minerals() > 500) {
+				if (countMgr.getAcademy() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setAcademy();
+				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
+					if (countMgr.getComsatStation() == 0) {
+						for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							countMgr.setComsatStation();
+						}
 					}
 				}
 			}
@@ -606,7 +623,7 @@ public class StrategyManager {
 								BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
 						countMgr.setBunker();
 					}
-				} else {
+				} else if (self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
 					countMgr.setBunker();
@@ -865,7 +882,6 @@ public class StrategyManager {
 				// 17 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-
 				// Bunker - 0724 최혜진 테스트용
 				// BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Bunker,
 				// BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
@@ -893,7 +909,7 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
 						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 
-			} else {
+			} else if (enemy.getRace() == Race.Protoss) {
 				// 0628 수정
 				// 5 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
@@ -946,12 +962,103 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(
 						informationMgr.getBasicSupplyProviderUnitType(),
 						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+				// Refinery
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(informationMgr.getRefineryBuildingType(),
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 2 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 16 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 3 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 17 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 4 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Factory - 0702 최혜진 수정 입구로
+				// 0730 - 최혜진 수정 Factory 건설 전략 적용
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
+				// 18 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Engineering Bay
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Engineering_Bay,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 19 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Factory - 0702 최혜진 수정 입구로
+				// 0730 - 최혜진 수정 Factory 건설 전략 적용
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
+						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
+				// 20 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+			} else {
+				// 0628 수정
+				// 5 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 6 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 7 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Supply Depot - 최혜진 수정
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						informationMgr.getBasicSupplyProviderUnitType(),
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+				// 8 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 9 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Barracks - 0704 최혜진 수정
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
+						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+				// 10 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 11 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 12 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 13 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 1 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 14 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Command Center
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						informationMgr.getBasicResourceDepotBuildingType(),
+						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+				// 15 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Refinery
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(informationMgr.getRefineryBuildingType(),
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 16 SCV
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// Supply Depot - 0704 최혜진 수정
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(
+						informationMgr.getBasicSupplyProviderUnitType(),
+						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 				// 17 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -961,17 +1068,14 @@ public class StrategyManager {
 				// 19 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				// 20 SCV
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
 				// 0730 - 최혜진 수정 Factory 건설 전략 적용
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Factory,
 						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
-				// 21 SCV
+				// 20 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-				// 22 SCV
+				// 21 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
@@ -1114,15 +1218,15 @@ public class StrategyManager {
 		}
 
 		// 고급 병력 추가 훈련
-		if (self.minerals() >= 150 && self.supplyUsed() < 390) {
+		if (self.supplyUsed() < 390) {
 			for (Unit unit : myUnits) {
 				if (unit.getType() == UnitType.Terran_Factory) {
 					if (unit.isCompleted() && !unit.isTraining()) {
-						if (unit.getAddon() != null && self.gas() >= 100) {
+						if (unit.getAddon() != null && self.minerals() >= 150 && self.gas() >= 100) {
 							unit.train(UnitType.Terran_Siege_Tank_Tank_Mode);
-						} else if (isAirAttack && self.gas() >= 50) {
+						} else if (isAirAttack && self.minerals() >= 100 && self.gas() >= 50) {
 							unit.train(UnitType.Terran_Goliath);
-						} else {
+						} else if (self.minerals() >= 75) {
 							unit.train(UnitType.Terran_Vulture);
 						}
 					}
@@ -1228,11 +1332,6 @@ public class StrategyManager {
 		else
 
 		{
-			// 1초에 한번만 실행
-			if (frameCount % 24 != 0) {
-				return;
-			}
-
 			if (isSiegeMode) {
 				for (Unit unit : myUnits) {
 					if (unit.getType().isWorker() || unit.getType().isBuilding()) {
@@ -1261,6 +1360,11 @@ public class StrategyManager {
 			// std.cout + "enemy OccupiedBaseLocations : " +
 			// InformationMgr.getOccupiedBaseLocations(InformationMgr._enemy).size()
 			// + std.endl;
+
+			// 1초에 한번만 실행
+			if (frameCount % 24 != 0) {
+				return;
+			}
 
 			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {

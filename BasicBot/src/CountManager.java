@@ -40,6 +40,8 @@ public class CountManager {
 		this.refinery = Math.max(this.refinery, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Refinery));
 
 		this.bunker = Math.max(this.bunker, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Bunker));
+		
+		this.engineeringBay = Math.max(this.engineeringBay, MyBotModule.Broodwar.self().allUnitCount(UnitType.Terran_Bunker));
 
 		this.completedMachineShop = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Machine_Shop);
 
