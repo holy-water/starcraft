@@ -356,6 +356,7 @@ public class StrategyManager {
 			if (unit.getType().isBuilding() || unit.getType().isWorker() || isGroundRangeUnit(unit.getType())) {
 				continue;
 			}
+
 			Unit myUnit = unit.getOrderTarget();
 			if (myUnit != null) {
 				if (myUnit.getGroundWeaponCooldown() != 0) {
@@ -676,6 +677,14 @@ public class StrategyManager {
 				}
 			}
 		} else {
+			// 0806 추가
+			if (countMgr.getBunker() == 0) {
+				if (self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.SecondChokePoint, true);
+					countMgr.setBunker();
+				}
+			}
 			// 레이스
 			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0) {
 				if (countMgr.getEngineeringBay() == 0) {
@@ -1302,8 +1311,9 @@ public class StrategyManager {
 				isTankMoving = true;
 			}
 
-			// 0716 수정
-			if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 11) {
+			// 0806 수정
+			if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 11
+					&& self.completedUnitCount(UnitType.Terran_Vulture) > 11) {
 				if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 						&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
 					isFullScaleAttackStarted = true;
