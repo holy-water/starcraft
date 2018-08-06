@@ -21,6 +21,19 @@
 
 
 
+BasicBot v1.5.0
+1. VultureMineManager NullPointer 에러 수정
+ - 적 본진 위치 모를때
+ - 죽은 Vulture에게 명령 내릴때
+2. 투혼 맵 Factory 위치 입구와 가장 가까운 순서대로 지어지도록 최적화
+3. 상대팀 Zerg시 정찰 임무의 SCV가 건물 건설에 동원되지 않도록 수정
+4. Turret을 두번째 길목에 가장 먼저 심도록 수정
+5. 해야할 일
+ - 투혼 맵 1시 방향 상대팀 저그(4드론 X)시 Bunker 건설하지 못하는 에러 발생 중
+ - 앞마당 건설 전략 수정
+
+
+
 BasicBot v1.4.9
 1. 투혼 맵 Turret 위치 지정
  - 서킷 4대, 투혼 5대
