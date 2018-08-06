@@ -100,6 +100,10 @@ public class VultureMineManager {
 					.getFirstExpansionLocation(MyBotModule.Broodwar.enemy());
 			Chokepoint enemySecondChockPoint = InformationManager.Instance()
 					.getSecondChokePoint(MyBotModule.Broodwar.enemy());
+			// 0806 - 최혜진 추가 적 본진 모를때 로직 수행 불가
+			if(enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
+				return;
+			}
 			int dx = enemyBaseLocation.getX() - enemySecondChockPoint.getCenter().getX();
 			int dy = enemyBaseLocation.getTilePosition().getY() - enemyFirstExpansion.getTilePosition().getY();
 			if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
@@ -121,53 +125,59 @@ public class VultureMineManager {
 			}
 			targetPosition = tempTargetTilePosition.toPosition();
 			for (Unit vulture : vultureForMine.keySet()) {
-				vulture.move(targetPosition);
-				vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
+				// 0806 - 죽은 Vulture에 대한 Nullpointer 에러 핸들링
+				if (vulture.exists()) {
+					vulture.move(targetPosition);
+					vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
+				}
 			}
 		} else {
 			if (vultureForMine.size() == 0 || vultureForMine.isEmpty() == true) {
 				return;
 			}
 			for (Unit vulture : vultureForMine.keySet()) {
-				if (vultureForMine.get(vulture) == VultureStatus.TargetNotAssigned.ordinal()) {
-					vulture.move(targetPosition);
-					vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
-				} else if (vultureForMine.get(vulture) == VultureStatus.MovingToEnemyBridge.ordinal()) {
-					if (vulture.getPosition().getDistance(targetPosition) < 10) {
-						// vulture가 Mine을 심을 장소에 도착
-						vultureForMine.replace(vulture, VultureStatus.PlaceSpiderMine.ordinal());
-					} else if (vulture.isIdle()) {
+				// 0806 - 죽은 Vulture에 대한 Nullpointer 에러 핸들링
+				if (vulture.exists()) {
+					if (vultureForMine.get(vulture) == VultureStatus.TargetNotAssigned.ordinal()) {
 						vulture.move(targetPosition);
-					}
-				} else if (vultureForMine.get(vulture) == VultureStatus.PlaceSpiderMine.ordinal()) {
-					if (vulture.isAttacking() == false && vulture.isMoving() == false) {
-						if (vulture.getSpiderMineCount() > 0) {
-							findTargetPostion(vulture);
-							useSpiderMineTech(vulture, targetPosition);
-						} else {
+						vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
+					} else if (vultureForMine.get(vulture) == VultureStatus.MovingToEnemyBridge.ordinal()) {
+						if (vulture.getPosition().getDistance(targetPosition) < 10) {
+							// vulture가 Mine을 심을 장소에 도착
+							vultureForMine.replace(vulture, VultureStatus.PlaceSpiderMine.ordinal());
+						} else if (vulture.isIdle()) {
+							vulture.move(targetPosition);
+						}
+					} else if (vultureForMine.get(vulture) == VultureStatus.PlaceSpiderMine.ordinal()) {
+						if (vulture.isAttacking() == false && vulture.isMoving() == false) {
+							if (vulture.getSpiderMineCount() > 0) {
+								findTargetPostion(vulture);
+								useSpiderMineTech(vulture, targetPosition);
+							} else {
+								vulture.move(InformationManager.Instance()
+										.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter());
+								vultureForMine.replace(vulture, VultureStatus.ComingBacktoMainBaseLocation.ordinal());
+							}
+						}
+					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
+						if (vulture.getPosition().getDistance(InformationManager.Instance()
+								.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()) < 50) {
+							vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
+						} else if (vulture.isIdle()) {
 							vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
 									.getCenter());
-							vultureForMine.replace(vulture, VultureStatus.ComingBacktoMainBaseLocation.ordinal());
 						}
-					}
-				} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
-					if (vulture.getPosition().getDistance(InformationManager.Instance()
-							.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()) < 50) {
-						vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
-					} else if (vulture.isIdle()) {
-						vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
-								.getCenter());
+
+					} else if (vultureForMine.get(vulture) == VultureStatus.MissionComplete.ordinal()) {
+						complete++;
 					}
 
-				} else if (vultureForMine.get(vulture) == VultureStatus.MissionComplete.ordinal()) {
-					complete++;
 				}
 
+				// if (vultureForMine.size() == complete) {
+				// vultureForMine.clear();
+				// }
 			}
-
-//			if (vultureForMine.size() == complete) {
-//				vultureForMine.clear();
-//			}
 		}
 	}
 

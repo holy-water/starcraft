@@ -48,23 +48,26 @@ public class ConstructionPlaceFinder {
 	// 0729 - 최혜진 추가
 	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
 	// 0805 - 최혜진 수정 투혼 맵 Turret 좌표
+	// 0806 - 최혜진 수정 Turret이 두번째 길목에 가장 먼저 건설되도록 변경
 	public static int numberOfTurretBuilt = 0;
-	private static int[] turretXLocationForCircuit = { 6, 0, 20, 24, 120, 0, 106, 102, 6, 0, 20, 24, 120, 0, 106, 102 };
-	private static int[] turretYLocationForCircuit = { 42, 0, 19, 6, 42, 0, 19, 6, 85, 0, 107, 120, 85, 0, 107, 120 };
-	private static int[] turretXLocationForSpirit = { 2, 8, 0, 26, 22, 94, 80, 0, 106, 120, 32, 46, 0, 21, 6, 124, 115,
-			0, 101, 102 };
-	private static int[] turretYLocationForSpirit = { 30, 44, 0, 19, 6, 3, 12, 0, 20, 29, 125, 113, 0, 104, 97, 95, 82,
-			0, 107, 120 };
+	private static int[] turretXLocationForCircuit = { 0, 6, 20, 24, 0, 120, 106, 102, 0, 6, 20, 24, 0, 120, 106, 102 };
+	private static int[] turretYLocationForCircuit = { 0, 42, 19, 6, 0, 42, 19, 6, 0, 85, 107, 120, 0, 85, 107, 120 };
+	private static int[] turretXLocationForSpirit = { 0, 2, 8, 26, 22, 0, 94, 80, 106, 120, 0, 32, 46, 21, 6, 0, 124,
+			115, 101, 102 };
+	private static int[] turretYLocationForSpirit = { 0, 30, 44, 19, 6, 0, 3, 12, 20, 29, 0, 125, 113, 104, 97, 0, 95,
+			82, 107, 120 };
 	// 0730 - 최혜진 추가
 	public static int numberOfFactoryBuilt = 0;
 	private static boolean isFirstBuilt;
 
 	// 0801 - 최혜진 추가 Factory 좌표 지정
 	// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
+	// 0806 - 최혜진 수정 투혼 맵 Factory 좌표 입구와 가깝게 수정
 	private static int[] FactoryXLocationForCircuit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
 	private static int[] FactoryYLocationForCircuit = { 21, 17, 104, 108, 0 };
-	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
-	private static int[] FactoryYLocationForSpirit = { 20, 16, 104, 108, 0 };
+	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 109, 116, 120, 124, 13, 8, 4, 0, 122, 117, 113,
+			109 };
+	private static int[] FactoryYLocationForSpirit = { 24, 20, 15, 19, 107, 103, 102, 106 };
 
 	// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
 	public static boolean zergNot4Drone;
@@ -538,12 +541,13 @@ public class ConstructionPlaceFinder {
 				desiredPosition = tempTilePosition.getPoint();
 				break;
 			// 0729 - 최혜진 추가 본진 및 앞마당 방어를 위한 Turret 건설 전략
+			// 0806 - 최혜진 수정 Turret이 두번째 길목에 가장 먼저 건설되도록 변경
 			case TurretAround:
 				int turretx = 0;
 				int turrety = 0;
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 4 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -557,7 +561,7 @@ public class ConstructionPlaceFinder {
 							turrety = turretYLocationForCircuit[numberOfTurretBuilt % 4];
 						}
 					} else if (locationOfBase == 2) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 4 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -571,7 +575,7 @@ public class ConstructionPlaceFinder {
 							turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
 						}
 					} else if (locationOfBase == 3) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 4 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -585,7 +589,7 @@ public class ConstructionPlaceFinder {
 							turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
 						}
 					} else if (locationOfBase == 4) {
-						if (numberOfTurretBuilt % 4 == 1) {
+						if (numberOfTurretBuilt % 4 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -603,7 +607,7 @@ public class ConstructionPlaceFinder {
 					// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 지정
 					// 0805 - 최혜진 수정
 					if (locationOfBase == 1) {
-						if (numberOfTurretBuilt % 5 == 2) {
+						if (numberOfTurretBuilt % 5 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -617,7 +621,7 @@ public class ConstructionPlaceFinder {
 							turrety = turretYLocationForSpirit[numberOfTurretBuilt % 5];
 						}
 					} else if (locationOfBase == 2) {
-						if (numberOfTurretBuilt % 5 == 2) {
+						if (numberOfTurretBuilt % 5 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -631,7 +635,7 @@ public class ConstructionPlaceFinder {
 							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 5];
 						}
 					} else if (locationOfBase == 3) {
-						if (numberOfTurretBuilt % 5 == 2) {
+						if (numberOfTurretBuilt % 5 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -645,7 +649,7 @@ public class ConstructionPlaceFinder {
 							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 10];
 						}
 					} else if (locationOfBase == 4) {
-						if (numberOfTurretBuilt % 5 == 2) {
+						if (numberOfTurretBuilt % 5 == 0) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -699,29 +703,30 @@ public class ConstructionPlaceFinder {
 					}
 				} else {
 					// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
+					// 0806 - 최혜진 수정 투혼 맵 Factory 입구와 가깝게 좌표 수정
 					if (locationOfBase == 1) {
 						int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
-						if (numberOfFactoryBuiltInt < 8) {
+						if (numberOfFactoryBuiltInt < 16) {
 							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
 							fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
 						}
 					} else if (locationOfBase == 2) {
 						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
-						if (numberOfFactoryBuiltInt < 8) {
+						if (numberOfFactoryBuiltInt < 16) {
 							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
+							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
 						}
 					} else if (locationOfBase == 3) {
-						int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
-						if (numberOfFactoryBuiltInt < 8) {
+						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 8;
+						if (numberOfFactoryBuiltInt < 16) {
 							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
+							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 4];
 						}
 					} else if (locationOfBase == 4) {
-						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
-						if (numberOfFactoryBuiltInt < 8) {
+						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 12;
+						if (numberOfFactoryBuiltInt < 16) {
 							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
+							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 6];
 						}
 					}
 				}
