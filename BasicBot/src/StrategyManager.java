@@ -458,10 +458,7 @@ public class StrategyManager {
 
 		countMgr.update();
 
-		// 적이 테란인 경우 벙커를 건설하지 않기 때문에 크기 구분
-		int size = enemy.getRace() == Race.Terran ? 2 : 3;
-
-		if (myUnitMap.size() == size) {
+		if (myUnitMap.size() == 3) {
 			return;
 		}
 
@@ -557,7 +554,7 @@ public class StrategyManager {
 			unit.lift();
 		} else {
 			TilePosition targetPosition = TilePosition.None;
-			if (BuildManager.Instance().getLocationOfBase() == 1) {
+			if (informationMgr.getDirectionOfStartLocation(self) == 11) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					targetPosition = new TilePosition(9, 49);
 				} else {
@@ -565,7 +562,7 @@ public class StrategyManager {
 					// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
 					targetPosition = new TilePosition(8, 53);
 				}
-			} else if (BuildManager.Instance().getLocationOfBase() == 2) {
+			} else if (informationMgr.getDirectionOfStartLocation(self) == 1) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					targetPosition = new TilePosition(118, 49);
 				} else {
@@ -573,7 +570,7 @@ public class StrategyManager {
 					// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
 					targetPosition = new TilePosition(71, 8);
 				}
-			} else if (BuildManager.Instance().getLocationOfBase() == 3) {
+			} else if (informationMgr.getDirectionOfStartLocation(self) == 7) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					targetPosition = new TilePosition(9, 77);
 				} else {
@@ -581,7 +578,7 @@ public class StrategyManager {
 					// 0728 - 최혜진 수정 투혼 맵 Engineering Bay 드는 위치 수정
 					targetPosition = new TilePosition(54, 121);
 				}
-			} else if (BuildManager.Instance().getLocationOfBase() == 4) {
+			} else if (informationMgr.getDirectionOfStartLocation(self) == 5) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					targetPosition = new TilePosition(118, 77);
 				} else {
@@ -1283,25 +1280,25 @@ public class StrategyManager {
 
 	private TilePosition getTankPosition() {
 		TilePosition targetPosition = TilePosition.None;
-		if (BuildManager.Instance().getLocationOfBase() == 1) {
+		if (informationMgr.getDirectionOfStartLocation(self) == 11) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(17, 25);
 			} else {
 				targetPosition = new TilePosition(21, 30);
 			}
-		} else if (BuildManager.Instance().getLocationOfBase() == 2) {
+		} else if (informationMgr.getDirectionOfStartLocation(self) == 1) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(109, 25);
 			} else {
 				targetPosition = new TilePosition(100, 19);
 			}
-		} else if (BuildManager.Instance().getLocationOfBase() == 3) {
+		} else if (informationMgr.getDirectionOfStartLocation(self) == 7) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(18, 102);
 			} else {
 				targetPosition = new TilePosition(27, 105);
 			}
-		} else if (BuildManager.Instance().getLocationOfBase() == 4) {
+		} else if (informationMgr.getDirectionOfStartLocation(self) == 5) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(109, 102);
 			} else {
@@ -1334,7 +1331,6 @@ public class StrategyManager {
 			StringTokenizer st;
 			GameRecord tempGameRecord;
 			while ((currentLine = br.readLine()) != null) {
-				System.out.println("LoadGameRecordList");
 
 				st = new StringTokenizer(currentLine, " ");
 				tempGameRecord = new GameRecord();
