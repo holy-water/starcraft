@@ -240,6 +240,7 @@ public class InformationManager {
 
 		// 0728 수정 - 적군 유닛이 아니라 아군 유닛으로 변경
 		for (Unit unit : selfPlayer.getUnits()) {
+			if (unit == null) continue;
 			if (unitType == null || unit.getType() == unitType) {
 				double dist = unit.getDistance(enemyBaseLocation.getPosition());
 				if (closestUnit == null || (dist < closestDist)) {
@@ -259,6 +260,7 @@ public class InformationManager {
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
+			if (unit == null) continue;
 			if (unit.getPlayer() == enemyPlayer) {
 				return true;
 			}
@@ -276,6 +278,7 @@ public class InformationManager {
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
+			if (unit == null) continue;
 			if (unit.getPlayer() == enemyPlayer && isCombatUnitType(unit.getType())) {
 				return true;
 			}
@@ -310,6 +313,7 @@ public class InformationManager {
 	public Map<String, Unit> getReasonForEnemysAppearance() {
 		Map<String, Unit> reasonMap = new HashMap<>();
 		for (Unit unit : enemyPlayer.getUnits()) {
+			if (unit == null) continue;
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
 				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
 						|| unit.getType() == UnitType.Zerg_Overlord) {
@@ -347,6 +351,7 @@ public class InformationManager {
 	public Map<String, Unit> getReasonForEnemysAppearanceAtMulti() {
 		Map<String, Unit> reasonMap = new HashMap<>();
 		for (Unit unit : enemyPlayer.getUnits()) {
+			if (unit == null) continue;
 			if (BWTA.getRegion(unit.getPosition()) == getFirstExpansionLocation(selfPlayer).getRegion()) {
 				if (unit.isAttacking()) {
 					if (unit.getOrderTarget().getType() == UnitType.Terran_SCV) {

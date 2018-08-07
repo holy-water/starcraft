@@ -8,7 +8,6 @@ import bwapi.Race;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwapi.WalkPosition;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Region;
@@ -22,7 +21,6 @@ public class ScoutManager {
 
 	public enum ScoutStatus {
 		NoScout, /// < 정찰 유닛을 미지정한 상태
-		MovingToCenter, /// < 0710 - 최혜진 추가 초반에 중앙으로 정찰가는 상태
 		MovingToAnotherBaseLocation, /// < 적군의 BaseLocation 이 미발견된 상태에서 정찰 유닛을
 										/// 이동시키고 있는 상태
 		MoveAroundEnemyBaseLocation, /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을
@@ -126,7 +124,7 @@ public class ScoutManager {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (direction == 11) holdingPos = new TilePosition(36, 41);
 					else if (direction == 1) holdingPos = new TilePosition(91, 41);					
-					else if (direction == 5) holdingPos = new TilePosition(85, 85);
+					else if (direction == 5) holdingPos = new TilePosition(88, 86);
 					else if (direction == 7) holdingPos = new TilePosition(37, 85);				
 				} else {
 					if (direction == 11) holdingPos = new TilePosition(35, 42);
@@ -154,50 +152,31 @@ public class ScoutManager {
 			// currentScoutTargetBaseLocation 으로 잡아서 이동
 			if (currentScoutTargetBaseLocation == null || 
 					currentScoutUnit.getDistance(currentScoutTargetBaseLocation.getPosition()) < 5 * Config.TILE_SIZE) {
-				// 0711 - 최혜진 수정 NoScout -> MovingToCenter -> MovingToAnotherBaseLocation
-				TilePosition center = new TilePosition(64, 64);
-				// 0716 추가 - 프로토스일 때만 중앙 정찰
-				if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss
-						&& currentScoutStatus == ScoutStatus.NoScout.ordinal()) { 
-					// 초기에 중앙으로 가라고 명령
-					currentScoutStatus = ScoutStatus.MovingToCenter.ordinal();
-					commandUtil.move(currentScoutUnit, center.toPosition());
-				} else if (currentScoutStatus == ScoutStatus.MovingToCenter.ordinal()) {
-					// 0712 - 최혜진 수정 중앙에서 멈추지 않고 바로 다른 곳으로 이동할 수 있도록
-					if (currentScoutUnit.getPosition().getDistance(center.toPosition()) < 150) {
-						// 중앙에 도착했다면 다른 baselocation 찾기
-						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
-					} else {
-						// 중앙에 도착하지 않았다면 계속 이동
-						return;
-					}
-				} else {
-					double closestDistance = 1000000000;
-					double tempDistance = 0;
-					BaseLocation closestBaseLocation = null;
-					for (BaseLocation startLocation : BWTA.getStartLocations()) {
-						// 우리 진영 빼기
-						if (myBaseLocation == startLocation) continue;
-						// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
-						if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
-							// GroundDistance 를 기준으로 가장 가까운 곳으로 선정
-							tempDistance = (double) (InformationManager.Instance()
-									.getMainBaseLocation(MyBotModule.Broodwar.self()).getGroundDistance(startLocation)
-									+ 0.5);
+				double closestDistance = 1000000000;
+				double tempDistance = 0;
+				BaseLocation closestBaseLocation = null;
+				for (BaseLocation startLocation : BWTA.getStartLocations()) {
+					// 우리 진영 빼기
+					if (myBaseLocation == startLocation) continue;
+					// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
+					if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
+						// GroundDistance 를 기준으로 가장 가까운 곳으로 선정
+						tempDistance = (double) (InformationManager.Instance()
+								.getMainBaseLocation(MyBotModule.Broodwar.self()).getGroundDistance(startLocation)
+								+ 0.5);
 
-							if (tempDistance > 0 && tempDistance < closestDistance) {
-								closestBaseLocation = startLocation;
-								closestDistance = tempDistance;
-							}
+						if (tempDistance > 0 && tempDistance < closestDistance) {
+							closestBaseLocation = startLocation;
+							closestDistance = tempDistance;
 						}
 					}
+				}
 
-					if (closestBaseLocation != null) {
-						// assign a scout to go scout it
-						commandUtil.move(currentScoutUnit, closestBaseLocation.getPosition());
-						currentScoutTargetBaseLocation = closestBaseLocation;
-						currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
-					}
+				if (closestBaseLocation != null) {
+					// assign a scout to go scout it
+					commandUtil.move(currentScoutUnit, closestBaseLocation.getPosition());
+					currentScoutTargetBaseLocation = closestBaseLocation;
+					currentScoutStatus = ScoutStatus.MovingToAnotherBaseLocation.ordinal();
 				}
 			}
 

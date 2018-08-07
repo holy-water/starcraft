@@ -20,6 +20,7 @@ public class WorkerData {
 		Combat, 		///< 전투
 		Idle,			///< 하는 일 없음. 대기 상태. 
 		Repair,			///< 수리. Terran_SCV 만 가능
+		RepairBunker,	///< 벙커 수리.
 		Move,			///< 이동
 		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨.
 		RunAway,		///< 도망. Move와 다름.
@@ -36,6 +37,10 @@ public class WorkerData {
 
 	// BasicBot 1.1 Patch End //////////////////////////////////////////////////
 	
+	// 벙커 수리병 숫자 제한
+	public int optimalBunkerRepairCnt = 2;
+	public int currentBunkerRepairCnt = 0;
+
 	/// 일꾼 목록
 	private ArrayList<Unit> workers = new ArrayList<Unit>();
 	/// ResourceDepot 목록
@@ -315,6 +320,23 @@ public class WorkerData {
 				}
 			}
 	    }
+	    else if (job == WorkerJob.RepairBunker)
+	    {
+	    	// only SCV can repair
+	    	if (unit.getType() == UnitType.Terran_SCV) {
+	    		
+	    		// set the unit the worker is to repair
+	    		workerRepairMap.put(unit.getID(), jobUnit);
+	    		
+	    		// start repairing if it is not repairing 
+	    		// 기존이 이미 수리를 하고 있으면 계속 기존 것을 수리한다
+	    		if (!unit.isRepairing())
+	    		{
+	    			commandUtil.repair(unit, jobUnit);
+	    			currentBunkerRepairCnt++;
+	    		}
+	    	}
+	    }
 	    else if (job == WorkerJob.RunAway)
 	    {
     		// 이동해야할 위치 저장
@@ -427,6 +449,11 @@ public class WorkerData {
 		else if (previousJob == WorkerJob.Repair)
 		{
 			workerRepairMap.remove(unit.getID()); // C++ : workerRepairMap.erase(unit);
+		}
+		else if (previousJob == WorkerJob.RepairBunker)
+		{
+			workerRepairMap.remove(unit.getID()); // C++ : workerRepairMap.erase(unit);
+			currentBunkerRepairCnt--;
 		}
 		else if (previousJob == WorkerJob.Move)
 		{

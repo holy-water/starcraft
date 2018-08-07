@@ -20,7 +20,6 @@ public class WorkerManager {
 
 	/// 일꾼 중 한명을 Repair Worker 로 정해서, 전체 수리 대상을 하나씩 순서대로 수리합니다
 	private Unit currentRepairWorker = null;
-	private Unit bunkerRepairWorker = null;
 	
 	/// 일꾼 중 한마리를 우리 진영에 건설된 건물 파괴자로 임명합니다.
 	private Unit currentAttackWorker = null;
@@ -53,6 +52,7 @@ public class WorkerManager {
 		handleRunAwayWorkers();
 		handleCombatWorkers();
 		handleRepairWorkers();
+		handleBunkerRepairWorkers();
 	}
 
 	public void updateWorkerStatus() {
@@ -182,6 +182,18 @@ public class WorkerManager {
 				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
 						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
+					currentRepairWorker = null;
+				}
+			}
+		
+			// if its job is repairBunker
+			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RepairBunker) {
+				Unit repairTargetUnit = workerData.getWorkerRepairUnit(worker);
+				
+				// 대상이 파괴되었거나, 수리가 다 끝난 경우
+				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
+						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()) {
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
 				}
 			}
 		}
@@ -286,16 +298,16 @@ public class WorkerManager {
 		}
 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit == null) continue;
 			if (unit.getType().isBuilding() && unit.isCompleted() == true
-					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
-				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
-				setRepairWorker(repairWorker, unit);
-				// 벙커의 경우 일꾼이 여러명이 수리하게 설정
-				if (unit.getType() == UnitType.Terran_Bunker) {
-					Unit bunkerRepairWorker = chooseRepairWorkerClosestToBunker(unit.getPosition(), 1000000000);
-					setRepairWorker(bunkerRepairWorker, unit);
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
+				if (unit.getType() != UnitType.Terran_Bunker) {
+					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
+					if (repairWorker != null) {
+						setRepairWorker(repairWorker, unit);
+					}
+					break;
 				}
-				break;
 			}
 			// 메카닉 유닛 (SCV, 시즈탱크, 레이쓰 등)의 경우 근처에 SCV가 있는 경우 수리. 일꾼 한명이 순서대로 수리
 			else if (unit.getType().isMechanical() && unit.isCompleted() == true
@@ -359,11 +371,30 @@ public class WorkerManager {
 			currentRepairWorker = closestWorker;
 		}
 
-		return closestWorker;
+		return currentRepairWorker;
+	}
+	
+	public void handleBunkerRepairWorkers() {
+		if (MyBotModule.Broodwar.self().getRace() != Race.Terran) {
+			return;
+		}
+
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit == null) continue;
+			if (unit.getType() == UnitType.Terran_Bunker && unit.isCompleted() == true
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
+				// 벙커의 경우 일꾼이 여러명이 수리하게 설정
+				int currentCt = workerData.currentBunkerRepairCnt;
+				for (int i=0; i<workerData.optimalBunkerRepairCnt-currentCt; i++) {
+					Unit bunkerRepairWorker = chooseRepairWorkerClosestToBunker(unit.getPosition());
+					setRepairWorker(bunkerRepairWorker, unit);						
+				}
+			}
+		}
 	}
 	
 	/// 벙커 수리용 유닛 따로 뽑기
-	public Unit chooseRepairWorkerClosestToBunker(Position p, int maxRange) {
+	public Unit chooseRepairWorkerClosestToBunker(Position p) {
 		if (!p.isValid())
 			return null;
 
@@ -373,15 +404,11 @@ public class WorkerManager {
 		// ////////////////////////////////////////////////
 		// 변수 기본값 수정
 
-		double closestDist = 1000000000;
+		double closestDist = Config.TILE_SIZE * 10;
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
-
-		if (bunkerRepairWorker != null && bunkerRepairWorker.exists() && bunkerRepairWorker.getHitPoints() > 0) {
-			return bunkerRepairWorker;
-		}
-
+		
 		// for each of our workers
 		for (Unit worker : workerData.getWorkers()) {
 			if (worker == null) {
@@ -390,7 +417,10 @@ public class WorkerManager {
 
 			if (worker.isCompleted() && (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Minerals
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move)) {
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RunAway
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.AttackAll)) {
 				double dist = worker.getDistance(p);
 
 				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false
@@ -399,11 +429,6 @@ public class WorkerManager {
 					closestDist = dist;
 				}
 			}
-		}
-
-		if (maxRange > closestDist || bunkerRepairWorker == null || bunkerRepairWorker.exists() == false
-				|| bunkerRepairWorker.getHitPoints() <= 0) {
-			bunkerRepairWorker = closestWorker;
 		}
 
 		return closestWorker;
@@ -434,6 +459,7 @@ public class WorkerManager {
 		}
 		
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit == null) continue;
 			if (unit.isCompleted() && unit.getHitPoints() > 0 && unit.exists() && unit.getType().isWorker()
 					&& WorkerManager.Instance().isMineralWorker(unit)) {
 				double dist = unit.getDistance(target);
@@ -669,7 +695,9 @@ public class WorkerManager {
 			if (unit.isCompleted() && (workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Move
 					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Idle
 					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Build
-					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Scout)) {
+					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Scout
+					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Repair
+					&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.RepairBunker)) {
 				// if it is a new closest distance, set the pointer
 				double distance = unit.getDistance(buildingPosition.toPosition());
 				if (closestMiningWorker == null || (distance < closestMiningWorkerDistance
@@ -800,6 +828,7 @@ public class WorkerManager {
 		double closestDist = 10000;
 
 		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
+			if (unit == null) continue;
 			double dist = unit.getDistance(worker);
 
 			if ((dist < 400) && (closestUnit == null || (dist < closestDist))) {
@@ -832,7 +861,11 @@ public class WorkerManager {
 	}
 
 	public void setRepairWorker(Unit worker, Unit unitToRepair) {
-		workerData.setWorkerJob(worker, WorkerData.WorkerJob.Repair, unitToRepair);
+		if (unitToRepair.getType() == UnitType.Terran_Bunker) {
+			workerData.setWorkerJob(worker, WorkerData.WorkerJob.RepairBunker, unitToRepair);			
+		} else {
+			workerData.setWorkerJob(worker, WorkerData.WorkerJob.Repair, unitToRepair);			
+		}
 	}
 
 	public void stopRepairing(Unit worker) {
