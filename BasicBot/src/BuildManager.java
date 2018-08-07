@@ -35,15 +35,20 @@ public class BuildManager {
 	// 0704 - 김성수 수정 StrategyManager에서 사용
 	// 0805 - 김성수 수정 Getter 등록
 	private static int locationOfBase = 0;
-	private static boolean isBarrackBuilt = false;
+
+	// 0807 - 최혜진 삭제
+	// private static boolean isBarrackBuilt = false;
 
 	// 0729 - 최혜진 추가
 	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
 	// 0805 - 최혜진 수정 투혼 맵 Turret 좌표
 	// 0806 - 최혜진 수정 Turret이 두번째 길목에 가장 먼저 건설되도록 변경
+	// 0807 - 최혜진 수정 앞마당 Command Center 옆에 Turret 추가
 	public static int numberOfTurretBuilt = 0;
-	private static int[] turretXLocationForCircuit = { 0, 6, 20, 24, 0, 120, 106, 102, 0, 6, 20, 24, 0, 120, 106, 102 };
-	private static int[] turretYLocationForCircuit = { 0, 42, 19, 6, 0, 42, 19, 6, 0, 85, 107, 120, 0, 85, 107, 120 };
+	private static int[] turretXLocationForCircuit = { 5, 0, 6, 20, 24, 121, 0, 120, 106, 102, 5, 0, 6, 20, 24, 121, 0,
+			120, 106, 102 };
+	private static int[] turretYLocationForCircuit = { 33, 0, 42, 19, 6, 33, 0, 42, 19, 6, 94, 0, 85, 107, 120, 94, 0,
+			85, 107, 120 };
 	private static int[] turretXLocationForSpirit = { 0, 2, 8, 26, 22, 0, 94, 80, 106, 120, 0, 32, 46, 21, 6, 0, 124,
 			115, 101, 102 };
 	private static int[] turretYLocationForSpirit = { 0, 30, 44, 19, 6, 0, 3, 12, 20, 29, 0, 125, 113, 104, 97, 0, 95,
@@ -56,14 +61,22 @@ public class BuildManager {
 	// 0801 - 최혜진 추가 Factory 좌표 지정
 	// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
 	// 0806 - 최혜진 수정 투혼 맵 Factory 좌표 입구와 가깝게 수정
+	// 0807 - 최혜진 수정 서킷 맵 Factory y 좌표 수정
 	private static int[] FactoryXLocationForCircuit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
-	private static int[] FactoryYLocationForCircuit = { 21, 17, 104, 108, 0 };
+	private static int[] FactoryYLocationForCircuit = { 20, 16, 105, 109, 0 };
 	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 109, 116, 120, 124, 13, 8, 4, 0, 122, 117, 113,
 			109 };
 	private static int[] FactoryYLocationForSpirit = { 24, 20, 15, 19, 107, 103, 102, 106 };
 
 	// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
 	public static boolean zergNot4Drone;
+
+	// 0807 - 최혜진 앞마당 막기 좌표 수정
+	private static int[] expansionXLocaitonForCircuit = { 13, 8, 11, 112, 117, 114, 11, 8, 14, 113, 117, 111 };
+	private static int[] expansionYLocaitonForCircuit = { 30, 32, 33, 30, 32, 33, 94, 95, 97, 94, 95, 97 };
+	private static int[] expansionXLocaitonForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] expansionYLocaitonForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int expansionOrder;
 
 	/// BuildOrderItem 들의 목록을 저장하는 buildQueue
 	public BuildOrderQueue buildQueue = new BuildOrderQueue();
@@ -1067,88 +1080,54 @@ public class BuildManager {
 		case BlockFirstChokePoint:
 			int blockx = 0;
 			int blocky = 0;
-			tempFirstExpansion = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
-			// 0724 - 최혜진 추가 상대 종족이 저그일 때 Barracks는 이미 앞마당에 지어졌음
-			if (isBarrackBuilt == false && MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
-				isBarrackBuilt = true;
-			}
-			// 0723 - 최혜진 수정 UnitType으로 제어
-			if (isBarrackBuilt == false) {
-				isBarrackBuilt = true;
-				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
-					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
-					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
-					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 2;
+			// 0807 - 최혜진 수정 앞마당 입구 막기 좌표 수정
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+					System.out.println(expansionOrder);
+					if (expansionOrder == 0) {
+						int index = expansionOrder + ((locationOfBase - 1) * 3);
+						if (index < 12) {
+							blockx = expansionXLocaitonForCircuit[index];
+							blocky = expansionYLocaitonForCircuit[index];
+							expansionOrder++;
+						}
+					} else if (expansionOrder == 1) {
+						seedPosition = getSeedPositionFromSeedLocationStrategy(
+								BuildOrderItem.SeedPositionStrategy.SecondChokePoint);
+						expansionOrder++;
+						break;
+					} else if (expansionOrder == 2) {
+						seedPosition = getSeedPositionFromSeedLocationStrategy(
+								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition);
+						expansionOrder++;
+						break;
+
 					}
 				} else {
-					// 0726 - 최혜진 추가 투혼 맵 적용
-					// 0801 - 최혜진 수정 좌표 변경
-					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX();
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
-					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
-					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 5;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 4;
-					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 4;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
+					int index = expansionOrder + ((locationOfBase - 1) * 3);
+					if (index < 12) {
+						blockx = expansionXLocaitonForCircuit[index];
+						blocky = expansionYLocaitonForCircuit[index];
+						expansionOrder++;
 					}
 				}
 			} else {
-				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
-					} else if (locationOfBase == 2) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 3;
-					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 8;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
-					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 7;
-						blocky = tempFirstExpansion.getTilePosition().getY() + 4;
+				if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+					if (expansionOrder == 1) {
+						seedPosition = getSeedPositionFromSeedLocationStrategy(
+								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition);
+					} else if (expansionOrder == 2) {
+						seedPosition = getSeedPositionFromSeedLocationStrategy(
+								BuildOrderItem.SeedPositionStrategy.SecondChokePoint);
 					}
-				} else {
-					// 0726 - 최혜진 추가 투혼 맵 적용
-					// 0801 - 최혜진 수정 좌표 변경
-					if (locationOfBase == 1) {
-						blockx = tempFirstExpansion.getTilePosition().getX() + 3;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 5;
-					} else if (locationOfBase == 2) {
-						// 0805 - 최혜진 추가
-						if (zergNot4Drone == false) {
-							seedPosition = getSeedPositionFromSeedLocationStrategy(
-									BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition);
-						} else {
-							TilePosition desiredPosition = TilePosition.None;
-							desiredPosition = ConstructionPlaceFinder.Instance()
-									.getBuildLocationNear(UnitType.Terran_Bunker,
-											InformationManager.Instance()
-													.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()
-													.toTilePosition());
-							seedPosition = desiredPosition.toPosition();
-						}
-						break;
-					} else if (locationOfBase == 3) {
-						blockx = tempFirstExpansion.getTilePosition().getX() - 1;
-						blocky = tempFirstExpansion.getTilePosition().getY() - 2;
-					} else if (locationOfBase == 4) {
-						blockx = tempFirstExpansion.getTilePosition().getX();
-						blocky = tempFirstExpansion.getTilePosition().getY() + 3;
-					}
+					expansionOrder++;
+					break;
+				}
+				int index = expansionOrder + ((locationOfBase - 1) * 3);
+				if (index < 12) {
+					blockx = expansionXLocaitonForSpirit[index];
+					blocky = expansionYLocaitonForSpirit[index];
+					expansionOrder++;
 				}
 			}
 			tempTilePosition = new TilePosition(blockx, blocky);
@@ -1195,13 +1174,14 @@ public class BuildManager {
 
 		// 0729 - 최혜진 추가 본진 및 앞마당 방어를 위한 Turret 건설 전략
 		// 0806 - 최혜진 수정 Turret이 두번째 길목에 가장 먼저 건설되도록 변경
+		// 0807 - 최혜진 수정 앞마당 Command Center 옆에 터렛 추가
 		case TurretAround:
 			TilePosition desiredPosition = TilePosition.None;
 			int turretx = 0;
 			int turrety = 0;
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				if (locationOfBase == 1) {
-					if (numberOfTurretBuilt % 4 == 0) {
+					if (numberOfTurretBuilt % 5 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
 							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
@@ -1210,11 +1190,11 @@ public class BuildManager {
 							turrety = desiredPosition.getY();
 						}
 					} else {
-						turretx = turretXLocationForCircuit[numberOfTurretBuilt % 4];
-						turrety = turretYLocationForCircuit[numberOfTurretBuilt % 4];
+						turretx = turretXLocationForCircuit[numberOfTurretBuilt % 5];
+						turrety = turretYLocationForCircuit[numberOfTurretBuilt % 5];
 					}
 				} else if (locationOfBase == 2) {
-					if (numberOfTurretBuilt % 4 == 0) {
+					if (numberOfTurretBuilt % 5 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
 							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
@@ -1223,11 +1203,11 @@ public class BuildManager {
 							turrety = desiredPosition.getY();
 						}
 					} else {
-						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
-						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 4];
+						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 5) + 5];
+						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 5) + 5];
 					}
 				} else if (locationOfBase == 3) {
-					if (numberOfTurretBuilt % 4 == 0) {
+					if (numberOfTurretBuilt % 5 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
 							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
@@ -1236,11 +1216,11 @@ public class BuildManager {
 							turrety = desiredPosition.getY();
 						}
 					} else {
-						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
-						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 8];
+						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 5) + 10];
+						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 5) + 10];
 					}
 				} else if (locationOfBase == 4) {
-					if (numberOfTurretBuilt % 4 == 0) {
+					if (numberOfTurretBuilt % 5 == 1) {
 						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
 						if (tempChokePoint != null) {
 							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
@@ -1249,8 +1229,8 @@ public class BuildManager {
 							turrety = desiredPosition.getY();
 						}
 					} else {
-						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
-						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 4) + 12];
+						turretx = turretXLocationForCircuit[(numberOfTurretBuilt % 5) + 15];
+						turrety = turretYLocationForCircuit[(numberOfTurretBuilt % 5) + 15];
 					}
 
 				}
