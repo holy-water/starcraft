@@ -268,6 +268,7 @@ public class InformationManager {
 		return false;
 	}
 
+	/// 0808 수정
 	/// 우리 유닛의 시야 내에 적이 있는가 체크하는 메소드
 	public boolean isEnemyUnitInRadius(Unit targetUnit) {
 		if (targetUnit == null)

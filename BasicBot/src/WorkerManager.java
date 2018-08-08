@@ -36,6 +36,7 @@ public class WorkerManager {
 	// 각 진영의 정보
 	private BaseLocation mainBaseLocation = infoMngr.getMainBaseLocation(MyBotModule.Broodwar.self());
 	private BaseLocation firstExpansionLocation = infoMngr.getFirstExpansionLocation(MyBotModule.Broodwar.self());
+	// TODO 반영 필요
 	private List<BaseLocation> occupiedBaseLocations = infoMngr.getOccupiedBaseLocations(MyBotModule.Broodwar.self());
 
 	/// 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트하고, 일꾼 유닛들이 자원 채취 등 임무 수행을 하도록 합니다
