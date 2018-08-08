@@ -178,9 +178,11 @@ public class WorkerManager {
 			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Repair) {
 				Unit repairTargetUnit = workerData.getWorkerRepairUnit(worker);
 
-				// 대상이 파괴되었거나, 수리가 다 끝난 경우
+				// 대상이 파괴되었거나, 수리가 다 끝난 경우, 우리 진영을 벗어난 경우
 				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
-						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()) {
+						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()
+						|| BWTA.getRegion(repairTargetUnit.getPosition()) != mainBaseLocation.getRegion()
+						|| BWTA.getRegion(repairTargetUnit.getPosition()) != firstExpansionLocation.getRegion()) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
 					currentRepairWorker = null;
 				}
@@ -299,29 +301,31 @@ public class WorkerManager {
 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit == null) continue;
-			if (unit.getType().isBuilding() && unit.isCompleted() == true
-					&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
-				if (unit.getType() != UnitType.Terran_Bunker) {
-					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
-					if (repairWorker != null) {
-						setRepairWorker(repairWorker, unit);
+			if (BWTA.getRegion(unit.getPosition()) == mainBaseLocation.getRegion()) {
+				if (unit.getType().isBuilding() && unit.isCompleted() == true
+						&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
+					if (unit.getType() != UnitType.Terran_Bunker) {
+						Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
+						if (repairWorker != null) {
+							setRepairWorker(repairWorker, unit);
+						}
+						break;
 					}
-					break;
+				}
+				// 메카닉 유닛 (SCV, 시즈탱크, 레이쓰 등)의 경우 근처에 SCV가 있는 경우 수리. 일꾼 한명이 순서대로 수리
+				else if (unit.getType().isMechanical() && unit.isCompleted() == true
+						&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
+					// SCV 는 수리 대상에서 제외. 전투 유닛만 수리하도록 한다
+					if (unit.getType() != UnitType.Terran_SCV
+							&& !VultureMineManager.Instance().vultureForMine.containsKey(unit)) {
+						Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10 * Config.TILE_SIZE);
+						if (repairWorker != null) {
+							setRepairWorker(repairWorker, unit);
+						}
+						break;
+					}
 				}
 			}
-			// 메카닉 유닛 (SCV, 시즈탱크, 레이쓰 등)의 경우 근처에 SCV가 있는 경우 수리. 일꾼 한명이 순서대로 수리
-			else if (unit.getType().isMechanical() && unit.isCompleted() == true
-					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
-				// SCV 는 수리 대상에서 제외. 전투 유닛만 수리하도록 한다
-				if (unit.getType() != UnitType.Terran_SCV) {
-					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10 * Config.TILE_SIZE);
-					if (repairWorker != null) {
-						setRepairWorker(repairWorker, unit);
-					}
-					break;
-				}
-			}
-
 		}
 	}
 
@@ -355,7 +359,10 @@ public class WorkerManager {
 
 			if (worker.isCompleted() && (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Minerals
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move)) {
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RunAway
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.AttackAll)) {
 				double dist = worker.getDistance(p);
 
 				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false

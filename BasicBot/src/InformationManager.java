@@ -268,13 +268,13 @@ public class InformationManager {
 		return false;
 	}
 
-	/// 우리 유닛의 일정 거리 이내에 적이 있는가 체크하는 메소드
+	/// 우리 유닛의 시야 내에 적이 있는가 체크하는 메소드
 	public boolean isEnemyUnitInRadius(Unit targetUnit) {
 		if (targetUnit == null)
 			return false;
-
-		// 반경 8 타일 이내에 있는 unit list
-		List<Unit> list = targetUnit.getUnitsInRadius(8 * Config.TILE_SIZE);
+		
+		// 시야 내에 있는 유닛 리스트
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().sightRange());
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
@@ -312,6 +312,8 @@ public class InformationManager {
 	// Drop / Attack / Scout / AttackAll
 	public Map<String, Unit> getReasonForEnemysAppearance() {
 		Map<String, Unit> reasonMap = new HashMap<>();
+		Unit tempTarget = null;
+		
 		for (Unit unit : enemyPlayer.getUnits()) {
 			if (unit == null) continue;
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
@@ -325,7 +327,9 @@ public class InformationManager {
 					}
 				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
 					if (unit.isAttacking()) {
-						if (unit.getOrderTarget().getType() == UnitType.Terran_SCV) {
+						tempTarget = unit.getOrderTarget();
+						if (tempTarget == null) tempTarget = unit.getTarget();
+						if (tempTarget != null && tempTarget.getType() == UnitType.Terran_SCV) {
 							reasonMap.put("Attack", unit);		// 일꾼이 일꾼 공격
 							break;							
 						}
@@ -350,11 +354,15 @@ public class InformationManager {
 	// RunAway / Attack
 	public Map<String, Unit> getReasonForEnemysAppearanceAtMulti() {
 		Map<String, Unit> reasonMap = new HashMap<>();
+		Unit tempTarget = null;
+		
 		for (Unit unit : enemyPlayer.getUnits()) {
 			if (unit == null) continue;
 			if (BWTA.getRegion(unit.getPosition()) == getFirstExpansionLocation(selfPlayer).getRegion()) {
 				if (unit.isAttacking()) {
-					if (unit.getOrderTarget().getType() == UnitType.Terran_SCV) {
+					tempTarget = unit.getOrderTarget(); 
+					if (tempTarget == null) tempTarget = unit.getTarget();
+					if (tempTarget != null && tempTarget.getType() == UnitType.Terran_SCV) {
 						if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
 							reasonMap.put("Attack", unit);		// 일꾼이 일꾼 공격
 							break;
