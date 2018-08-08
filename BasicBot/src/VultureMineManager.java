@@ -101,7 +101,7 @@ public class VultureMineManager {
 			Chokepoint enemySecondChockPoint = InformationManager.Instance()
 					.getSecondChokePoint(MyBotModule.Broodwar.enemy());
 			// 0806 - 최혜진 추가 적 본진 모를때 로직 수행 불가
-			if(enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
+			if (enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
 				return;
 			}
 			int dx = enemyBaseLocation.getX() - enemySecondChockPoint.getCenter().getX();
@@ -126,8 +126,10 @@ public class VultureMineManager {
 			targetPosition = tempTargetTilePosition.toPosition();
 			for (Unit vulture : vultureForMine.keySet()) {
 				// 0806 - 죽은 Vulture에 대한 Nullpointer 에러 핸들링
-				if (vulture.exists()) {
-					vulture.move(targetPosition);
+				if (vulture != null && vulture.exists()) {
+					// 0808 - 최혜진 추가 vulture의 위치가 겹치지 않도록 랜덤 배정
+					findTargetPostion(vulture);
+					vulture.move(minePlacementPosition);
 					vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
 				}
 			}
@@ -137,22 +139,43 @@ public class VultureMineManager {
 			}
 			for (Unit vulture : vultureForMine.keySet()) {
 				// 0806 - 죽은 Vulture에 대한 Nullpointer 에러 핸들링
-				if (vulture.exists()) {
+				if (vulture != null && vulture.exists()) {
 					if (vultureForMine.get(vulture) == VultureStatus.TargetNotAssigned.ordinal()) {
+						// 0808 - 최혜진 추가 vulture의 위치가 겹치지 않도록 랜덤 배정
+						// findTargetPostion(vulture);
 						vulture.move(targetPosition);
 						vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
 					} else if (vultureForMine.get(vulture) == VultureStatus.MovingToEnemyBridge.ordinal()) {
-						if (vulture.getPosition().getDistance(targetPosition) < 10) {
+						// 0808 - 최혜진 추가 Vulture 공격 받을 시 도망가는 로직
+						if (vulture.isUnderAttack()) {
+							vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
+									.getCenter());
+							vultureForMine.replace(vulture, VultureStatus.RunningAwayFromEnemy.ordinal());
+							continue;
+						}
+						// 0808 - 최혜진 추가 Vulture와 적군이 일정거리 이상 가까워지기만 해도 도망가는 로직
+						Unit closestEnemy = WorkerManager.Instance().getClosestEnemyUnitFromWorker(vulture);
+						if (closestEnemy != null && closestEnemy.exists()) {
+							if (closestEnemy.getDistance(vulture) < 50) {
+								vulture.move(InformationManager.Instance()
+										.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter());
+								vultureForMine.replace(vulture, VultureStatus.RunningAwayFromEnemy.ordinal());
+								continue;
+							}
+						}
+						if (vulture.getPosition().getDistance(targetPosition) < 100) {
 							// vulture가 Mine을 심을 장소에 도착
 							vultureForMine.replace(vulture, VultureStatus.PlaceSpiderMine.ordinal());
 						} else if (vulture.isIdle()) {
-							vulture.move(targetPosition);
+							// 0808 - 최혜진 추가 vulture의 위치가 겹치지 않도록 랜덤 배정
+							findTargetPostion(vulture);
+							vulture.move(minePlacementPosition);
 						}
 					} else if (vultureForMine.get(vulture) == VultureStatus.PlaceSpiderMine.ordinal()) {
 						if (vulture.isAttacking() == false && vulture.isMoving() == false) {
 							if (vulture.getSpiderMineCount() > 0) {
 								findTargetPostion(vulture);
-								useSpiderMineTech(vulture, targetPosition);
+								useSpiderMineTech(vulture, minePlacementPosition);
 							} else {
 								vulture.move(InformationManager.Instance()
 										.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter());
@@ -160,8 +183,9 @@ public class VultureMineManager {
 							}
 						}
 					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
+						// 0808 - 최혜진 수정 도착 인식 지점 변경
 						if (vulture.getPosition().getDistance(InformationManager.Instance()
-								.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()) < 50) {
+								.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()) < 100) {
 							vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
 						} else if (vulture.isIdle()) {
 							vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
@@ -194,6 +218,10 @@ public class VultureMineManager {
 		int currentY = targetPosition.toTilePosition().getY();
 		TilePosition resultPosition = new TilePosition(currentX + plusX, currentY + plusY);
 		minePlacementPosition = resultPosition.toPosition();
+		// 0808 - 최혜진 추가 vulture가 갈 수 없는 곳이라면 다시 지정
+		if (!MyBotModule.Broodwar.isWalkable(StrategyManager.Instance().toWalkPosition(minePlacementPosition))) {
+			findTargetPostion(vulture);
+		}
 
 	}
 

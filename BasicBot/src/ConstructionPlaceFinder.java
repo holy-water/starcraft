@@ -53,7 +53,7 @@ public class ConstructionPlaceFinder {
 	public static int numberOfTurretBuilt = 0;
 	private static int[] turretXLocationForCircuit = { 5, 0, 6, 20, 24, 121, 0, 120, 106, 102, 5, 0, 6, 20, 24, 121, 0,
 			120, 106, 102 };
-	private static int[] turretYLocationForCircuit = { 33, 0, 42, 19, 6, 33, 0, 42, 19, 6, 94, 0, 85, 107, 120, 94, 0,
+	private static int[] turretYLocationForCircuit = { 33, 0, 42, 19, 6, 33, 0, 42, 19, 6, 96, 0, 85, 107, 120, 96, 0,
 			85, 107, 120 };
 	private static int[] turretXLocationForSpirit = { 0, 2, 8, 26, 22, 0, 94, 80, 106, 120, 0, 32, 46, 21, 6, 0, 124,
 			115, 101, 102 };
@@ -524,11 +524,10 @@ public class ConstructionPlaceFinder {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
-							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							if (tempRallyPoint != null) {
+								desiredPosition = ConstructionPlaceFinder.Instance()
+										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -538,11 +537,10 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 2) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
-							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							if (tempRallyPoint != null) {
+								desiredPosition = ConstructionPlaceFinder.Instance()
+										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -552,11 +550,10 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 3) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
-							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							if (tempRallyPoint != null) {
+								desiredPosition = ConstructionPlaceFinder.Instance()
+										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -566,11 +563,10 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 4) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
-							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							if (tempRallyPoint != null) {
+								desiredPosition = ConstructionPlaceFinder.Instance()
+										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -713,6 +709,7 @@ public class ConstructionPlaceFinder {
 				break;
 
 			// 0730 - 최혜진 추가 본진 Factory와 Supply Depot 피해서 건설하기 위한 전략
+			// 0808 - 최혜진 서킷맵 좌표 수정
 			case OtherInMainBaseLocation:
 				tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
 				int ox = 0;
@@ -721,38 +718,38 @@ public class ConstructionPlaceFinder {
 					if (locationOfBase == 1) {
 						if (isFirstBuilt == false) {
 							isFirstBuilt = true;
-							ox = tempBaseLocation.getTilePosition().getX() + 8;
-							oy = tempBaseLocation.getTilePosition().getY() - 2;
+							ox = 15;
+							oy = 13;
 						} else {
-							ox = tempBaseLocation.getTilePosition().getX() + 8;
-							oy = tempBaseLocation.getTilePosition().getY() + 2;
+							ox = 11;
+							oy = 13;
 						}
 					} else if (locationOfBase == 2) {
 						if (isFirstBuilt == false) {
 							isFirstBuilt = true;
-							ox = tempBaseLocation.getTilePosition().getX() - 10;
-							oy = tempBaseLocation.getTilePosition().getY() - 2;
+							ox = 106;
+							oy = 13;
 						} else {
-							ox = tempBaseLocation.getTilePosition().getX() - 10;
-							oy = tempBaseLocation.getTilePosition().getY() + 2;
+							ox = 112;
+							oy = 13;
 						}
 					} else if (locationOfBase == 3) {
 						if (isFirstBuilt == false) {
 							isFirstBuilt = true;
-							ox = tempBaseLocation.getTilePosition().getX() + 8;
-							oy = tempBaseLocation.getTilePosition().getY() - 2;
+							ox = 15;
+							oy = 112;
 						} else {
-							ox = tempBaseLocation.getTilePosition().getX() + 8;
-							oy = tempBaseLocation.getTilePosition().getY() + 2;
+							ox = 11;
+							oy = 112;
 						}
 					} else if (locationOfBase == 4) {
 						if (isFirstBuilt == false) {
 							isFirstBuilt = true;
-							ox = tempBaseLocation.getTilePosition().getX() - 10;
-							oy = tempBaseLocation.getTilePosition().getY() - 2;
+							ox = 106;
+							oy = 112;
 						} else {
-							ox = tempBaseLocation.getTilePosition().getX() - 10;
-							oy = tempBaseLocation.getTilePosition().getY() + 2;
+							ox = 112;
+							oy = 112;
 						}
 					}
 				} else {

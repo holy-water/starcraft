@@ -47,7 +47,7 @@ public class BuildManager {
 	public static int numberOfTurretBuilt = 0;
 	private static int[] turretXLocationForCircuit = { 5, 0, 6, 20, 24, 121, 0, 120, 106, 102, 5, 0, 6, 20, 24, 121, 0,
 			120, 106, 102 };
-	private static int[] turretYLocationForCircuit = { 33, 0, 42, 19, 6, 33, 0, 42, 19, 6, 94, 0, 85, 107, 120, 94, 0,
+	private static int[] turretYLocationForCircuit = { 33, 0, 42, 19, 6, 33, 0, 42, 19, 6, 96, 0, 85, 107, 120, 96, 0,
 			85, 107, 120 };
 	private static int[] turretXLocationForSpirit = { 0, 2, 8, 26, 22, 0, 94, 80, 106, 120, 0, 32, 46, 21, 6, 0, 124,
 			115, 101, 102 };
@@ -133,9 +133,21 @@ public class BuildManager {
 					&& currentItem.seedLocation != TilePosition.Unknown && currentItem.seedLocation.isValid()) {
 				seedPosition = currentItem.seedLocation.toPosition();
 			} else {
-				seedPosition = getSeedPositionFromSeedLocationStrategy(currentItem.seedLocationStrategy);
+				// 0808 - 최혜진 수정 seedPosition과 desiredPosition의 충돌로 인해 깜빡거림 발생하는 것 방지
+				if (currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.BunkerForZerg
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.TurretAround
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.OtherInMainBaseLocation) {
+					seedPosition = getSeedPositionFromSeedLocationStrategy(currentItem.seedLocationStrategy);
+				}
 			}
 
+//			if (currentItem.metaType.getUnitType() == UnitType.Terran_Engineering_Bay) {
+//				System.out.println("seedPosition" + seedPosition.toTilePosition().getX() + " "
+//						+ seedPosition.toTilePosition().getY());
+//			}
 			// this is the unit which can produce the currentItem
 			Unit producer = getProducer(currentItem.metaType, seedPosition, currentItem.producerID);
 
@@ -242,7 +254,10 @@ public class BuildManager {
 							// currentItem.metaType.getUnitType().getName().c_str()
 							// + " desiredPosition " + desiredPosition.x + "," +
 							// desiredPosition.y + std::endl;
-
+							// if (currentItem.metaType.getUnitType() == UnitType.Terran_Supply_Depot) {
+							// System.out.println(
+							// "desiredPosition" + desiredPosition.getX() + " " + desiredPosition.getY());
+							// }
 							if (desiredPosition != TilePosition.None) {
 								// Send the construction task to the
 								// construction manager
@@ -1174,6 +1189,7 @@ public class BuildManager {
 		// 0729 - 최혜진 추가 본진 및 앞마당 방어를 위한 Turret 건설 전략
 		// 0806 - 최혜진 수정 Turret이 두번째 길목에 가장 먼저 건설되도록 변경
 		// 0807 - 최혜진 수정 앞마당 Command Center 옆에 터렛 추가
+		// 0808 - 최혜진 수정 앞마당 Command Center 옆 터렛을 Rally Point로 변경
 		case TurretAround:
 			TilePosition desiredPosition = TilePosition.None;
 			int turretx = 0;
@@ -1181,10 +1197,10 @@ public class BuildManager {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				if (locationOfBase == 1) {
 					if (numberOfTurretBuilt % 5 == 1) {
-						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
-						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+						TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+						if (tempRallyPoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance()
+									.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1194,10 +1210,10 @@ public class BuildManager {
 					}
 				} else if (locationOfBase == 2) {
 					if (numberOfTurretBuilt % 5 == 1) {
-						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
-						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+						TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+						if (tempRallyPoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance()
+									.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1207,10 +1223,10 @@ public class BuildManager {
 					}
 				} else if (locationOfBase == 3) {
 					if (numberOfTurretBuilt % 5 == 1) {
-						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
-						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+						TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+						if (tempRallyPoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance()
+									.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1220,10 +1236,10 @@ public class BuildManager {
 					}
 				} else if (locationOfBase == 4) {
 					if (numberOfTurretBuilt % 5 == 1) {
-						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
-						if (tempChokePoint != null) {
-							desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-									UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+						TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+						if (tempRallyPoint != null) {
+							desiredPosition = ConstructionPlaceFinder.Instance()
+									.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 							turretx = desiredPosition.getX();
 							turrety = desiredPosition.getY();
 						}
@@ -1362,6 +1378,7 @@ public class BuildManager {
 			break;
 
 		// 0730 - 최혜진 추가 본진 Factory와 Supply Depot 피해서 건설하기 위한 전략
+		// 0808 - 최혜진 서킷맵 좌표 수정
 		case OtherInMainBaseLocation:
 			tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
 			int ox = 0;
@@ -1370,38 +1387,38 @@ public class BuildManager {
 				if (locationOfBase == 1) {
 					if (isFirstBuilt == false) {
 						isFirstBuilt = true;
-						ox = tempBaseLocation.getTilePosition().getX() + 8;
-						oy = tempBaseLocation.getTilePosition().getY() - 2;
+						ox = 15;
+						oy = 13;
 					} else {
-						ox = tempBaseLocation.getTilePosition().getX() + 8;
-						oy = tempBaseLocation.getTilePosition().getY() + 2;
+						ox = 11;
+						oy = 13;
 					}
 				} else if (locationOfBase == 2) {
 					if (isFirstBuilt == false) {
 						isFirstBuilt = true;
-						ox = tempBaseLocation.getTilePosition().getX() - 10;
-						oy = tempBaseLocation.getTilePosition().getY() - 2;
+						ox = 106;
+						oy = 13;
 					} else {
-						ox = tempBaseLocation.getTilePosition().getX() - 10;
-						oy = tempBaseLocation.getTilePosition().getY() + 2;
+						ox = 112;
+						oy = 13;
 					}
 				} else if (locationOfBase == 3) {
 					if (isFirstBuilt == false) {
 						isFirstBuilt = true;
-						ox = tempBaseLocation.getTilePosition().getX() + 8;
-						oy = tempBaseLocation.getTilePosition().getY() - 2;
+						ox = 15;
+						oy = 112;
 					} else {
-						ox = tempBaseLocation.getTilePosition().getX() + 8;
-						oy = tempBaseLocation.getTilePosition().getY() + 2;
+						ox = 11;
+						oy = 112;
 					}
 				} else if (locationOfBase == 4) {
 					if (isFirstBuilt == false) {
 						isFirstBuilt = true;
-						ox = tempBaseLocation.getTilePosition().getX() - 10;
-						oy = tempBaseLocation.getTilePosition().getY() - 2;
+						ox = 106;
+						oy = 112;
 					} else {
-						ox = tempBaseLocation.getTilePosition().getX() - 10;
-						oy = tempBaseLocation.getTilePosition().getY() + 2;
+						ox = 112;
+						oy = 112;
 					}
 				}
 			} else {
