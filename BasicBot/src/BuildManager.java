@@ -1083,7 +1083,6 @@ public class BuildManager {
 			// 0807 - 최혜진 수정 앞마당 입구 막기 좌표 수정
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
-					System.out.println(expansionOrder);
 					if (expansionOrder == 0) {
 						int index = expansionOrder + ((locationOfBase - 1) * 3);
 						if (index < 12) {

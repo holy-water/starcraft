@@ -36,6 +36,8 @@ public class StrategyManager {
 
 	private Player enemy = MyBotModule.Broodwar.enemy();
 
+	BaseLocation targetBaseLocation;
+
 	// 0709 추가 - 내 유닛 리스트
 	private List<Unit> myUnits;
 	// 0709 추가 - 적 유닛 리스트
@@ -146,7 +148,7 @@ public class StrategyManager {
 		// 0801 - 최혜진 추가 주기적 스캔
 		executeScan();
 		// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
-		// excuteSpiderMine();
+		excuteSpiderMine();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -503,6 +505,10 @@ public class StrategyManager {
 		}
 
 		if (countMgr.getComsatStation() == 0) {
+			return;
+		}
+		// 0808 추가 - 공격 모드일 때는 스캔 에너지 저장
+		if (isFullScaleAttackStarted) {
 			return;
 		}
 
@@ -999,7 +1005,7 @@ public class StrategyManager {
 
 		// 게임에서는 서플라이 값이 200까지 있지만, BWAPI 에서는 서플라이 값이 400까지 있다
 		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
-		if (self.supplyTotal() <= 400) {
+		if (self.supplyTotal() < 400) {
 
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
@@ -1129,8 +1135,7 @@ public class StrategyManager {
 			}
 
 			// 0806 수정
-			if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 8
-					&& self.completedUnitCount(UnitType.Terran_Vulture) > 8) {
+			if (self.supplyUsed() >= 390) {
 				if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 						&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
 					isFullScaleAttackStarted = true;
@@ -1165,12 +1170,12 @@ public class StrategyManager {
 				Unit closestUnit = informationMgr
 						.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Tank_Mode);
 
-				if(closestUnit != null) {
-					
+				if (closestUnit != null) {
+
 					closestUnit.useTech(TechType.Tank_Siege_Mode);
-					
-					List<Unit> units = closestUnit.getUnitsInRadius(4 * Config.TILE_SIZE);
-					
+
+					List<Unit> units = closestUnit.getUnitsInRadius(8 * Config.TILE_SIZE);
+
 					for (Unit unit : units) {
 						if (unit.getPlayer() == enemy) {
 							continue;
@@ -1183,7 +1188,7 @@ public class StrategyManager {
 						}
 					}
 				}
-				
+
 			} else {
 				// 시즈모드 > 탱크모드
 				for (Unit unit : myUnits) {
@@ -1200,25 +1205,23 @@ public class StrategyManager {
 			if (frameCount % 24 != 0) {
 				return;
 			}
-			UnitType unitType = isSiegeMode ? UnitType.Terran_Siege_Tank_Siege_Mode
-					: UnitType.Terran_Siege_Tank_Tank_Mode;
-
-			Unit closestUnit = informationMgr.getClosestUnitFromEnemyBaseLocation(unitType);
 
 			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
 				// 공격 대상 지역 결정
-				BaseLocation targetBaseLocation = null;
-				double closestDistance = 100000000;
+				if (targetBaseLocation == null) {
+					double closestDistance = 100000000;
 
-				for (BaseLocation baseLocation : informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer)) {
-					double distance = BWTA.getGroundDistance(
-							informationMgr.getMainBaseLocation(informationMgr.selfPlayer).getTilePosition(),
-							baseLocation.getTilePosition());
+					for (BaseLocation baseLocation : informationMgr
+							.getOccupiedBaseLocations(informationMgr.enemyPlayer)) {
+						double distance = BWTA.getGroundDistance(
+								informationMgr.getMainBaseLocation(informationMgr.selfPlayer).getTilePosition(),
+								baseLocation.getTilePosition());
 
-					if (distance < closestDistance) {
-						closestDistance = distance;
-						targetBaseLocation = baseLocation;
+						if (distance < closestDistance) {
+							closestDistance = distance;
+							targetBaseLocation = baseLocation;
+						}
 					}
 				}
 
@@ -1235,11 +1238,7 @@ public class StrategyManager {
 						// canAttack 유닛은 attackMove Command 로 공격을 보냅니다
 						if (unit.canAttack()) {
 							if (unit.isIdle()) {
-								if (unit.getType() != unitType && closestUnit != null) {
-									commandUtil.attackMove(unit, closestUnit.getPosition());
-								} else {
-									commandUtil.attackMove(unit, targetBaseLocation.getPosition());
-								}
+								commandUtil.attackMove(unit, targetBaseLocation.getPosition());
 							}
 						}
 					}
@@ -1248,7 +1247,7 @@ public class StrategyManager {
 		}
 	}
 
-	private TilePosition getRallyPosition() {
+	public TilePosition getRallyPosition() {
 		TilePosition targetPosition = TilePosition.None;
 		if (informationMgr.getDirectionOfStartLocation(self) == 11) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
