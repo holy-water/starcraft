@@ -240,7 +240,8 @@ public class InformationManager {
 
 		// 0728 수정 - 적군 유닛이 아니라 아군 유닛으로 변경
 		for (Unit unit : selfPlayer.getUnits()) {
-			if (unit == null) continue;
+			if (unit == null)
+				continue;
 			if (unitType == null || unit.getType() == unitType) {
 				double dist = unit.getDistance(enemyBaseLocation.getPosition());
 				if (closestUnit == null || (dist < closestDist)) {
@@ -260,7 +261,8 @@ public class InformationManager {
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
-			if (unit == null) continue;
+			if (unit == null)
+				continue;
 			if (unit.getPlayer() == enemyPlayer) {
 				return true;
 			}
@@ -273,13 +275,14 @@ public class InformationManager {
 	public boolean isEnemyUnitInRadius(Unit targetUnit) {
 		if (targetUnit == null)
 			return false;
-		
+
 		// 시야 내에 있는 유닛 리스트
 		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().sightRange());
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
-			if (unit == null) continue;
+			if (unit == null)
+				continue;
 			if (unit.getPlayer() == enemyPlayer && isCombatUnitType(unit.getType())) {
 				return true;
 			}
@@ -314,63 +317,70 @@ public class InformationManager {
 	public Map<String, Unit> getReasonForEnemysAppearance() {
 		Map<String, Unit> reasonMap = new HashMap<>();
 		Unit tempTarget = null;
-		
+
 		for (Unit unit : enemyPlayer.getUnits()) {
-			if (unit == null) continue;
+			if (unit == null)
+				continue;
 			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
 				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
 						|| unit.getType() == UnitType.Zerg_Overlord) {
 					if (unit.getSpaceRemaining() < 8) {
-						reasonMap.put("Drop", null);		// 위험상황(드랍)
+						reasonMap.put("Drop", null); // 위험상황(드랍)
 						break;
 					} else {
-						reasonMap.put("Scout", null);		// 정찰
+						reasonMap.put("Scout", null); // 정찰
 					}
-				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
+				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone
+						|| unit.getType() == UnitType.Protoss_Probe) {
 					if (unit.isAttacking()) {
 						tempTarget = unit.getOrderTarget();
-						if (tempTarget == null) tempTarget = unit.getTarget();
+						if (tempTarget == null)
+							tempTarget = unit.getTarget();
 						if (tempTarget != null && tempTarget.getType() == UnitType.Terran_SCV) {
-							reasonMap.put("Attack", unit);		// 일꾼이 일꾼 공격
-							break;							
+							reasonMap.put("Attack", unit); // 일꾼이 일꾼 공격
+							break;
 						}
 					} else {
-						reasonMap.put("Scout", null);		// 정찰						
+						reasonMap.put("Scout", null); // 정찰
 					}
-				} else if (unit.getType().isBuilding() && unit.isCompleted() && unit.getHitPoints() == unit.getType().maxHitPoints()) {
-					reasonMap.put("Attack", unit);			// 적 건물 건설
+				} else if (unit.getType().isBuilding() && unit.isCompleted()
+						&& unit.getHitPoints() == unit.getType().maxHitPoints()) {
+					reasonMap.put("Attack", unit); // 적 건물 건설
 					break;
 				} else if (unit.getType().isBuilding()) {
 					reasonMap.put("Scout", null);
 				} else {
-					reasonMap.put("AttackAll", null);		// 드랍 상황 무관 / 공격 타이밍
+					reasonMap.put("AttackAll", null); // 드랍 상황 무관 / 공격 타이밍
 					break;
 				}
 			}
 		}
 		return reasonMap;
 	}
-	
+
 	// 현재 본진이 어떤 상황인지 체크
 	// RunAway / Attack
 	public Map<String, Unit> getReasonForEnemysAppearanceAtMulti() {
 		Map<String, Unit> reasonMap = new HashMap<>();
 		Unit tempTarget = null;
-		
+
 		for (Unit unit : enemyPlayer.getUnits()) {
-			if (unit == null) continue;
+			if (unit == null)
+				continue;
 			if (BWTA.getRegion(unit.getPosition()) == getFirstExpansionLocation(selfPlayer).getRegion()) {
 				if (unit.isAttacking()) {
-					tempTarget = unit.getOrderTarget(); 
-					if (tempTarget == null) tempTarget = unit.getTarget();
+					tempTarget = unit.getOrderTarget();
+					if (tempTarget == null)
+						tempTarget = unit.getTarget();
 					if (tempTarget != null && tempTarget.getType() == UnitType.Terran_SCV) {
-						if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone || unit.getType() == UnitType.Protoss_Probe) {
-							reasonMap.put("Attack", unit);		// 일꾼이 일꾼 공격
+						if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone
+								|| unit.getType() == UnitType.Protoss_Probe) {
+							reasonMap.put("Attack", unit); // 일꾼이 일꾼 공격
 							break;
 						} else {
-							reasonMap.put("RunAway", null);		// 도망
+							reasonMap.put("RunAway", null); // 도망
 							break;
-						}						
+						}
 					}
 				}
 			}
@@ -746,7 +756,8 @@ public class InformationManager {
 	/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 	public final boolean isCombatUnitType(UnitType type) {
 		if (type == UnitType.Zerg_Lurker /*
-											 * || type == UnitType.Protoss_Dark_Templar
+											 * || type ==
+											 * UnitType.Protoss_Dark_Templar
 											 */) {
 			return false;
 		}
