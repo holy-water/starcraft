@@ -1194,16 +1194,15 @@ public class StrategyManager {
 			Unit closestUnit = myUnitMap.get("Tank");
 
 			if (isSiegeMode) {
+				// 탱크모드 > 시즈모드
+				if (closestUnit == null || !closestUnit.exists()) {
+					closestUnit = informationMgr
+							.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Siege_Mode);
+					myUnitMap.remove("Tank");
+					myUnitMap.put("Tank", closestUnit);
+				}
 				if (closestUnit != null) {
-					// 탱크모드 > 시즈모드
-					if (!closestUnit.exists()) {
-						closestUnit = informationMgr
-								.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Siege_Mode);
-						myUnitMap.remove("Tank");
-						myUnitMap.put("Tank", closestUnit);
-					}
-
-					if (closestUnit != null && closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+					if (closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 						closestUnit.useTech(TechType.Tank_Siege_Mode);
 					}
 
@@ -1221,7 +1220,6 @@ public class StrategyManager {
 						}
 					}
 				}
-
 			} else {
 				// 시즈모드 > 탱크모드
 				for (Unit unit : myUnits) {
