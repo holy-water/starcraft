@@ -304,7 +304,7 @@ public class WorkerManager {
 			if (unit == null) continue;
 			if (BWTA.getRegion(unit.getPosition()) == mainBaseLocation.getRegion()) {
 				if (unit.getType().isBuilding() && unit.isCompleted() == true
-						&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
+						&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
 					if (unit.getType() != UnitType.Terran_Bunker) {
 						Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
 						if (repairWorker != null) {
@@ -390,7 +390,7 @@ public class WorkerManager {
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit == null) continue;
 			if (unit.getType() == UnitType.Terran_Bunker && unit.isCompleted() == true
-					&& unit.getHitPoints() < unit.getType().maxHitPoints()/3) {
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
 				// 벙커의 경우 일꾼이 여러명이 수리하게 설정
 				int currentCt = workerData.currentBunkerRepairCnt;
 				for (int i=0; i<workerData.optimalBunkerRepairCnt-currentCt; i++) {

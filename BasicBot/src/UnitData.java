@@ -43,6 +43,8 @@ public class UnitData {
 	/// value: List<Integer> (ex) 유닛 ID 리스트
 	Map<Integer, List<Integer>> unitListMap = new HashMap<>();
 	
+	List<Unit> comsatList = new ArrayList<>();
+	
 	public UnitData() 
 	{
 		/*
@@ -96,6 +98,9 @@ public class UnitData {
 			}
 			//numCreatedUnits[unit.getType().getID()]++;
 			//numUnits[unit.getType().getID()]++;
+			if (unit.getType() == UnitType.Terran_Comsat_Station) {
+				comsatList.add(unit);
+			}
 		}
 	}
 	
@@ -128,7 +133,11 @@ public class UnitData {
 	public void removeUnit(Unit unit)
 	{
 		if (unit == null) { return; }
-
+		
+		if (unit.getType() == UnitType.Terran_Comsat_Station) {
+			comsatList.remove(unit);
+		}
+		
 		mineralsLost += unit.getType().mineralPrice();
 		gasLost += unit.getType().gasPrice();
 		if(numUnits.get(unit.getType().toString()) == 1){
@@ -143,7 +152,7 @@ public class UnitData {
 		}
 		// numUnits[unit.getType().getID()]--;
 		// numDeadUnits[unit.getType().getID()]++;
-
+		
 		unitAndUnitInfoMap.remove(unit.getID());
 	}
 
