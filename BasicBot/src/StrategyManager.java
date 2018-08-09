@@ -1203,7 +1203,7 @@ public class StrategyManager {
 						myUnitMap.put("Tank", closestUnit);
 					}
 
-					if (closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+					if (closestUnit != null && closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 						closestUnit.useTech(TechType.Tank_Siege_Mode);
 					}
 
