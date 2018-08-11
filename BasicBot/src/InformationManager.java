@@ -62,7 +62,7 @@ public class InformationManager {
 
 	/// 위험지역
 	public DangerousLocation currentDangerousLocation = null;
-	
+
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -108,12 +108,12 @@ public class InformationManager {
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
-		
+
 		// 위험지역 정보 업데이트
 		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
-			updateDangerousInfo();			
+			updateDangerousInfo();
 		}
-		
+
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
 			updateBaseLocationInfo();
@@ -154,14 +154,14 @@ public class InformationManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/// 위험지역에 대한 정보를 업데이트
 	public void updateDangerousInfo() {
 		DangerousLocation mostDangerousLoca = new DangerousLocation();
 		mostDangerousLoca.setEnemyCnt(0);
-		
+
 		DangerousLocation tempDangerousLocation = null;
-		for(BaseLocation baseLocation: occupiedBaseLocations.get(selfPlayer)) {
+		for (BaseLocation baseLocation : occupiedBaseLocations.get(selfPlayer)) {
 			tempDangerousLocation = researchForce(baseLocation);
 			if (tempDangerousLocation != null) {
 				if (tempDangerousLocation.getEnemyCnt() > mostDangerousLoca.getEnemyCnt()) {
@@ -271,7 +271,7 @@ public class InformationManager {
 		for (Unit unit : selfPlayer.getUnits()) {
 			if (unit == null)
 				continue;
-			if (unitType == null || unit.getType() == unitType) {
+			if (unit.getType() == unitType) {
 				double dist = unit.getDistance(enemyBaseLocation.getPosition());
 				if (closestUnit == null || (dist < closestDist)) {
 					closestUnit = unit;
@@ -298,11 +298,11 @@ public class InformationManager {
 		}
 		return false;
 	}
-	
+
 	// 해당 지역에 적 일꾼 유닛이 있다면 적 일꾼 리턴
 	public Unit getWorkerInRegion(Region region) {
 		Unit targetWorker = null;
-		for (Unit enemyUnit: MyBotModule.Broodwar.enemy().getUnits()) {
+		for (Unit enemyUnit : MyBotModule.Broodwar.enemy().getUnits()) {
 			if (BWTA.getRegion(enemyUnit.getPosition()) == region && enemyUnit.getType().isWorker()) {
 				targetWorker = enemyUnit;
 				break;
@@ -351,14 +351,14 @@ public class InformationManager {
 		}
 		return forcePoint;
 	}
-	
-	// 특정 baseLocation을 위험도 체크 가능한 객체로 반환 
+
+	// 특정 baseLocation을 위험도 체크 가능한 객체로 반환
 	public DangerousLocation researchForce(BaseLocation baseLocation) {
-		
+
 		Map<Integer, UnitInfo> uiMap = getUnitData(enemyPlayer).getUnitAndUnitInfoMap();
 		Iterator<Integer> it = uiMap.keySet().iterator();
 		DangerousLocation tempDangerLocation = new DangerousLocation();
-		
+
 		int forcePoint = 0;
 		int airForcePoint = 0;
 		int groundForcePoint = 0;
@@ -379,12 +379,12 @@ public class InformationManager {
 				}
 			}
 		}
-		
+
 		// 병력이 있을 때만 위험지역으로 return
 		if (forcePoint > 1) {
 			tempDangerLocation.setBaseLocation(baseLocation);
 			tempDangerLocation.setEnemyCnt(forcePoint);
-			
+
 			if (airForcePoint > 0 && groundForcePoint > 0) {
 				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Both);
 			} else if (airForcePoint > 0) {
@@ -392,88 +392,53 @@ public class InformationManager {
 			} else if (groundForcePoint > 0) {
 				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Ground);
 			}
-			
+
 			return tempDangerLocation;
-		} 
+		}
 		// 병력이 없는 경우 null
 		else {
 			return null;
 		}
 	}
-	
-/*
-	// 현재 본진이 어떤 상황인지 체크
-	// Drop / Attack / Scout
-	public Map<String, Unit> getReasonForEnemysAppearance() {
-		Map<String, Unit> reasonMap = new HashMap<>();
-		Unit tempTarget = null;
 
-		for (Unit unit : enemyPlayer.getUnits()) {
-			if (unit == null)
-				continue;
-			if (BWTA.getRegion(unit.getPosition()) == getMainBaseLocation(selfPlayer).getRegion()) {
-				if (unit.getType() == UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle
-						|| unit.getType() == UnitType.Zerg_Overlord) {
-					if (unit.getSpaceRemaining() < 8) {
-						reasonMap.put("Drop", null); // 위험상황(드랍)
-						break;
-					} else {
-						reasonMap.put("Scout", null); // 정찰
-					}
-				} else if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone
-						|| unit.getType() == UnitType.Protoss_Probe) {
-					if (unit.isAttacking()) {
-						tempTarget = unit.getOrderTarget();
-						if (tempTarget == null)
-							tempTarget = unit.getTarget();
-						if (tempTarget != null && tempTarget.getType() == UnitType.Terran_SCV) {
-							reasonMap.put("Attack", unit); // 일꾼이 일꾼 공격
-							break;
-						}
-					} else {
-						reasonMap.put("Scout", null); // 정찰
-					}
-				} else if (unit.getType().isBuilding() && unit.isCompleted()
-						&& unit.getHitPoints() == unit.getType().maxHitPoints()) {
-					reasonMap.put("Attack", unit); // 적 건물 건설
-					break;
-				} else if (unit.getType().isBuilding()) {
-					reasonMap.put("Scout", null);
-				}
-			}
-		}
-		return reasonMap;
-	}
-
-	// 현재 본진이 어떤 상황인지 체크
-	// RunAway / Attack
-	public Map<String, Unit> getReasonForEnemysAppearanceAtMulti() {
-		Map<String, Unit> reasonMap = new HashMap<>();
-		Unit tempTarget = null;
-
-		for (Unit unit : enemyPlayer.getUnits()) {
-			if (unit == null)
-				continue;
-			if (BWTA.getRegion(unit.getPosition()) == getFirstExpansionLocation(selfPlayer).getRegion()) {
-				if (unit.isAttacking()) {
-					tempTarget = unit.getOrderTarget();
-					if (tempTarget == null)
-						tempTarget = unit.getTarget();
-					if (tempTarget != null && tempTarget.getType() == UnitType.Terran_SCV) {
-						if (unit.getType() == UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone
-								|| unit.getType() == UnitType.Protoss_Probe) {
-							reasonMap.put("Attack", unit); // 일꾼이 일꾼 공격
-							break;
-						} else {
-							reasonMap.put("RunAway", null); // 도망
-							break;
-						}
-					}
-				}
-			}
-		}
-		return reasonMap;
-	}*/
+	/*
+	 * // 현재 본진이 어떤 상황인지 체크 // Drop / Attack / Scout public Map<String, Unit>
+	 * getReasonForEnemysAppearance() { Map<String, Unit> reasonMap = new
+	 * HashMap<>(); Unit tempTarget = null;
+	 * 
+	 * for (Unit unit : enemyPlayer.getUnits()) { if (unit == null) continue; if
+	 * (BWTA.getRegion(unit.getPosition()) ==
+	 * getMainBaseLocation(selfPlayer).getRegion()) { if (unit.getType() ==
+	 * UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle ||
+	 * unit.getType() == UnitType.Zerg_Overlord) { if (unit.getSpaceRemaining()
+	 * < 8) { reasonMap.put("Drop", null); // 위험상황(드랍) break; } else {
+	 * reasonMap.put("Scout", null); // 정찰 } } else if (unit.getType() ==
+	 * UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone ||
+	 * unit.getType() == UnitType.Protoss_Probe) { if (unit.isAttacking()) {
+	 * tempTarget = unit.getOrderTarget(); if (tempTarget == null) tempTarget =
+	 * unit.getTarget(); if (tempTarget != null && tempTarget.getType() ==
+	 * UnitType.Terran_SCV) { reasonMap.put("Attack", unit); // 일꾼이 일꾼 공격 break;
+	 * } } else { reasonMap.put("Scout", null); // 정찰 } } else if
+	 * (unit.getType().isBuilding() && unit.isCompleted() && unit.getHitPoints()
+	 * == unit.getType().maxHitPoints()) { reasonMap.put("Attack", unit); // 적
+	 * 건물 건설 break; } else if (unit.getType().isBuilding()) {
+	 * reasonMap.put("Scout", null); } } } return reasonMap; }
+	 * 
+	 * // 현재 본진이 어떤 상황인지 체크 // RunAway / Attack public Map<String, Unit>
+	 * getReasonForEnemysAppearanceAtMulti() { Map<String, Unit> reasonMap = new
+	 * HashMap<>(); Unit tempTarget = null;
+	 * 
+	 * for (Unit unit : enemyPlayer.getUnits()) { if (unit == null) continue; if
+	 * (BWTA.getRegion(unit.getPosition()) ==
+	 * getFirstExpansionLocation(selfPlayer).getRegion()) { if
+	 * (unit.isAttacking()) { tempTarget = unit.getOrderTarget(); if (tempTarget
+	 * == null) tempTarget = unit.getTarget(); if (tempTarget != null &&
+	 * tempTarget.getType() == UnitType.Terran_SCV) { if (unit.getType() ==
+	 * UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone ||
+	 * unit.getType() == UnitType.Protoss_Probe) { reasonMap.put("Attack",
+	 * unit); // 일꾼이 일꾼 공격 break; } else { reasonMap.put("RunAway", null); // 도망
+	 * break; } } } } } return reasonMap; }
+	 */
 
 	public void updateBaseLocationInfo() {
 		if (occupiedRegions.get(selfPlayer) != null) {
@@ -800,25 +765,25 @@ public class InformationManager {
 
 		return direction;
 	}
-	
+
 	/// 해당 Player의 처음 본진 위치(방향)를 리턴합니다 > 11, 1, 5, 7시로 리턴
-		public int getDirectionOfStartLocation(BaseLocation baseLocation) {
-			int x = baseLocation.getTilePosition().getX();
-			int y = baseLocation.getTilePosition().getY();
+	public int getDirectionOfStartLocation(BaseLocation baseLocation) {
+		int x = baseLocation.getTilePosition().getX();
+		int y = baseLocation.getTilePosition().getY();
 
-			int direction = 0; // 방향 리턴값
+		int direction = 0; // 방향 리턴값
 
-			if (x < 64 && y < 64)
-				direction = 11;
-			else if (x > 64 && y < 64)
-				direction = 1;
-			else if (x > 64 && y > 64)
-				direction = 5;
-			else if (x < 64 && y > 64)
-				direction = 7;
+		if (x < 64 && y < 64)
+			direction = 11;
+		else if (x > 64 && y < 64)
+			direction = 1;
+		else if (x > 64 && y > 64)
+			direction = 5;
+		else if (x < 64 && y > 64)
+			direction = 7;
 
-			return direction;
-		}
+		return direction;
+	}
 
 	/// 해당 Player (아군 or 적군) 의 모든 유닛 목록 (가장 최근값) UnitAndUnitInfoMap 을 리턴합니다<br>
 	/// 파악된 정보만을 리턴하기 때문에 적군의 정보는 틀린 값일 수 있습니다

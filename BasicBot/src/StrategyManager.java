@@ -347,6 +347,9 @@ public class StrategyManager {
 			return;
 		}
 
+		if (isFullScaleAttackStarted) {
+			return;
+		}
 		// 0705 추가 - 내 유닛을 공격하는 적 유닛이 있으면 반대로 이동
 		// 0706 수정 - 내 유닛이 공격이 가능 하면 공격, 불가능하면 반대로 이동
 		// 0712 추가 - 해당 위치로 이동할 수 있을 때만 이동
@@ -372,35 +375,6 @@ public class StrategyManager {
 				}
 			}
 		}
-
-		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
-			return;
-		}
-
-		if (isFullScaleAttackStarted) {
-			// if (isSiegeMode) {
-			// if (siegeModeCount++ > 5) {
-			// Unit unit = informationMgr
-			// .getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Siege_Mode);
-			// if (unit != null && !unit.isAttacking() && !unit.isUnderAttack()
-			// && unit.getGroundWeaponCooldown() == 0) {
-			// mainDistance -= 300;
-			// isSiegeMode = false;
-			// }
-			// }
-			// } else {
-			// Unit unit = myUnitMap.get("Barracks");
-			// if (unit != null && unit.exists()) {
-			// if (informationMgr.isEnemyUnitInSight(unit)) {
-			// System.out.println("적 공격 유닛 발견!!");
-			// isSiegeMode = true;
-			// siegeModeCount = 0;
-			// }
-			// }
-			// }
-		}
-
 	}
 
 	// 0712 추가
@@ -512,6 +486,25 @@ public class StrategyManager {
 		}
 
 		if (self.completedUnitCount(UnitType.Terran_Comsat_Station) == 0) {
+			return;
+		}
+
+		boolean isDark = false;
+
+		if (enemy.getRace() == Race.Protoss) {
+			for (Unit dark : informationMgr.getUnitData(enemy).darkList) {
+				if (dark == null || !dark.exists()) {
+					continue;
+				}
+
+				if (!dark.isDetected()) {
+					isDark = true;
+					executeScanAt(dark.getPosition());
+				}
+			}
+		}
+
+		if (isDark) {
 			return;
 		}
 
@@ -637,7 +630,7 @@ public class StrategyManager {
 					|| enemy.allUnitCount(UnitType.Protoss_Dark_Templar) != 0) {
 				if (countMgr.getAcademy() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setAcademy();
 				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
 					if (countMgr.getComsatStation() == 0) {
@@ -660,7 +653,7 @@ public class StrategyManager {
 					|| enemy.allUnitCount(UnitType.Protoss_Carrier) != 0) {
 				if (countMgr.getArmory() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					isAirAttack = true;
@@ -699,7 +692,7 @@ public class StrategyManager {
 			if (enemy.allUnitCount(UnitType.Zerg_Lurker) != 0 || enemy.allUnitCount(UnitType.Zerg_Lurker_Egg) != 0) {
 				if (countMgr.getAcademy() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setAcademy();
 				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
 					if (countMgr.getComsatStation() == 0) {
@@ -720,7 +713,7 @@ public class StrategyManager {
 				}
 				if (countMgr.getArmory() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					isAirAttack = true;
@@ -754,7 +747,7 @@ public class StrategyManager {
 				}
 				if (countMgr.getArmory() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					isAirAttack = true;
@@ -1005,7 +998,7 @@ public class StrategyManager {
 		} else {
 
 		}
-		
+
 	}
 
 	// 일꾼 계속 추가 생산
@@ -1256,11 +1249,11 @@ public class StrategyManager {
 					if (barracks.isUnderAttack()) {
 						barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
 					} else if (barracks.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
-						barracks.move(getBarracksPosition(targetBaseLocation).toPosition());
+						barracks.move(getRallyPosition(targetBaseLocation).toPosition());
 					} else {
 						barracks.stop();
 						// 1초에 한번만 실행
-						if (frameCount % 24 != 0) {
+						if (frameCount % 24 == 0) {
 							if (!informationMgr.isEnemyUnitInSight(barracks)) {
 								if (truceCount++ > 5) {
 									mainDistance -= 100;
@@ -1271,7 +1264,28 @@ public class StrategyManager {
 					}
 				}
 
-				if (targetBaseLocation != null && barracks != null) {
+				Unit closestUnit = informationMgr
+						.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Tank_Mode);
+				if (closestUnit != null && informationMgr.isEnemyUnitInSight(closestUnit)) {
+					if (closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+						closestUnit.useTech(TechType.Tank_Siege_Mode);
+					}
+
+					List<Unit> units = closestUnit.getUnitsInRadius(10 * Config.TILE_SIZE);
+
+					for (Unit unit : units) {
+						if (unit.getPlayer() == enemy) {
+							continue;
+						}
+						if (unit.getType().isWorker() || unit.getType().isBuilding()) {
+							continue;
+						}
+						if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+							unit.useTech(TechType.Tank_Siege_Mode);
+						}
+					}
+				}
+				if (targetBaseLocation != null) {
 					for (Unit unit : myUnits) {
 						// 건물은 제외
 						if (unit.getType().isBuilding()) {
@@ -1282,20 +1296,34 @@ public class StrategyManager {
 							continue;
 						}
 						// canAttack 유닛은 attackMove Command 로 공격을 보냅니다
-						double subDistance = unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode ? mainDistance + 200
-								: mainDistance + 300;
+						double subDistance = unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode ? mainDistance + 100
+								: mainDistance + 200;
 						if (unit.getDistance(targetBaseLocation.getPosition()) > subDistance) {
 							if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-								unit.unsiege();
+								if (!informationMgr.isEnemyUnitInSight(unit)) {
+									unit.unsiege();
+								}
 							}
 							commandUtil.attackMove(unit, targetBaseLocation.getPosition());
 						} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 							unit.useTech(TechType.Tank_Siege_Mode);
 						} else {
-							unit.attack(unit.getPosition());
+							unit.holdPosition();
 						}
 					}
 				}
+			}
+		}
+	}
+
+	public void executeScanAt(Position pos) {
+		for (Unit comsat : informationMgr.getUnitData(self).comsatList) {
+			if (comsat == null || !comsat.isCompleted())
+				return;
+
+			if (comsat.getEnergy() >= 50) {
+				comsat.useTech(TechType.Scanner_Sweep, pos);
+				break;
 			}
 		}
 	}
@@ -1323,6 +1351,36 @@ public class StrategyManager {
 		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 5) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(94, 88);
+			} else {
+				targetPosition = new TilePosition(102, 93);
+			}
+		}
+		return targetPosition;
+	}
+
+	public TilePosition getRallyPosition(BaseLocation baseLocation) {
+		TilePosition targetPosition = TilePosition.None;
+		if (informationMgr.getDirectionOfStartLocation(baseLocation) == 11) {
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				targetPosition = new TilePosition(25, 34);
+			} else {
+				targetPosition = new TilePosition(25, 34);
+			}
+		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 1) {
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				targetPosition = new TilePosition(102, 34);
+			} else {
+				targetPosition = new TilePosition(102, 34);
+			}
+		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 7) {
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				targetPosition = new TilePosition(25, 93);
+			} else {
+				targetPosition = new TilePosition(25, 93);
+			}
+		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 5) {
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				targetPosition = new TilePosition(102, 93);
 			} else {
 				targetPosition = new TilePosition(102, 93);
 			}
