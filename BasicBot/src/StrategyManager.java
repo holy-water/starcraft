@@ -739,8 +739,9 @@ public class StrategyManager {
 					countMgr.setBunker();
 				}
 			}
-			// 레이스
-			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0) {
+			// 레이스, 배틀크루저
+			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0 || enemy.allUnitCount(UnitType.Terran_Physics_Lab) > 0
+					|| enemy.allUnitCount(UnitType.Terran_Battlecruiser) > 0) {
 				if (countMgr.getEngineeringBay() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
 							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
