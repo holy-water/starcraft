@@ -28,6 +28,9 @@ public class VultureMineManager {
 	private static int[] mineXLocationForSpirit = { 36, 83, 44, 89 };
 	private static int[] mineYLocationForSpirit = { 44, 32, 95, 82 };
 
+	private static int[] mineXOtherLocationForSpirit = { 49, 77, 36, 49, 77, 90, 36, 49, 77, 90, 49, 77 };
+	private static int[] mineYOtherLocationForSpirit = { 45, 45, 55, 55, 55, 55, 77, 77, 77, 77, 83, 83 };
+
 	private static Position targetPosition = Position.None;
 	private static Position minePlacementPosition = Position.None;
 
@@ -128,7 +131,7 @@ public class VultureMineManager {
 				// 0806 - 죽은 Vulture에 대한 Nullpointer 에러 핸들링
 				if (vulture != null && vulture.exists()) {
 					// 0808 - 최혜진 추가 vulture의 위치가 겹치지 않도록 랜덤 배정
-					findTargetPostion(vulture);
+					findFirstTargetPostion(vulture);
 					vulture.move(minePlacementPosition);
 					vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
 				}
@@ -142,14 +145,13 @@ public class VultureMineManager {
 				if (vulture != null && vulture.exists()) {
 					if (vultureForMine.get(vulture) == VultureStatus.TargetNotAssigned.ordinal()) {
 						// 0808 - 최혜진 추가 vulture의 위치가 겹치지 않도록 랜덤 배정
-						// findTargetPostion(vulture);
+						findFirstTargetPostion(vulture);
 						vulture.move(targetPosition);
 						vultureForMine.replace(vulture, VultureStatus.MovingToEnemyBridge.ordinal());
 					} else if (vultureForMine.get(vulture) == VultureStatus.MovingToEnemyBridge.ordinal()) {
 						// 0808 - 최혜진 추가 Vulture 공격 받을 시 도망가는 로직
 						if (vulture.isUnderAttack()) {
-							vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
-									.getCenter());
+							vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
 							vultureForMine.replace(vulture, VultureStatus.RunningAwayFromEnemy.ordinal());
 							continue;
 						}
@@ -157,8 +159,7 @@ public class VultureMineManager {
 						Unit closestEnemy = WorkerManager.Instance().getClosestEnemyUnitFromWorker(vulture);
 						if (closestEnemy != null && closestEnemy.exists()) {
 							if (closestEnemy.getDistance(vulture) < 50) {
-								vulture.move(InformationManager.Instance()
-										.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter());
+								vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
 								vultureForMine.replace(vulture, VultureStatus.RunningAwayFromEnemy.ordinal());
 								continue;
 							}
@@ -168,28 +169,130 @@ public class VultureMineManager {
 							vultureForMine.replace(vulture, VultureStatus.PlaceSpiderMine.ordinal());
 						} else if (vulture.isIdle()) {
 							// 0808 - 최혜진 추가 vulture의 위치가 겹치지 않도록 랜덤 배정
-							findTargetPostion(vulture);
+							findFirstTargetPostion(vulture);
 							vulture.move(minePlacementPosition);
 						}
 					} else if (vultureForMine.get(vulture) == VultureStatus.PlaceSpiderMine.ordinal()) {
 						if (vulture.isAttacking() == false && vulture.isMoving() == false) {
-							if (vulture.getSpiderMineCount() > 0) {
-								findTargetPostion(vulture);
+							if (vulture.getSpiderMineCount() == 3) {
+								findTargetPostion(vulture, targetPosition);
+								useSpiderMineTech(vulture, minePlacementPosition);
+							} else if (vulture.getSpiderMineCount() == 2) {
+								TilePosition tempTilePosition = TilePosition.None;
+								int locationOfBase = ConstructionPlaceFinder.locationOfBase;
+								if (locationOfBase == 1) {
+									if (enemyLocationOfBase == 2) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[1],
+												mineYOtherLocationForSpirit[1]);
+									} else if (enemyLocationOfBase == 3) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[6],
+												mineYOtherLocationForSpirit[6]);
+									} else if (enemyLocationOfBase == 4) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[8],
+												mineYOtherLocationForSpirit[8]);
+									}
+								} else if (locationOfBase == 2) {
+									if (enemyLocationOfBase == 1) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[0],
+												mineYOtherLocationForSpirit[0]);
+									} else if (enemyLocationOfBase == 3) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[7],
+												mineYOtherLocationForSpirit[7]);
+									} else if (enemyLocationOfBase == 4) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[9],
+												mineYOtherLocationForSpirit[9]);
+									}
+								} else if (locationOfBase == 3) {
+									if (enemyLocationOfBase == 1) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[2],
+												mineYOtherLocationForSpirit[2]);
+									} else if (enemyLocationOfBase == 2) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[4],
+												mineYOtherLocationForSpirit[4]);
+									} else if (enemyLocationOfBase == 4) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[11],
+												mineYOtherLocationForSpirit[11]);
+									}
+								} else if (locationOfBase == 4) {
+									if (enemyLocationOfBase == 1) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[3],
+												mineYOtherLocationForSpirit[3]);
+									} else if (enemyLocationOfBase == 2) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[5],
+												mineYOtherLocationForSpirit[5]);
+									} else if (enemyLocationOfBase == 3) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[10],
+												mineYOtherLocationForSpirit[10]);
+									}
+
+								}
+
+								findTargetPostion(vulture, tempTilePosition.toPosition());
+								useSpiderMineTech(vulture, minePlacementPosition);
+							} else if (vulture.getSpiderMineCount() == 1) {
+								TilePosition tempTilePosition = TilePosition.None;
+								int locationOfBase = ConstructionPlaceFinder.locationOfBase;
+								if (locationOfBase == 1) {
+									if (enemyLocationOfBase == 2) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[0],
+												mineYOtherLocationForSpirit[0]);
+									} else if (enemyLocationOfBase == 3) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[2],
+												mineYOtherLocationForSpirit[2]);
+									} else if (enemyLocationOfBase == 4) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[3],
+												mineYOtherLocationForSpirit[3]);
+									}
+								} else if (locationOfBase == 2) {
+									if (enemyLocationOfBase == 1) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[1],
+												mineYOtherLocationForSpirit[1]);
+									} else if (enemyLocationOfBase == 3) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[4],
+												mineYOtherLocationForSpirit[4]);
+									} else if (enemyLocationOfBase == 4) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[5],
+												mineYOtherLocationForSpirit[5]);
+									}
+								} else if (locationOfBase == 3) {
+									if (enemyLocationOfBase == 1) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[6],
+												mineYOtherLocationForSpirit[6]);
+									} else if (enemyLocationOfBase == 2) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[7],
+												mineYOtherLocationForSpirit[7]);
+									} else if (enemyLocationOfBase == 4) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[10],
+												mineYOtherLocationForSpirit[10]);
+									}
+								} else if (locationOfBase == 4) {
+									if (enemyLocationOfBase == 1) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[8],
+												mineYOtherLocationForSpirit[8]);
+									} else if (enemyLocationOfBase == 2) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[9],
+												mineYOtherLocationForSpirit[9]);
+									} else if (enemyLocationOfBase == 3) {
+										tempTilePosition = new TilePosition(mineXOtherLocationForSpirit[11],
+												mineYOtherLocationForSpirit[11]);
+									}
+
+								}
+
+								findTargetPostion(vulture, tempTilePosition.toPosition());
 								useSpiderMineTech(vulture, minePlacementPosition);
 							} else {
-								vulture.move(InformationManager.Instance()
-										.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter());
+								vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
 								vultureForMine.replace(vulture, VultureStatus.ComingBacktoMainBaseLocation.ordinal());
 							}
 						}
 					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
 						// 0808 - 최혜진 수정 도착 인식 지점 변경
-						if (vulture.getPosition().getDistance(InformationManager.Instance()
-								.getSecondChokePoint(MyBotModule.Broodwar.self()).getCenter()) < 100) {
+						if (vulture.getPosition()
+								.getDistance(StrategyManager.Instance().getRallyPosition().toPosition()) < 100) {
 							vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
 						} else if (vulture.isIdle()) {
-							vulture.move(InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self())
-									.getCenter());
+							vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
 						}
 
 					} else if (vultureForMine.get(vulture) == VultureStatus.MissionComplete.ordinal()) {
@@ -206,10 +309,10 @@ public class VultureMineManager {
 	}
 
 	// 0805 - 최혜진 추가 Vulture가 Sprider Mine을 심을 위치를 찾아주는 메서드
-	private void findTargetPostion(Unit vulture) {
+	private void findFirstTargetPostion(Unit vulture) {
 
-		int lowerlimit = -4;
-		int upperlimit = 4;
+		int lowerlimit = -2;
+		int upperlimit = 2;
 
 		int plusX = (int) (Math.random() * (upperlimit - lowerlimit + 1)) + lowerlimit;
 		int plusY = (int) (Math.random() * (upperlimit - lowerlimit + 1)) + lowerlimit;
@@ -220,7 +323,26 @@ public class VultureMineManager {
 		minePlacementPosition = resultPosition.toPosition();
 		// 0808 - 최혜진 추가 vulture가 갈 수 없는 곳이라면 다시 지정
 		if (!MyBotModule.Broodwar.isWalkable(StrategyManager.Instance().toWalkPosition(minePlacementPosition))) {
-			findTargetPostion(vulture);
+			findFirstTargetPostion(vulture);
+		}
+
+	}
+
+	private void findTargetPostion(Unit vulture, Position newTargetPostion) {
+
+		int lowerlimit = -5;
+		int upperlimit = 5;
+
+		int plusX = (int) (Math.random() * (upperlimit - lowerlimit + 1)) + lowerlimit;
+		int plusY = (int) (Math.random() * (upperlimit - lowerlimit + 1)) + lowerlimit;
+
+		int currentX = newTargetPostion.toTilePosition().getX();
+		int currentY = newTargetPostion.toTilePosition().getY();
+		TilePosition resultPosition = new TilePosition(currentX + plusX, currentY + plusY);
+		minePlacementPosition = resultPosition.toPosition();
+		// 0808 - 최혜진 추가 vulture가 갈 수 없는 곳이라면 다시 지정
+		if (!MyBotModule.Broodwar.isWalkable(StrategyManager.Instance().toWalkPosition(minePlacementPosition))) {
+			findTargetPostion(vulture, newTargetPostion);
 		}
 
 	}
@@ -229,4 +351,5 @@ public class VultureMineManager {
 	private void useSpiderMineTech(Unit vulture, Position position) {
 		vulture.useTech(TechType.Spider_Mines, minePlacementPosition);
 	}
+
 }
