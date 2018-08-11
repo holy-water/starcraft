@@ -89,14 +89,6 @@ public class WorkerManager {
 					}
 					return;
 				}
-			} else if (reasonMap.containsKey("AttackAll")) {
-				// 입구쪽 어택땅
-				for (Unit worker : workerData.getWorkers()) {
-					if (worker.isCompleted()) {
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.AttackAll);
-					}
-				}
-				return;				
 			}
 		}
 		
@@ -302,7 +294,8 @@ public class WorkerManager {
 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit == null) continue;
-			if (BWTA.getRegion(unit.getPosition()) == mainBaseLocation.getRegion()) {
+			if (BWTA.getRegion(unit.getPosition()) == mainBaseLocation.getRegion()
+					|| BWTA.getRegion(unit.getPosition()) == firstExpansionLocation.getRegion()) {
 				if (unit.getType().isBuilding() && unit.isCompleted() == true
 						&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
 					if (unit.getType() != UnitType.Terran_Bunker) {

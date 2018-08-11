@@ -313,7 +313,7 @@ public class InformationManager {
 	}
 
 	// 현재 본진이 어떤 상황인지 체크
-	// Drop / Attack / Scout / AttackAll
+	// Drop / Attack / Scout
 	public Map<String, Unit> getReasonForEnemysAppearance() {
 		Map<String, Unit> reasonMap = new HashMap<>();
 		Unit tempTarget = null;
@@ -349,9 +349,6 @@ public class InformationManager {
 					break;
 				} else if (unit.getType().isBuilding()) {
 					reasonMap.put("Scout", null);
-				} else {
-					reasonMap.put("AttackAll", null); // 드랍 상황 무관 / 공격 타이밍
-					break;
 				}
 			}
 		}

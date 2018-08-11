@@ -23,9 +23,8 @@ public class ScoutManager {
 		NoScout, /// < 정찰 유닛을 미지정한 상태
 		MovingToAnotherBaseLocation, /// < 적군의 BaseLocation 이 미발견된 상태에서 정찰 유닛을
 										/// 이동시키고 있는 상태
-		MoveAroundEnemyBaseLocation, /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을
+		MoveAroundEnemyBaseLocation /// < 적군의 BaseLocation 이 발견된 상태에서 정찰 유닛을
 									/// 이동시키고 있는 상태
-		WatingForZerg				/// 저그의 초기 공격 대비 3분간 대기하는 상태
 	};
 
 	private BaseLocation currentScoutTargetBaseLocation = null;
@@ -111,34 +110,6 @@ public class ScoutManager {
 			currentScoutUnit = null;
 			currentScoutStatus = ScoutStatus.NoScout.ordinal();
 			return;
-		}
-		
-		// 상대가 저그이면 일단 앞마당 입구에서 3분 대기 후 출발
-		if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
-			if (MyBotModule.Broodwar.getFrameCount() / 24 < 180) {
-				if (currentScoutStatus == ScoutStatus.WatingForZerg.ordinal()) return;
-				// 본진의 방향 세팅
-				int direction = InformationManager.Instance().getDirectionOfStartLocation(MyBotModule.Broodwar.self());
-				TilePosition holdingPos = TilePosition.None;	// 3분간 서있을 위치
-				
-				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					if (direction == 11) holdingPos = new TilePosition(36, 41);
-					else if (direction == 1) holdingPos = new TilePosition(91, 41);					
-					else if (direction == 5) holdingPos = new TilePosition(88, 86);
-					else if (direction == 7) holdingPos = new TilePosition(37, 85);				
-				} else {
-					if (direction == 11) holdingPos = new TilePosition(35, 42);
-					else if (direction == 1) holdingPos = new TilePosition(86, 29);					
-					else if (direction == 5) holdingPos = new TilePosition(91, 84);
-					else if (direction == 7) holdingPos = new TilePosition(41, 98);
-				}
-				
-				if (holdingPos != TilePosition.None) {
-					commandUtil.move(currentScoutUnit, holdingPos.toPosition());					
-					currentScoutStatus = ScoutStatus.WatingForZerg.ordinal();
-				}
-				return;
-			}
 		}
 		
 		BaseLocation enemyBaseLocation = InformationManager.Instance()
