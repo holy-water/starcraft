@@ -82,7 +82,6 @@ public class ConstructionPlaceFinder {
 
 	// 0811 - 최혜진 추가 순서가 아직 정해진지 여부를 판단
 	private static boolean isMultipleExpansionOrderDecided;
-	private static Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
 	private static TreeMap<Integer, BaseLocation> orderOfBaseLocations = new TreeMap<>();
 
 	/// static singleton 객체를 리턴합니다
@@ -683,46 +682,7 @@ public class ConstructionPlaceFinder {
 				int enemyLocation = VultureMineManager.Instance().enemyLocationOfBase;
 				// 본진 위치, 적 본진 위치를 알고 아직 순서가 정해지지 않은 경우 순서를 정한다
 				if (locationOfBase != 0 && enemyLocation != 0 && isMultipleExpansionOrderDecided == false) {
-					List<BaseLocation> multipleExpansionList = BWTA.getBaseLocations();
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						for (BaseLocation tempBaseLocations : multipleExpansionList) {
-							int x = tempBaseLocations.getTilePosition().getX();
-							int y = tempBaseLocations.getTilePosition().getY();
-							if (x == 7 && y == 9) {
-								System.out.println(x + " " + y);
-								numberOfBaseLocations.put(0, tempBaseLocations);
-							} else if (x == 7 && y == 34) {
-								numberOfBaseLocations.put(1, tempBaseLocations);
-							} else if (x == 35 && y == 15) {
-								numberOfBaseLocations.put(2, tempBaseLocations);
-							} else if (x == 62 && y == 5) {
-								numberOfBaseLocations.put(3, tempBaseLocations);
-							} else if (x == 89 && y == 15) {
-								numberOfBaseLocations.put(4, tempBaseLocations);
-							} else if (x == 117 && y == 9) {
-								numberOfBaseLocations.put(5, tempBaseLocations);
-							} else if (x == 117 && y == 34) {
-								numberOfBaseLocations.put(6, tempBaseLocations);
-							} else if (x == 14 && y == 63) {
-								numberOfBaseLocations.put(7, tempBaseLocations);
-							} else if (x == 110 && y == 63) {
-								numberOfBaseLocations.put(8, tempBaseLocations);
-							} else if (x == 7 && y == 92) {
-								numberOfBaseLocations.put(9, tempBaseLocations);
-							} else if (x == 7 && y == 118) {
-								numberOfBaseLocations.put(10, tempBaseLocations);
-							} else if (x == 35 && y == 110) {
-								numberOfBaseLocations.put(11, tempBaseLocations);
-							} else if (x == 62 && y == 119) {
-								numberOfBaseLocations.put(12, tempBaseLocations);
-							} else if (x == 89 && y == 110) {
-								numberOfBaseLocations.put(13, tempBaseLocations);
-							} else if (x == 117 && y == 118) {
-								numberOfBaseLocations.put(14, tempBaseLocations);
-							} else if (x == 117 && y == 92) {
-								numberOfBaseLocations.put(15, tempBaseLocations);
-							}
-						}
 						if (locationOfBase == 1) {
 							if (enemyLocation == 1) {
 

@@ -60,6 +60,8 @@ public class StrategyManager {
 	private int truceCount;
 	// 0801 - 최혜진 추가 적 본진 및 적 길목 스캔 스위치
 	private boolean enemyBaseLocationScanned;
+	// 0812 - 최혜진 추가 Expansion 순서 지정
+	public Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -771,6 +773,10 @@ public class StrategyManager {
 	}
 
 	public void setInitialBuildOrder() {
+
+		// 0812 - 최혜진 추가 Expansion 번호 부여
+		setNumberOfBaseLocations();
+
 		if (self.getRace() == Race.Terran) {
 			// 5 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
@@ -953,6 +959,53 @@ public class StrategyManager {
 						BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation, true);
 			}
 		}
+	}
+
+	// 0812 - 최혜진 추가 Expansion 위치에 번호 부여
+	private void setNumberOfBaseLocations() {
+		List<BaseLocation> multipleExpansionList = BWTA.getBaseLocations();
+		if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+			for (BaseLocation tempBaseLocations : multipleExpansionList) {
+				int x = tempBaseLocations.getTilePosition().getX();
+				int y = tempBaseLocations.getTilePosition().getY();
+				if (x == 7 && y == 9) {
+					numberOfBaseLocations.put(0, tempBaseLocations);
+				} else if (x == 7 && y == 34) {
+					numberOfBaseLocations.put(1, tempBaseLocations);
+				} else if (x == 35 && y == 15) {
+					numberOfBaseLocations.put(2, tempBaseLocations);
+				} else if (x == 62 && y == 5) {
+					numberOfBaseLocations.put(3, tempBaseLocations);
+				} else if (x == 89 && y == 15) {
+					numberOfBaseLocations.put(4, tempBaseLocations);
+				} else if (x == 117 && y == 9) {
+					numberOfBaseLocations.put(5, tempBaseLocations);
+				} else if (x == 117 && y == 34) {
+					numberOfBaseLocations.put(6, tempBaseLocations);
+				} else if (x == 14 && y == 63) {
+					numberOfBaseLocations.put(7, tempBaseLocations);
+				} else if (x == 110 && y == 63) {
+					numberOfBaseLocations.put(8, tempBaseLocations);
+				} else if (x == 7 && y == 92) {
+					numberOfBaseLocations.put(9, tempBaseLocations);
+				} else if (x == 7 && y == 118) {
+					numberOfBaseLocations.put(10, tempBaseLocations);
+				} else if (x == 35 && y == 110) {
+					numberOfBaseLocations.put(11, tempBaseLocations);
+				} else if (x == 62 && y == 119) {
+					numberOfBaseLocations.put(12, tempBaseLocations);
+				} else if (x == 89 && y == 110) {
+					numberOfBaseLocations.put(13, tempBaseLocations);
+				} else if (x == 117 && y == 118) {
+					numberOfBaseLocations.put(14, tempBaseLocations);
+				} else if (x == 117 && y == 92) {
+					numberOfBaseLocations.put(15, tempBaseLocations);
+				}
+			}
+		} else {
+
+		}
+		
 	}
 
 	// 일꾼 계속 추가 생산
