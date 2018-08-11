@@ -264,26 +264,15 @@ public class ConstructionPlaceFinder {
 						int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
 						int dy = tempBaseLocation.getTilePosition().getY()
 								- tempFirstExpansion.getTilePosition().getY();
-						numberOfSupply = 1;
 						// 0722 - 최혜진 수정 초기 좌표 설정
 						// 0723 - 최혜진 수정 좌표 이상 해결
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-							nx = leftcornerX = 0;
-							ny = uppercornerY = 0;
 							locationOfBase = 1;
 						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-							nx = rightcornerX = 125;
-							ny = uppercornerY = 0;
 							locationOfBase = 2;
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-							nx = leftcornerX = 9;
-							ny = lowercornerY = 125;
 							locationOfBase = 3;
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-							nx = rightcornerX = 119;
-							ny = lowercornerY = 125;
 							locationOfBase = 4;
 						}
 					} else {
@@ -298,129 +287,22 @@ public class ConstructionPlaceFinder {
 						// 0722 - 최혜진 수정 초기 좌표 설정
 						// 0723 - 최혜진 수정 좌표 이상 해결
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-							nx = leftcornerX = 0;
-							ny = uppercornerY = 0;
 							locationOfBase = 1;
 						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-							nx = rightcornerX = 125;
-							ny = uppercornerY = 0;
 							locationOfBase = 2;
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-							nx = leftcornerX = 6;
-							ny = lowercornerY = 125;
 							locationOfBase = 3;
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-							nx = rightcornerX = 119;
-							ny = lowercornerY = 125;
 							locationOfBase = 4;
 						}
 					}
 					isSupplyDepotBuild = true;
-					// System.out.println(locationOfBase + " " + nx + " " + ny);
-
-				} else { // 첫번째가 아닌 경우
-					numberOfSupply++;
-					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
-						if (locationOfBase == 1) {
-							if (numberOfSupply % 8 == 1) {
-								uppercornerY = uppercornerY + 2;
-								leftcornerX = 0;
-							} else {
-								leftcornerX = leftcornerX + 3;
-							}
-							nx = leftcornerX;
-							ny = uppercornerY;
-						} else if (locationOfBase == 2) {
-							if (numberOfSupply % 8 == 1) {
-								uppercornerY = uppercornerY + 2;
-								rightcornerX = 125;
-							} else {
-								rightcornerX = rightcornerX - 3;
-							}
-							nx = rightcornerX;
-							ny = uppercornerY;
-						} else if (locationOfBase == 3) {
-							if (numberOfSupply % 7 == 1) {
-								lowercornerY = lowercornerY - 2;
-								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-								leftcornerX = 9;
-							} else {
-								leftcornerX = leftcornerX + 3;
-							}
-							nx = leftcornerX;
-							ny = lowercornerY;
-						} else if (locationOfBase == 4) {
-							if (numberOfSupply % 7 == 1) {
-								lowercornerY = lowercornerY - 2;
-								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-								rightcornerX = 119;
-							} else {
-								rightcornerX = rightcornerX - 3;
-							}
-							nx = rightcornerX;
-							ny = lowercornerY;
-						}
-
-						// System.out.println(nx + " " + ny);
-					} else {
-						// 0726 - 최혜진 추가 투혼 맵 적용
-						// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
-						if (locationOfBase == 1) {
-							if (numberOfSupply % 6 == 1) {
-								uppercornerY = uppercornerY + 2;
-								leftcornerX = 0;
-							} else {
-								leftcornerX = leftcornerX + 3;
-							}
-							nx = leftcornerX;
-							ny = uppercornerY;
-						} else if (locationOfBase == 2) {
-							if (numberOfSupply % 8 == 1) {
-								uppercornerY = uppercornerY + 2;
-								rightcornerX = 125;
-							} else {
-								rightcornerX = rightcornerX - 3;
-							}
-							nx = rightcornerX;
-							ny = uppercornerY;
-						} else if (locationOfBase == 3) {
-							if (numberOfSupply % 8 == 1) {
-								lowercornerY = lowercornerY - 2;
-								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-								leftcornerX = 6;
-							} else {
-								leftcornerX = leftcornerX + 3;
-							}
-							nx = leftcornerX;
-							ny = lowercornerY;
-						} else if (locationOfBase == 4) {
-							if (numberOfSupply % 6 == 1) {
-								lowercornerY = lowercornerY - 2;
-								// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
-								rightcornerX = 119;
-							} else {
-								rightcornerX = rightcornerX - 3;
-							}
-							nx = rightcornerX;
-							ny = lowercornerY;
-						}
-
-						// System.out.println(nx + " " + ny);
-					}
 				}
-				tempTilePosition = new TilePosition(nx, ny);
-				// 0724 - 최혜진 추가 해당 위치에 건설이 불가능할 경우 다음 번으로 넘김
-				if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)) {
-					desiredPosition = tempTilePosition.getPoint();
-				} else {
-					desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
-							seedPositionStrategy);
-				}
-
+				tempTilePosition = checkEveryPositionForSupplyDepot();
+				desiredPosition = tempTilePosition.getPoint();
+				numberOfSupply++;
 				break;
+
 			case BlockFirstChokePoint:
 				int blockx = 0;
 				int blocky = 0;
@@ -801,6 +683,131 @@ public class ConstructionPlaceFinder {
 		return desiredPosition;
 
 		// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+	}
+
+	// 0811 - 최혜진 추가 Supply Depot 처음부터 탐색
+	public final TilePosition checkEveryPositionForSupplyDepot() {
+		TilePosition tempTilePosition = TilePosition.None;
+
+		int nx = 0;
+		int ny = 0;
+
+		for (int i = 0; i <= numberOfSupply; i++) {
+			if (i == 0) {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (locationOfBase == 1) {
+						nx = 0;
+						ny = 0;
+					} else if (locationOfBase == 2) {
+						nx = 125;
+						ny = 0;
+					} else if (locationOfBase == 3) {
+						nx = 9;
+						ny = 125;
+					} else if (locationOfBase == 4) {
+						nx = 119;
+						ny = 125;
+					}
+				} else {
+					if (locationOfBase == 1) {
+						nx = 0;
+						ny = 0;
+					} else if (locationOfBase == 2) {
+						nx = 125;
+						ny = 0;
+					} else if (locationOfBase == 3) {
+						nx = 6;
+						ny = 125;
+					} else if (locationOfBase == 4) {
+						nx = 119;
+						ny = 125;
+					}
+				}
+			} else {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
+					if (locationOfBase == 1) {
+						if (i % 8 == 0) {
+							ny = ny + 2;
+							nx = 0;
+						} else {
+							nx = nx + 3;
+						}
+					} else if (locationOfBase == 2) {
+						if (i % 8 == 0) {
+							ny = ny + 2;
+							nx = 125;
+						} else {
+							nx = nx - 3;
+						}
+					} else if (locationOfBase == 3) {
+						if (i % 7 == 0) {
+							ny = ny - 2;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = 9;
+						} else {
+							nx = nx + 3;
+						}
+					} else if (locationOfBase == 4) {
+						if (i % 7 == 0) {
+							ny = ny - 2;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = 119;
+						} else {
+							nx = nx - 3;
+						}
+					}
+				} else {
+					// 0726 - 최혜진 추가 투혼 맵 적용
+					// 0722 - 최혜진 수정 Supply Depot 짓는 방식 변경
+					if (locationOfBase == 1) {
+						if (i % 6 == 0) {
+							ny = ny + 2;
+							nx = 0;
+						} else {
+							nx = nx + 3;
+						}
+					} else if (locationOfBase == 2) {
+						if (i % 8 == 0) {
+							ny = ny + 2;
+							nx = 125;
+						} else {
+							nx = nx - 3;
+						}
+					} else if (locationOfBase == 3) {
+						if (i % 8 == 0) {
+							ny = ny - 2;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = 6;
+						} else {
+							nx = nx + 3;
+						}
+					} else if (locationOfBase == 4) {
+						if (i % 6 == 0) {
+							ny = ny - 2;
+							// 0805 - 최혜진 수정 미네랄과 붙어있지 않도록 수정
+							nx = 119;
+						} else {
+							nx = nx - 3;
+						}
+					}
+				}
+			}
+
+			tempTilePosition = new TilePosition(nx, ny);
+			if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)) {
+				break;
+			}
+			tempTilePosition = TilePosition.None;
+		}
+
+		if (tempTilePosition != TilePosition.None || tempTilePosition != null) {
+			return tempTilePosition.getPoint();
+		} else {
+			numberOfSupply++;
+			return checkEveryPositionForSupplyDepot();
+		}
+
 	}
 
 	/// desiredPosition 근처에서 건물 건설 가능 위치를 탐색해서 리턴합니다<br>
