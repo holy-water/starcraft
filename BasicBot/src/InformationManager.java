@@ -298,10 +298,22 @@ public class InformationManager {
 		}
 		return false;
 	}
+	
+	// 해당 지역에 적 일꾼 유닛이 있다면 적 일꾼 리턴
+	public Unit getWorkerInRegion(Region region) {
+		Unit targetWorker = null;
+		for (Unit enemyUnit: MyBotModule.Broodwar.enemy().getUnits()) {
+			if (BWTA.getRegion(enemyUnit.getPosition()) == region && enemyUnit.getType().isWorker()) {
+				targetWorker = enemyUnit;
+				break;
+			}
+		}
+		return targetWorker;
+	}
 
 	/// 0808 수정
 	/// 우리 유닛의 시야 내에 적이 있는가 체크하는 메소드
-	public boolean isEnemyUnitInRadius(Unit targetUnit) {
+	public boolean isEnemyUnitInSight(Unit targetUnit) {
 		if (targetUnit == null)
 			return false;
 
@@ -388,7 +400,8 @@ public class InformationManager {
 			return null;
 		}
 	}
-
+	
+/*
 	// 현재 본진이 어떤 상황인지 체크
 	// Drop / Attack / Scout
 	public Map<String, Unit> getReasonForEnemysAppearance() {
@@ -460,7 +473,7 @@ public class InformationManager {
 			}
 		}
 		return reasonMap;
-	}
+	}*/
 
 	public void updateBaseLocationInfo() {
 		if (occupiedRegions.get(selfPlayer) != null) {

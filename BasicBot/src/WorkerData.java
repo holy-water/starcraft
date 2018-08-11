@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -17,15 +16,13 @@ public class WorkerData {
 		Minerals, 		///< 미네랄 채취 
 		Gas,			///< 가스 채취
 		Build,			///< 건물 건설
-		Combat, 		///< 전투
 		Idle,			///< 하는 일 없음. 대기 상태. 
 		Repair,			///< 수리. Terran_SCV 만 가능
 		RepairBunker,	///< 벙커 수리.
 		Move,			///< 이동
 		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨.
 		RunAway,		///< 도망. Move와 다름.
-		Attack,			///< 공격. 4드론 전략에 대응할 때
-		AttackAll,		///< 총공격. 본진 위기
+		Attack,			///< 공격.
 		Default 		///< 기본. 미설정 상태. 
 	};
 	
@@ -56,6 +53,7 @@ public class WorkerData {
 	private Map<Integer, Unit> workerMineralMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRefineryMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRepairMap = new HashMap<Integer, Unit>();
+	private Map<Integer, Unit> workerAttackMap = new HashMap<Integer, Unit>();
 	
 	private CommandUtil commandUtil = new CommandUtil();
 	
@@ -112,6 +110,9 @@ public class WorkerData {
 					}
 					if (workerRepairMap.containsKey(worker.getID())) {
 						workerRepairMap.remove(worker.getID());
+					}
+					if (workerAttackMap.containsKey(worker.getID())) {
+						workerAttackMap.remove(worker.getID());
 					}
 					if (workerMoveMap.containsKey(worker.getID())) {
 						workerMoveMap.remove(worker.getID());
@@ -347,13 +348,15 @@ public class WorkerData {
 	    else if (job == WorkerJob.Attack)
 		{	
 	    	if (jobUnit != null) {
+	    		workerAttackMap.put(unit.getID(), jobUnit);
+	    	
 	    		// 공격 중이 아닐때만
 				if (!unit.isAttacking())
 				{
 					commandUtil.attackUnit(unit, jobUnit);
 				}
 	    	}
-		} 
+		}
 		else if (job == WorkerJob.Scout)
 		{
 
@@ -396,23 +399,6 @@ public class WorkerData {
 			//BWAPI::Broodwar->printf("Something went horribly wrong");
 		}
 	}
-	
-	public void setWorkerJob(Unit unit, WorkerJob job)
-	{
-		if (unit == null) { return; }
-
-		clearPreviousJob(unit);
-		workerJobMap.put(unit.getID(), job);
-
-		if (job == WorkerJob.AttackAll)
-		{	
-    		// 본진 - 입구 중간 지점으로 Attack Move
-    		Position mainPos = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()).getPosition();
-    		Position firstPos = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self()).getPoint();
-    		Position targetPos = new Position((mainPos.getX()+firstPos.getX())/2, (mainPos.getY()+firstPos.getY())/2);
-    		commandUtil.attackMove(unit, targetPos);
-		} 
-	}
 
 	public void clearPreviousJob(Unit unit)
 	{
@@ -454,6 +440,10 @@ public class WorkerData {
 		{
 			workerRepairMap.remove(unit.getID()); // C++ : workerRepairMap.erase(unit);
 			currentBunkerRepairCnt--;
+		}
+		else if (previousJob == WorkerJob.Attack)
+		{
+			workerAttackMap.remove(unit.getID());
 		}
 		else if (previousJob == WorkerJob.Move)
 		{
@@ -713,6 +703,17 @@ public class WorkerData {
 
 		return null;
 	}
+	
+	public Unit getWorkerAttackUnit(Unit unit)
+	{
+		if (unit == null) { return null; }
+		
+		if(workerAttackMap.containsKey(unit.getID())){
+			return workerAttackMap.get(unit.getID());
+		}
+
+		return null;
+	}
 
 	public Unit getWorkerDepot(Unit unit)
 	{
@@ -781,7 +782,6 @@ public class WorkerData {
 		WorkerData.WorkerJob j = getWorkerJob(unit);
 
 		if (j == WorkerData.WorkerJob.Build) return 'B';
-		if (j == WorkerData.WorkerJob.Combat) return 'C';
 		if (j == WorkerData.WorkerJob.Default) return 'D';
 		if (j == WorkerData.WorkerJob.Gas) return 'G';
 		if (j == WorkerData.WorkerJob.Idle) return 'I';

@@ -51,21 +51,22 @@ public class WorkerManager {
 		handleIdleWorkers();
 		handleMoveWorkers();
 		handleRunAwayWorkers();
-		handleCombatWorkers();
 		handleRepairWorkers();
 		handleBunkerRepairWorkers();
+		
+		// 게임 시작 후 5분 이내일 경우에만 들어온 적 일꾼 죽이기
+		if (MyBotModule.Broodwar.getFrameCount() < 24 * 300) {
+			handleAttackWorkers();			
+		}
 	}
 
 	public void updateWorkerStatus() {
-		// Drone 은 건설을 위해 isConstructing = true 상태로 건설장소까지 이동한 후,
-		// 잠깐 getBuildType() == none 가 되었다가, isConstructing = true, isMorphing = true 가
-		// 된 후, 건설을 시작한다
 		
 		// 위험도 체크 후 비상일 경우 scv Job > Attack 전환
 		// 본진에 적군 쳐들어온 경우
 		// if 드랍 -> scv 전체 튄다
 		// else -> scv 싸운다
-		Map<String, Unit> reasonMap;
+		/*Map<String, Unit> reasonMap;
 		if (infoMngr.isEnemyUnitInRadius(mainBaseLocation.getPosition(), 10)) {
 			reasonMap = infoMngr.getReasonForEnemysAppearance();
 			if (reasonMap.containsKey("Drop")) {
@@ -109,17 +110,16 @@ public class WorkerManager {
 				}
 				return;
 			}
-		}
+		}*/
 		
 		// for each of our Workers
 		for (Unit worker : workerData.getWorkers()) {
-			if (!worker.isCompleted()) {
+			if (worker == null || !worker.isCompleted()) {
 				continue;
 			}
 
 			// worker가 공격을 받으면 다른 진영으로 도망가도록 설정
-			// 테스트 아직 못한 상태
-			/*if (worker.isUnderAttack()) {
+			if (worker.isUnderAttack()) {
 				// 각 진영에서 다른 진영으로 이동하도록 세팅 > 역할을 Move로 하여 Idle 상태가 되지 않도록 함
 				if (BWTA.getRegion(worker.getPosition()) == mainBaseLocation.getRegion()) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway,
@@ -132,7 +132,7 @@ public class WorkerManager {
 				}
 				// occupiedBaseLocation
 				else {
-					for (int i = 1; i < occupiedBaseLocations.size(); i++) {
+					for (int i = 2; i < occupiedBaseLocations.size(); i++) {
 						if (BWTA.getRegion(worker.getPosition()) == occupiedBaseLocations.get(i).getRegion()) {
 							workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway,
 									occupiedBaseLocations.get(i - 1).getStaticMinerals().get(0));
@@ -141,7 +141,7 @@ public class WorkerManager {
 					}
 				}
 				continue;
-			}*/
+			}
 
 			// 게임상에서 worker가 isIdle 상태가 되었으면 (새로 탄생했거나, 그전 임무가 끝난 경우),
 			// WorkerData 도 Idle 로 맞춘 후, handleGasWorkers, handleIdleWorkers 등에서
@@ -188,6 +188,17 @@ public class WorkerManager {
 				// 대상이 파괴되었거나, 수리가 다 끝난 경우
 				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
 						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()) {
+					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
+				}
+			}
+			
+			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack) {
+				Unit attackTargetUnit = workerData.getWorkerAttackUnit(worker);
+				
+				// 대상이 파괴되었거나, 지역을 벗어난 경우
+				if (attackTargetUnit == null || !attackTargetUnit.exists() || attackTargetUnit.getHitPoints() <= 0
+						|| (BWTA.getRegion(attackTargetUnit.getPosition()) != mainBaseLocation.getRegion() 
+							&& BWTA.getRegion(attackTargetUnit.getPosition()) != firstExpansionLocation.getRegion())) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
 				}
 			}
@@ -268,23 +279,57 @@ public class WorkerManager {
 		}
 
 	}
+	
+	/// 적의 일꾼 유닛이 본진/앞마당에 있다는게 확인되면 가까운 우리 일꾼 유닛이 공격
+	public void handleAttackWorkers() {
+		// 적 일꾼 유닛이 본진 / 앞마당에 있는지 체크
+		Unit enemyWorkerInFirst = infoMngr.getWorkerInRegion(firstExpansionLocation.getRegion());
+		if (enemyWorkerInFirst != null) {
+			Unit attackWorker = getClosestAttackWorkerTo(enemyWorkerInFirst.getPosition());
+			if (attackWorker != null) {
+				workerData.setWorkerJob(attackWorker, WorkerData.WorkerJob.Attack, enemyWorkerInFirst);
+				return;
+			}
+		}
+		
+		Unit enemyWorkerInMain = infoMngr.getWorkerInRegion(mainBaseLocation.getRegion());
+		if (enemyWorkerInMain != null) {
+			Unit attackWorker = getClosestAttackWorkerTo(enemyWorkerInMain.getPosition());
+			if (attackWorker != null) {
+				workerData.setWorkerJob(attackWorker, WorkerData.WorkerJob.Attack, enemyWorkerInMain);
+			}
+		}
+	}
+	
+	/// 타겟 유닛으로부터 가장 가까운 / 혹은 이미 배정된 worker 리턴
+	public Unit getClosestAttackWorkerTo(Position target) {
+		Unit closestUnit = null;
+		double closestDist = 1000000000;
 
-	// bad micro for combat workers
-	public void handleCombatWorkers() {
+		if (currentAttackWorker != null && currentAttackWorker.exists() && currentAttackWorker.getHitPoints() > 0) {
+			return currentAttackWorker;
+		}
+		
 		for (Unit worker : workerData.getWorkers()) {
-			if (worker == null)
-				continue;
+			if (worker == null) continue;
 
-			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Combat) {
-				MyBotModule.Broodwar.drawCircleMap(worker.getPosition().getX(), worker.getPosition().getY(), 4,
-						Color.Yellow, true);
-				Unit target = getClosestEnemyUnitFromWorker(worker);
-
-				if (target != null) {
-					commandUtil.attackUnit(worker, target);
+			if (worker.isCompleted() && (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Minerals
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move)) {
+				double dist = worker.getDistance(target);
+				if (closestUnit == null || dist < closestDist) {
+					closestUnit = worker;
+					closestDist = dist;
 				}
 			}
 		}
+
+		if (currentAttackWorker == null || currentAttackWorker.exists() == false
+				|| currentAttackWorker.getHitPoints() <= 0) {
+			currentAttackWorker = closestUnit;
+		}
+		
+		return currentAttackWorker;	
 	}
 
 	public void handleRepairWorkers() {
@@ -355,8 +400,7 @@ public class WorkerManager {
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RunAway
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.AttackAll)) {
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack)) {
 				double dist = worker.getDistance(p);
 
 				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false
@@ -420,8 +464,7 @@ public class WorkerManager {
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RunAway
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack
-					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.AttackAll)) {
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack)) {
 				double dist = worker.getDistance(p);
 
 				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false
@@ -450,34 +493,7 @@ public class WorkerManager {
 		}
 	}
 
-	/// 타겟 건물로부터 가장 가까운 / 혹은 이미 배정된 worker 리턴
-	public Unit getClosestAttackWorkerTo(Position target) {
-		Unit closestUnit = null;
-		double closestDist = 1000000000;
-
-		if (currentAttackWorker != null && currentAttackWorker.exists() && currentAttackWorker.getHitPoints() > 0) {
-			return currentAttackWorker;
-		}
-		
-		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-			if (unit == null) continue;
-			if (unit.isCompleted() && unit.getHitPoints() > 0 && unit.exists() && unit.getType().isWorker()
-					&& WorkerManager.Instance().isMineralWorker(unit)) {
-				double dist = unit.getDistance(target);
-				if (closestUnit == null || dist < closestDist) {
-					closestUnit = unit;
-					closestDist = dist;
-				}
-			}
-		}
-
-		if (currentAttackWorker == null || currentAttackWorker.exists() == false
-				|| currentAttackWorker.getHitPoints() <= 0) {
-			currentAttackWorker = closestUnit;
-		}
-		
-		return currentAttackWorker;	
-	}
+	
 	
 	/// target 으로부터 가장 가까운 Mineral 일꾼 유닛을 리턴합니다
 	public Unit getClosestMineralWorkerTo(Position target) {
@@ -517,9 +533,6 @@ public class WorkerManager {
 
 		Unit closestDepot = null;
 		double closestDistance = 1000000000;
-
-		int selfForcePoint = 0;
-		int enemyForcePoint = 0;
 
 		// 완성된, 공중에 떠있지 않고 땅에 정착해있는, ResourceDepot 혹은 Lair 나 Hive로 변형중인 Hatchery
 		// 중에서
@@ -830,22 +843,14 @@ public class WorkerManager {
 
 		return closestUnit;
 	}
-
-	/// 해당 일꾼 유닛에게 Combat 임무를 부여합니다
-	public void setCombatWorker(Unit worker) {
-		if (worker == null)
-			return;
-
-		workerData.setWorkerJob(worker, WorkerData.WorkerJob.Combat, (Unit) null);
-	}
-
+	
 	/// 모든 Combat 일꾼 유닛에 대해 임무를 해제합니다
-	public void stopCombat() {
+	public void stopAttack() {
 		for (Unit worker : workerData.getWorkers()) {
 			if (worker == null)
 				continue;
 
-			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Combat) {
+			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack) {
 				setMineralWorker(worker);
 			}
 		}
