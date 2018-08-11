@@ -528,22 +528,12 @@ public class WorkerManager {
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit == null)
 				continue;
-			selfForcePoint = 0;
-			enemyForcePoint = 0;
 
 			if (unit.getType().isResourceDepot() && (unit.isCompleted() || unit.getType() == UnitType.Zerg_Lair
 					|| unit.getType() == UnitType.Zerg_Hive) && unit.isLifted() == false) {
 				if (workerData.depotHasEnoughMineralWorkers(unit) == false) {
+					// TODO
 					// 해당 지역이 위험한 지역일 경우 선택에서 제외
-					// 위험도 체크는 아군과 적군의 병력 비교로 한다
-					selfForcePoint = infoMngr.getForcePoint(BWTA.getRegion(unit.getPosition()),
-							MyBotModule.Broodwar.self());
-					enemyForcePoint = infoMngr.getForcePoint(BWTA.getRegion(unit.getPosition()),
-							MyBotModule.Broodwar.enemy());
-					if (selfForcePoint < enemyForcePoint) {
-						continue;
-					}
-
 					double distance = unit.getDistance(worker);
 					if (closestDistance > distance) {
 						closestDepot = unit;

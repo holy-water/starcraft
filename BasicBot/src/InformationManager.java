@@ -60,6 +60,9 @@ public class InformationManager {
 	/// 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 
+	/// 위험지역
+	public DangerousLocation currentDangerousLocation = null;
+	
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -105,7 +108,12 @@ public class InformationManager {
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
 		updateUnitsInfo();
-
+		
+		// 위험지역 정보 업데이트
+		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {
+			updateDangerousInfo();			
+		}
+		
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
 			updateBaseLocationInfo();
@@ -144,6 +152,27 @@ public class InformationManager {
 			unitData.get(unit.getPlayer()).updateUnitInfo(unit);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	/// 위험지역에 대한 정보를 업데이트
+	public void updateDangerousInfo() {
+		DangerousLocation mostDangerousLoca = new DangerousLocation();
+		mostDangerousLoca.setEnemyCnt(0);
+		
+		DangerousLocation tempDangerousLocation = null;
+		for(BaseLocation baseLocation: occupiedBaseLocations.get(selfPlayer)) {
+			tempDangerousLocation = researchForce(baseLocation);
+			if (tempDangerousLocation != null) {
+				if (tempDangerousLocation.getEnemyCnt() > mostDangerousLoca.getEnemyCnt()) {
+					mostDangerousLoca = tempDangerousLocation;
+				}
+			}
+		}
+		if (mostDangerousLoca.getEnemyCnt() > 0) {
+			currentDangerousLocation = mostDangerousLoca;
+		} else {
+			currentDangerousLocation = null;
 		}
 	}
 
@@ -291,7 +320,7 @@ public class InformationManager {
 		return false;
 	}
 
-	// 한 지역 내에서 아군 또는 적군의 병력 계산 - 가중치 부여
+	// 특정 지역 내에서 아군/적군의 병력 체크
 	public int getForcePoint(Region region, Player player) {
 
 		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
@@ -304,12 +333,60 @@ public class InformationManager {
 			if (BWTA.getRegion(ui.getLastPosition()) == region) {
 				// 전투 유닛인 경우만 고려
 				if (isCombatUnitType(ui.getType()) && ui.isCompleted()) {
-					// TODO 타입은 나중에 다시 계산
 					forcePoint++;
 				}
 			}
 		}
 		return forcePoint;
+	}
+	
+	// 특정 baseLocation을 위험도 체크 가능한 객체로 반환 
+	public DangerousLocation researchForce(BaseLocation baseLocation) {
+		
+		Map<Integer, UnitInfo> uiMap = getUnitData(enemyPlayer).getUnitAndUnitInfoMap();
+		Iterator<Integer> it = uiMap.keySet().iterator();
+		DangerousLocation tempDangerLocation = new DangerousLocation();
+		
+		int forcePoint = 0;
+		int airForcePoint = 0;
+		int groundForcePoint = 0;
+
+		while (it.hasNext()) {
+			UnitInfo ui = uiMap.get(it.next());
+
+			// 유닛이 해당 지역에 들어와있는지 확인
+			if (BWTA.getRegion(ui.getLastPosition()) == baseLocation.getRegion()) {
+				// 전투 유닛인 경우만 고려
+				if (isCombatUnitType(ui.getType()) && ui.isCompleted()) {
+					forcePoint++;
+					if (ui.getType().isFlyer()) {
+						airForcePoint++;
+					} else {
+						groundForcePoint++;
+					}
+				}
+			}
+		}
+		
+		// 병력이 있을 때만 위험지역으로 return
+		if (forcePoint > 1) {
+			tempDangerLocation.setBaseLocation(baseLocation);
+			tempDangerLocation.setEnemyCnt(forcePoint);
+			
+			if (airForcePoint > 0 && groundForcePoint > 0) {
+				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Both);
+			} else if (airForcePoint > 0) {
+				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Air);
+			} else if (groundForcePoint > 0) {
+				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Ground);
+			}
+			
+			return tempDangerLocation;
+		} 
+		// 병력이 없는 경우 null
+		else {
+			return null;
+		}
 	}
 
 	// 현재 본진이 어떤 상황인지 체크
