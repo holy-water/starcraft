@@ -44,6 +44,7 @@ public class UnitData {
 	Map<Integer, List<Integer>> unitListMap = new HashMap<>();
 	
 	List<Unit> comsatList = new ArrayList<>();
+	List<Unit> darkList = new ArrayList<>();
 	
 	public UnitData() 
 	{
@@ -102,6 +103,11 @@ public class UnitData {
 					&& unit.getPlayer() == MyBotModule.Broodwar.self()) {
 				comsatList.add(unit);
 			}
+			
+			if (unit.getType() == UnitType.Protoss_Dark_Templar
+					&& unit.getPlayer() == MyBotModule.Broodwar.enemy()) {
+				darkList.add(unit);
+			}
 		}
 	}
 	
@@ -135,8 +141,12 @@ public class UnitData {
 	{
 		if (unit == null) { return; }
 		
-		if (unit.getType() == UnitType.Terran_Comsat_Station) {
+		if (unit.getType() == UnitType.Terran_Comsat_Station && comsatList.contains(unit)) {
 			comsatList.remove(unit);
+		}
+		
+		if (unit.getType() == UnitType.Protoss_Dark_Templar && darkList.contains(unit)) {
+			darkList.remove(unit);
 		}
 		
 		mineralsLost += unit.getType().mineralPrice();
