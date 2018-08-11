@@ -34,7 +34,7 @@ public class VultureMineManager {
 	private static Position targetPosition = Position.None;
 	private static Position minePlacementPosition = Position.None;
 
-	public static int enemyLocationOfBase;
+	public int enemyLocationOfBase;
 
 	public static int doneWithMinePlacement;
 

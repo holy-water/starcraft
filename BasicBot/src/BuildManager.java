@@ -139,15 +139,17 @@ public class BuildManager {
 						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation
 						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition
 						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.TurretAround
-						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.OtherInMainBaseLocation) {
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.OtherInMainBaseLocation
+						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.MultipleExpansion) {
 					seedPosition = getSeedPositionFromSeedLocationStrategy(currentItem.seedLocationStrategy);
 				}
 			}
 
-//			if (currentItem.metaType.getUnitType() == UnitType.Terran_Engineering_Bay) {
-//				System.out.println("seedPosition" + seedPosition.toTilePosition().getX() + " "
-//						+ seedPosition.toTilePosition().getY());
-//			}
+			// if (currentItem.metaType.getUnitType() == UnitType.Terran_Engineering_Bay) {
+			// System.out.println("seedPosition" + seedPosition.toTilePosition().getX() + "
+			// "
+			// + seedPosition.toTilePosition().getY());
+			// }
 			// this is the unit which can produce the currentItem
 			Unit producer = getProducer(currentItem.metaType, seedPosition, currentItem.producerID);
 

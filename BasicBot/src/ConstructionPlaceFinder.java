@@ -1,6 +1,9 @@
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import bwapi.Position;
 import bwapi.Race;
@@ -35,15 +38,9 @@ public class ConstructionPlaceFinder {
 	private static boolean isInitialized = false;
 	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
 	private static boolean isSupplyDepotBuild = false;
-	// 0722 - 최혜진 수정 변수 값 삭제
-	// 0723 - 최혜진 수정 변수 값 복귀
-	private static int leftcornerX;
-	private static int rightcornerX;
-	private static int uppercornerY;
-	private static int lowercornerY;
+
 	public static int locationOfBase = 0;
 	private static int numberOfSupply = 0;
-	private static boolean isBarrackBuilt = false; // 0703 - 최혜진 추가
 
 	// 0729 - 최혜진 추가
 	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
@@ -82,6 +79,11 @@ public class ConstructionPlaceFinder {
 	private static int[] expansionXLocaitonForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	private static int[] expansionYLocaitonForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	private static int expansionOrder;
+
+	// 0811 - 최혜진 추가 순서가 아직 정해진지 여부를 판단
+	private static boolean isMultipleExpansionOrderDecided;
+	private static Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
+	private static TreeMap<Integer, BaseLocation> orderOfBaseLocations = new TreeMap<>();
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
@@ -252,8 +254,6 @@ public class ConstructionPlaceFinder {
 
 			// 0630 - 최혜진 추가 SupplyDepot에 대한 전략 추가
 			case SupplyDepotPosition:
-				int nx = 0;
-				int ny = 0;
 				if (isSupplyDepotBuild == false) { // Supply Depot 첫번째 위치 지정인 경우
 					// BaseLocation이 맵의 어느 부분에 위치하는지 파악하고 초기값 리턴
 					tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
@@ -677,6 +677,109 @@ public class ConstructionPlaceFinder {
 				tempTilePosition = new TilePosition(ox, oy);
 				desiredPosition = tempTilePosition.getPoint();
 				break;
+
+			// 0811 - 최혜진 추가 다른 지역으로의 추가적인 확장
+			case MultipleExpansion:
+				int enemyLocation = VultureMineManager.Instance().enemyLocationOfBase;
+				// 본진 위치, 적 본진 위치를 알고 아직 순서가 정해지지 않은 경우 순서를 정한다
+				if (locationOfBase != 0 && enemyLocation != 0 && isMultipleExpansionOrderDecided == false) {
+					List<BaseLocation> multipleExpansionList = BWTA.getBaseLocations();
+					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+						for (BaseLocation tempBaseLocations : multipleExpansionList) {
+							int x = tempBaseLocations.getTilePosition().getX();
+							int y = tempBaseLocations.getTilePosition().getY();
+							if (x == 7 && y == 9) {
+								System.out.println(x + " " + y);
+								numberOfBaseLocations.put(0, tempBaseLocations);
+							} else if (x == 7 && y == 34) {
+								numberOfBaseLocations.put(1, tempBaseLocations);
+							} else if (x == 35 && y == 15) {
+								numberOfBaseLocations.put(2, tempBaseLocations);
+							} else if (x == 62 && y == 5) {
+								numberOfBaseLocations.put(3, tempBaseLocations);
+							} else if (x == 89 && y == 15) {
+								numberOfBaseLocations.put(4, tempBaseLocations);
+							} else if (x == 117 && y == 9) {
+								numberOfBaseLocations.put(5, tempBaseLocations);
+							} else if (x == 117 && y == 34) {
+								numberOfBaseLocations.put(6, tempBaseLocations);
+							} else if (x == 14 && y == 63) {
+								numberOfBaseLocations.put(7, tempBaseLocations);
+							} else if (x == 110 && y == 63) {
+								numberOfBaseLocations.put(8, tempBaseLocations);
+							} else if (x == 7 && y == 92) {
+								numberOfBaseLocations.put(9, tempBaseLocations);
+							} else if (x == 7 && y == 118) {
+								numberOfBaseLocations.put(10, tempBaseLocations);
+							} else if (x == 35 && y == 110) {
+								numberOfBaseLocations.put(11, tempBaseLocations);
+							} else if (x == 62 && y == 119) {
+								numberOfBaseLocations.put(12, tempBaseLocations);
+							} else if (x == 89 && y == 110) {
+								numberOfBaseLocations.put(13, tempBaseLocations);
+							} else if (x == 117 && y == 118) {
+								numberOfBaseLocations.put(14, tempBaseLocations);
+							} else if (x == 117 && y == 92) {
+								numberOfBaseLocations.put(15, tempBaseLocations);
+							}
+						}
+						if (locationOfBase == 1) {
+							if (enemyLocation == 1) {
+
+							} else if (enemyLocation == 2) {
+
+							} else if (enemyLocation == 3) {
+
+							} else if (enemyLocation == 4) {
+
+							}
+						} else if (locationOfBase == 2) {
+							if (enemyLocation == 1) {
+
+							} else if (enemyLocation == 2) {
+
+							} else if (enemyLocation == 3) {
+
+							} else if (enemyLocation == 4) {
+
+							}
+						} else if (locationOfBase == 3) {
+							if (enemyLocation == 1) {
+
+							} else if (enemyLocation == 2) {
+
+							} else if (enemyLocation == 3) {
+
+							} else if (enemyLocation == 4) {
+
+							}
+						} else if (locationOfBase == 4) {
+							if (enemyLocation == 1) {
+
+							} else if (enemyLocation == 2) {
+
+							} else if (enemyLocation == 3) {
+
+							} else if (enemyLocation == 4) {
+
+							}
+						}
+					} else { // 투혼 맵
+
+					}
+				}
+				// System.out.println(numberOfBaseLocations.size());
+				// System.out.println(numberOfBaseLocations.get(0).getTilePosition().getX() + "
+				// "
+				// + numberOfBaseLocations.get(0).getTilePosition().getY());
+				// for (int i : numberOfBaseLocations.keySet()) {
+				// System.out.println(i + " " +
+				// numberOfBaseLocations.get(i).getTilePosition().getX() + " "
+				// + numberOfBaseLocations.get(i).getTilePosition().getY());
+				// }
+
+				desiredPosition = new TilePosition(62, 119);
+				break;
 			}
 		}
 
@@ -917,7 +1020,7 @@ public class ConstructionPlaceFinder {
 
 		// returns a valid build location near the desired tile position (x,y).
 		TilePosition resultPosition = TilePosition.None;
-		TilePosition tempPosition;
+
 		ConstructionTask b = new ConstructionTask(buildingType, desiredPosition);
 
 		// maxRange 를 설정하지 않거나, maxRange 를 128으로 설정하면 지도 전체를 다 탐색하는데, 매우 느려질뿐만 아니라, 대부분의

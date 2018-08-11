@@ -27,7 +27,8 @@ public class BuildOrderItem {
 		BunkerForZerg,              ///< 0723 최혜진 추가 - 4드론 저그에 대항하기 위한 Bunker 건설 전략
 		TurretAround,               ///< 0729 최혜진 추가 - Turret으로 본진과 앞마당 둘러싸기
 		FactoryInMainBaseLocation,  ///< 0730 최혜진 추가 - Factory 건설 효율화
-		OtherInMainBaseLocation     ///< 0730 최혜진 추가 - Factory와 Supply Depot 피해서 건설하기 위한 전략
+		OtherInMainBaseLocation,    ///< 0730 최혜진 추가 - Factory와 Supply Depot 피해서 건설하기 위한 전략
+		MultipleExpansion           ///< 0811 최혜진 추가 - 추가적인 확장
 	};
 	
 	public SeedPositionStrategy seedLocationStrategy;	///< 건설위치 초안 결정 정책
