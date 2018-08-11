@@ -62,6 +62,11 @@ public class StrategyManager {
 	private boolean enemyBaseLocationScanned;
 	// 0812 - 최혜진 추가 Expansion 순서 지정
 	public Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
+	
+	private String[] buildingNames = { "Barracks", "EngineeringBay", "Bunker" };
+
+	private UnitType[] buildingTypes = { UnitType.Terran_Barracks, UnitType.Terran_Engineering_Bay,
+			UnitType.Terran_Bunker };
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
@@ -132,14 +137,14 @@ public class StrategyManager {
 		}
 		// 0709 추가
 		init();
-		// 0709 추가
-		executeAnalyzeBuild();
 
 		executeWorkerTraining();
 
 		executeSupplyManagement();
 
 		executeSeniorityCombatUnitTraining();
+		// 0709 추가
+		executeAnalyzeBuild();
 		// 0628 추가
 		executeBuildingManagement();
 
@@ -164,14 +169,318 @@ public class StrategyManager {
 		// //////////////////////////////////////////////////
 	}
 
-	private boolean isConstructEngineeringBay(Race race) {
-		if (race == Race.Terran) {
-			return countMgr.getFactory() > 3;
-		} else if (race == Race.Zerg) {
-			return countMgr.getFactory() > 1;
-		}
-		return true;
+	// 0709 추가
+	private void init() {
 
+		frameCount = MyBotModule.Broodwar.getFrameCount();
+
+		myUnits = self.getUnits();
+
+		enemyUnits = enemy.getUnits();
+
+		countMgr.update();
+
+		if (myUnitMap.size() == buildingNames.length) {
+			return;
+		}
+
+		for (Unit unit : myUnits) {
+			if (unit.getType().isWorker()) {
+				continue;
+			}
+
+			for (int i = 0; i < buildingNames.length; i++) {
+				if (myUnitMap.get(buildingNames[i]) == null && unit.getType() == buildingTypes[i]) {
+					myUnitMap.put(buildingNames[i], unit);
+					break;
+				}
+			}
+		}
+	}
+
+	// 일꾼 계속 추가 생산
+	public void executeWorkerTraining() {
+
+		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) != 0) {
+			return;
+		}
+
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+
+		// 0628 추가
+		// 12초에 한번만 실행
+		if (frameCount % (24 * 12) != 0) {
+			return;
+		}
+
+		if (self.minerals() >= 50) {
+			// workerCount = 현재 일꾼 수 + 생산중인 일꾼 수
+			int workerCount = self.allUnitCount(UnitType.Terran_SCV);
+
+			for (Unit unit : myUnits) {
+				if (unit.getType().isResourceDepot()) {
+					if (unit.isTraining()) {
+						workerCount += unit.getTrainingQueue().size();
+					}
+				}
+			}
+
+			if (workerCount < 50) {
+				for (Unit unit : myUnits) {
+					if (unit.getType().isResourceDepot()) {
+						unit.train(UnitType.Terran_SCV);
+					}
+				}
+			}
+		}
+	}
+
+	// Supply DeadLock 예방 및 SupplyProvider 가 부족해질 상황 에 대한 선제적 대응으로서<br>
+	// SupplyProvider를 추가 건설/생산한다
+	public void executeSupplyManagement() {
+
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 1) {
+			return;
+		}
+
+		// 게임에서는 서플라이 값이 200까지 있지만, BWAPI 에서는 서플라이 값이 400까지 있다
+		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
+		if (self.supplyTotal() < 400) {
+
+			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
+			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
+			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
+			int supplyMargin = 12 + (countMgr.getFactory() * 4);
+
+			// currentSupplyShortage 를 계산한다
+			int currentSupplyShortage = self.supplyUsed() + supplyMargin - self.supplyTotal();
+
+			if (currentSupplyShortage > 0) {
+
+				// 생산/건설 중인 Supply를 센다
+				int onBuildingSupplyCount = 0;
+
+				// 저그 종족인 경우, 생산중인 Zerg_Overlord (Zerg_Egg) 를 센다. Hatchery 등 건물은
+				// 세지 않는다
+
+				onBuildingSupplyCount += ConstructionManager.Instance()
+						.getConstructionQueueItemCount(informationMgr.getBasicSupplyProviderUnitType(), null)
+						* informationMgr.getBasicSupplyProviderUnitType().supplyProvided();
+
+				if (currentSupplyShortage > onBuildingSupplyCount) {
+					boolean isToEnqueue = true;
+					if (!BuildManager.Instance().buildQueue.isEmpty()) {
+						BuildOrderItem currentItem = BuildManager.Instance().buildQueue.getHighestPriorityItem();
+						if (currentItem.metaType.isUnit() && currentItem.metaType.getUnitType() == InformationManager
+								.Instance().getBasicSupplyProviderUnitType()) {
+							isToEnqueue = false;
+						}
+					}
+					if (isToEnqueue) {
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(
+								informationMgr.getBasicSupplyProviderUnitType(),
+								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					}
+				}
+			}
+		}
+
+		// BasicBot 1.1 Patch End
+		// ////////////////////////////////////////////////
+	}
+
+	public void executeSeniorityCombatUnitTraining() {
+
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 2) {
+			return;
+		}
+
+		// 고급 병력 추가 훈련
+		if (self.supplyUsed() < 390) {
+			for (Unit unit : myUnits) {
+				if (unit.getType() == UnitType.Terran_Factory) {
+					if (unit.isCompleted() && !unit.isTraining()) {
+						UnitType unitType = selectTrainUnitType(unit);
+						if (unitType != null) {
+							unit.train(unitType);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// 0712 수정 - 초반뿐만 아니라 전체적으로 상대 빌드를 분석하는 함수
+	private void executeAnalyzeBuild() {
+
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 3) {
+			return;
+		}
+
+		// 0710 수정
+		// 0712 수정 - 시간에 따라 상대 빌드 탐색
+		if (enemy.getRace() == Race.Protoss) {
+			if (countMgr.getBunker() == 0) {
+				if (self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+					countMgr.setBunker();
+				}
+			}
+			// 다크 템플러
+			if (enemy.allUnitCount(UnitType.Protoss_Templar_Archives) != 0
+					|| enemy.allUnitCount(UnitType.Protoss_Dark_Templar) != 0) {
+				if (countMgr.getAcademy() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setAcademy();
+				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
+					if (countMgr.getComsatStation() == 0) {
+						for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							countMgr.setComsatStation();
+						}
+					}
+				}
+				if (countMgr.getEngineeringBay() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					countMgr.setEngineeringBay();
+				}
+			}
+			// 캐리어
+			if (enemy.allUnitCount(UnitType.Protoss_Stargate) != 0
+					|| enemy.allUnitCount(UnitType.Protoss_Fleet_Beacon) != 0
+					|| enemy.allUnitCount(UnitType.Protoss_Carrier) != 0) {
+				if (countMgr.getArmory() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setArmory();
+				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
+					isAirAttack = true;
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
+								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
+							// 골리앗 사정거리 업그레이드
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
+									true);
+						}
+					}
+				}
+			}
+		} else if (enemy.getRace() == Race.Zerg) {
+			if (countMgr.getBunker() == 0) {
+				if (self.completedUnitCount(UnitType.Terran_Barracks) == 0) {
+					// 4드론
+					if (enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
+						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에
+						// Bunker 건설
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+								BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
+						countMgr.setBunker();
+					}
+				} else {
+					// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
+					BuildManager.zergNot4Drone = true;
+					ConstructionPlaceFinder.zergNot4Drone = true;
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+					countMgr.setBunker();
+				}
+			}
+			// 러커
+			if (enemy.allUnitCount(UnitType.Zerg_Lurker) != 0 || enemy.allUnitCount(UnitType.Zerg_Lurker_Egg) != 0) {
+				if (countMgr.getAcademy() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setAcademy();
+				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
+					if (countMgr.getComsatStation() == 0) {
+						for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+							countMgr.setComsatStation();
+						}
+					}
+				}
+			}
+			// 뮤탈
+			if (enemy.allUnitCount(UnitType.Zerg_Spire) != 0 || enemy.allUnitCount(UnitType.Zerg_Mutalisk) != 0) {
+				if (countMgr.getEngineeringBay() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					countMgr.setEngineeringBay();
+				}
+				if (countMgr.getArmory() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setArmory();
+				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
+					isAirAttack = true;
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
+								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
+							// 골리앗 사정거리 업그레이드
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
+									true);
+						}
+					}
+				}
+			}
+		} else {
+			// 0806 추가
+			if (countMgr.getBunker() == 0) {
+				if (self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
+							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
+					countMgr.setBunker();
+				}
+			}
+			// 레이스, 배틀크루저
+			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0 || enemy.allUnitCount(UnitType.Terran_Physics_Lab) > 0
+					|| enemy.allUnitCount(UnitType.Terran_Battlecruiser) > 0) {
+				if (countMgr.getEngineeringBay() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					countMgr.setEngineeringBay();
+				}
+				if (countMgr.getArmory() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setArmory();
+				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
+					isAirAttack = true;
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
+								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
+							// 골리앗 사정거리 업그레이드
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
+									true);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// 0702 수정
@@ -182,7 +491,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
+		if (frameCount % 24 != 4) {
 			return;
 		}
 
@@ -337,7 +646,173 @@ public class StrategyManager {
 				}
 			}
 		}
+	}
 
+	private boolean isConstructEngineeringBay(Race race) {
+		if (race == Race.Terran) {
+			return countMgr.getFactory() > 3;
+		} else if (race == Race.Zerg) {
+			return countMgr.getFactory() > 1;
+		}
+		return true;
+
+	}
+
+	public void executeCombat() {
+
+		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
+		if (isFullScaleAttackStarted == false) {
+			Unit barracks = myUnitMap.get("Barracks");
+			Unit bunker = myUnitMap.get("Bunker");
+			Position rallyPoint = getRallyPosition().toPosition();
+			// 0627 수정 및 추가
+			if (enemy.getRace() != Race.Terran && barracks != null) {
+				rallyPoint = barracks.isLifted() ? getRallyPosition().toPosition()
+						: informationMgr.getFirstChokePoint(self).getCenter();
+			}
+
+			// 0710 추가 - 긴급상황 시 본진 랠리 포인트
+			// 0825 추가 - 첫번째 탱크는 언덕 위에 위치 / 이동 중 공격받을 때 반격 추가
+			for (Unit unit : myUnits) {
+				if (unit.getType().isWorker() || unit.getType().isBuilding()) {
+					continue;
+				}
+				if (unit.getType() == UnitType.Terran_Marine && bunker != null) {
+					if (bunker.isCompleted()) {
+						commandUtil.rightClick(unit, bunker);
+					} else {
+						commandUtil.attackMove(unit, bunker.getPosition());
+					}
+				} else if (enemy.getRace() != Race.Terran && barracks != null && !barracks.isLifted()
+						&& unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode && unit.isCompleted()) {
+					TilePosition targetPosition = getTankPosition();
+					commandUtil.attackMove(unit, targetPosition.toPosition());
+				} else {
+					// 0805 - 최혜진 추가 Mine 심으러 간다고 지정된 Vulture의 경우에는 해당 명령을 받지
+					// 않는다.
+					if (unit.getType() == UnitType.Terran_Vulture
+							&& VultureMineManager.Instance().vultureForMine.containsKey(unit)) {
+						continue;
+					}
+					commandUtil.attackMove(unit, rallyPoint);
+				}
+			}
+
+			if (barracks != null) {
+				if (!barracks.isLifted() && self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 1) {
+					barracks.lift();
+				} else {
+					barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
+				}
+			}
+
+			// 0806 수정
+			if (self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5) {
+				if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
+						&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
+					isFullScaleAttackStarted = true;
+				}
+			}
+
+			// 1초에 한번만 실행
+			if (frameCount % 24 != 5) {
+				return;
+			}
+
+			if (self.hasResearched(TechType.Tank_Siege_Mode)) {
+				for (Unit unit : myUnits) {
+					if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
+						if (!unit.isMoving() && !unit.isAttacking()) {
+							if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+								unit.useTech(TechType.Tank_Siege_Mode);
+							}
+						}
+					}
+				}
+			}
+		}
+		// 공격 모드가 되면, 모든 전투유닛들을 적군 Main BaseLocation 로 공격 가도록 합니다
+		// 0726 추가 - 공격모드가 되면, 모든 시즈탱크가 탱크모드로 변경
+		else
+
+		{
+			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
+					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
+				// 공격 대상 지역 결정
+
+				targetBaseLocation = informationMgr.getMainBaseLocation(enemy);
+
+				Unit barracks = myUnitMap.get("Barracks");
+
+				if (barracks != null && barracks.exists()) {
+					if (barracks.isUnderAttack()) {
+						barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
+					} else if (barracks.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
+						barracks.move(getRallyPosition(targetBaseLocation).toPosition());
+					} else {
+						barracks.stop();
+						// 1초에 한번만 실행
+						if (frameCount % 24 == 0) {
+							if (!informationMgr.isEnemyUnitInSight(barracks)) {
+								if (truceCount++ > 5) {
+									mainDistance -= 100;
+									truceCount = 0;
+								}
+							}
+						}
+					}
+				}
+
+				Unit closestUnit = informationMgr
+						.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Tank_Mode);
+				if (closestUnit != null && informationMgr.isEnemyUnitInSight(closestUnit)) {
+					if (closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+						closestUnit.useTech(TechType.Tank_Siege_Mode);
+					}
+
+					List<Unit> units = closestUnit.getUnitsInRadius(10 * Config.TILE_SIZE);
+
+					for (Unit unit : units) {
+						if (unit.getPlayer() == enemy) {
+							continue;
+						}
+						if (unit.getType().isWorker() || unit.getType().isBuilding()) {
+							continue;
+						}
+						if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+							unit.useTech(TechType.Tank_Siege_Mode);
+						}
+					}
+				}
+				if (targetBaseLocation != null) {
+					for (Unit unit : myUnits) {
+						// 건물은 제외
+						if (unit.getType().isBuilding()) {
+							continue;
+						}
+						// 모든 일꾼은 제외
+						if (unit.getType().isWorker()) {
+							continue;
+						}
+						// canAttack 유닛은 attackMove Command 로 공격을 보냅니다
+						double subDistance = unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode ? mainDistance + 100
+								: mainDistance + 200;
+						if (unit.getDistance(targetBaseLocation.getPosition()) > subDistance) {
+							if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+								if (!informationMgr.isEnemyUnitInSight(unit)) {
+									unit.unsiege();
+								}
+							}
+							commandUtil.attackMove(unit, targetBaseLocation.getPosition());
+						} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+							unit.useTech(TechType.Tank_Siege_Mode);
+						} else {
+							unit.holdPosition();
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// 0704 수정
@@ -430,119 +905,6 @@ public class StrategyManager {
 		return new Position(x, y);
 	}
 
-	// 0709 추가
-	private void init() {
-
-		frameCount = MyBotModule.Broodwar.getFrameCount();
-
-		myUnits = self.getUnits();
-
-		enemyUnits = enemy.getUnits();
-
-		countMgr.update();
-
-		if (myUnitMap.size() == 3) {
-			return;
-		}
-
-		for (Unit unit : myUnits) {
-			if (unit.getType().isWorker()) {
-				continue;
-			}
-			if (myUnitMap.get("Barracks") == null && unit.getType() == UnitType.Terran_Barracks) {
-				myUnitMap.put("Barracks", unit);
-				continue;
-			}
-			if (myUnitMap.get("EngineeringBay") == null && unit.getType() == UnitType.Terran_Engineering_Bay) {
-				myUnitMap.put("EngineeringBay", unit);
-				continue;
-			}
-			if (myUnitMap.get("Bunker") == null && unit.getType() == UnitType.Terran_Bunker) {
-				myUnitMap.put("Bunker", unit);
-				continue;
-			}
-		}
-	}
-
-	// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
-	private void excuteSpiderMine() {
-
-		if (!self.hasResearched(TechType.Spider_Mines)) {
-			return;
-		}
-		// 0804 - 최혜진 수정 Vulture 갯수 세는 로직 수정
-		if (self.completedUnitCount(UnitType.Terran_Vulture) >= 3) {
-			VultureMineManager.Instance().update();
-		}
-
-	}
-
-	// 0801 - 최혜진 추가 주기적 스캔
-	private void executeScan() {
-
-		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
-			return;
-		}
-
-		if (self.completedUnitCount(UnitType.Terran_Comsat_Station) == 0) {
-			return;
-		}
-
-		boolean isDark = false;
-
-		if (enemy.getRace() == Race.Protoss) {
-			for (Unit dark : informationMgr.getUnitData(enemy).darkList) {
-				if (dark == null || !dark.exists()) {
-					continue;
-				}
-
-				if (!dark.isDetected()) {
-					isDark = true;
-					executeScanAt(dark.getPosition());
-				}
-			}
-		}
-
-		if (isDark) {
-			return;
-		}
-
-		// scan 작동 규칙
-		// 적진 위치 모를 경우 : 본진을 제외한 baseLocation을 돌아가면서 쏜다
-		// 적진 위치 알 경우 : 적의 본진과 적의 앞마당을 돌아가면서 쏜다
-		for (Unit comsat : informationMgr.getUnitData(self).comsatList) {
-			if (comsat == null || !comsat.isCompleted())
-				return;
-
-			if (comsat.getEnergy() >= 100) {
-				BaseLocation enemyBase = informationMgr.getMainBaseLocation(enemy);
-				BaseLocation selfBase = informationMgr.getMainBaseLocation(self);
-
-				if (enemyBase == null) {
-					for (BaseLocation startLocation : BWTA.getStartLocations()) {
-						if (selfBase == startLocation)
-							continue;
-						// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
-						if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
-							comsat.useTech(TechType.Scanner_Sweep, startLocation.getPosition());
-							break;
-						}
-					}
-				} else {
-					Position enemyBasePosition = enemyBase.getPosition();
-					if (enemyBaseLocationScanned == false) {
-						comsat.useTech(TechType.Scanner_Sweep, enemyBasePosition);
-						enemyBaseLocationScanned = true;
-					} else {
-						comsat.useTech(TechType.Scanner_Sweep, informationMgr.getSecondChokePoint(enemy).getPoint());
-						enemyBaseLocationScanned = false;
-					}
-				}
-			}
-		}
-	}
-
 	private void executeEngineeringBayControl() {
 
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
@@ -555,7 +917,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
+		if (frameCount % 24 != 6) {
 			return;
 		}
 
@@ -607,161 +969,88 @@ public class StrategyManager {
 		}
 	}
 
-	// 0712 수정 - 초반뿐만 아니라 전체적으로 상대 빌드를 분석하는 함수
-	private void executeAnalyzeBuild() {
+	// 0801 - 최혜진 추가 주기적 스캔
+	private void executeScan() {
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
+		if (frameCount % 24 != 7) {
 			return;
 		}
 
-		// 0710 수정
-		// 0712 수정 - 시간에 따라 상대 빌드 탐색
-		if (enemy.getRace() == Race.Protoss) {
-			if (countMgr.getBunker() == 0) {
-				if (self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
-							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
-					countMgr.setBunker();
-				}
+		if (self.completedUnitCount(UnitType.Terran_Comsat_Station) == 0) {
+			return;
+		}
+
+		boolean isUsed = false;
+
+		for (Unit unit : informationMgr.getUnitData(enemy).scanObjList) {
+			if (unit == null || !unit.exists()) {
+				continue;
 			}
-			// 다크 템플러
-			if (enemy.allUnitCount(UnitType.Protoss_Templar_Archives) != 0
-					|| enemy.allUnitCount(UnitType.Protoss_Dark_Templar) != 0) {
-				if (countMgr.getAcademy() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					countMgr.setAcademy();
-				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
-					if (countMgr.getComsatStation() == 0) {
-						for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-							countMgr.setComsatStation();
+
+			if (!unit.isDetected()) {
+				isUsed = true;
+				executeScanAt(unit.getPosition());
+			}
+		}
+
+		if (isUsed) {
+			return;
+		}
+
+		if (isFullScaleAttackStarted) {
+			return;
+		}
+
+		// scan 작동 규칙
+		// 적진 위치 모를 경우 : 본진을 제외한 baseLocation을 돌아가면서 쏜다
+		// 적진 위치 알 경우 : 적의 본진과 적의 앞마당을 돌아가면서 쏜다
+		for (Unit comsat : informationMgr.getUnitData(self).comsatList) {
+			if (comsat == null || !comsat.isCompleted())
+				continue;
+
+			if (comsat.getEnergy() >= 100) {
+				BaseLocation enemyBase = informationMgr.getMainBaseLocation(enemy);
+				BaseLocation selfBase = informationMgr.getMainBaseLocation(self);
+
+				if (enemyBase == null) {
+					for (BaseLocation startLocation : BWTA.getStartLocations()) {
+						if (selfBase == startLocation)
+							continue;
+						// if we haven't explored it yet (방문했었던 곳은 다시 가볼 필요 없음)
+						if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition()) == false) {
+							comsat.useTech(TechType.Scanner_Sweep, startLocation.getPosition());
+							break;
 						}
-					}
-				}
-				if (countMgr.getEngineeringBay() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					countMgr.setEngineeringBay();
-				}
-			}
-			// 캐리어
-			if (enemy.allUnitCount(UnitType.Protoss_Stargate) != 0
-					|| enemy.allUnitCount(UnitType.Protoss_Fleet_Beacon) != 0
-					|| enemy.allUnitCount(UnitType.Protoss_Carrier) != 0) {
-				if (countMgr.getArmory() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					countMgr.setArmory();
-				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					isAirAttack = true;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
-							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
-						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
-								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
-							// 골리앗 사정거리 업그레이드
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
-									true);
-						}
-					}
-				}
-			}
-		} else if (enemy.getRace() == Race.Zerg) {
-			if (countMgr.getBunker() == 0) {
-				if (self.completedUnitCount(UnitType.Terran_Barracks) == 0) {
-					// 4드론
-					if (enemy.allUnitCount(UnitType.Zerg_Zergling) != 0) {
-						// 0723 - 최혜진 수정 4드론 시 BunkerForZerg 전략 적용하여 지정된 위치에
-						// Bunker 건설
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
-								BuildOrderItem.SeedPositionStrategy.BunkerForZerg, true);
-						countMgr.setBunker();
 					}
 				} else {
-					// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
-					BuildManager.zergNot4Drone = true;
-					ConstructionPlaceFinder.zergNot4Drone = true;
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
-							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
-					countMgr.setBunker();
-				}
-			}
-			// 러커
-			if (enemy.allUnitCount(UnitType.Zerg_Lurker) != 0 || enemy.allUnitCount(UnitType.Zerg_Lurker_Egg) != 0) {
-				if (countMgr.getAcademy() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					countMgr.setAcademy();
-				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
-					if (countMgr.getComsatStation() == 0) {
-						for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-							countMgr.setComsatStation();
-						}
+					Position enemyBasePosition = enemyBase.getPosition();
+					if (enemyBaseLocationScanned == false) {
+						comsat.useTech(TechType.Scanner_Sweep, enemyBasePosition);
+						enemyBaseLocationScanned = true;
+					} else {
+						comsat.useTech(TechType.Scanner_Sweep, informationMgr.getSecondChokePoint(enemy).getPoint());
+						enemyBaseLocationScanned = false;
 					}
 				}
 			}
-			// 뮤탈
-			if (enemy.allUnitCount(UnitType.Zerg_Spire) != 0 || enemy.allUnitCount(UnitType.Zerg_Mutalisk) != 0) {
-				if (countMgr.getEngineeringBay() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					countMgr.setEngineeringBay();
-				}
-				if (countMgr.getArmory() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					countMgr.setArmory();
-				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					isAirAttack = true;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
-							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
-						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
-								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
-							// 골리앗 사정거리 업그레이드
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
-									true);
-						}
-					}
-				}
-			}
-		} else {
-			// 0806 추가
-			if (countMgr.getBunker() == 0) {
-				if (self.completedUnitCount(UnitType.Terran_Barracks) > 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
-							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
-					countMgr.setBunker();
-				}
-			}
-			// 레이스, 배틀크루저
-			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0 || enemy.allUnitCount(UnitType.Terran_Physics_Lab) > 0
-					|| enemy.allUnitCount(UnitType.Terran_Battlecruiser) > 0) {
-				if (countMgr.getEngineeringBay() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					countMgr.setEngineeringBay();
-				}
-				if (countMgr.getArmory() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					countMgr.setArmory();
-				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					isAirAttack = true;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
-							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
-						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
-								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
-							// 골리앗 사정거리 업그레이드
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
-									true);
-						}
-					}
-				}
-			}
+		}
+	}
+
+	// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
+	private void excuteSpiderMine() {
+
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 8) {
+			return;
+		}
+
+		if (!self.hasResearched(TechType.Spider_Mines)) {
+			return;
+		}
+		// 0804 - 최혜진 수정 Vulture 갯수 세는 로직 수정
+		if (self.completedUnitCount(UnitType.Terran_Vulture) >= 3) {
+			VultureMineManager.Instance().update();
 		}
 	}
 
@@ -998,153 +1287,6 @@ public class StrategyManager {
 		} else {
 
 		}
-
-	}
-
-	// 일꾼 계속 추가 생산
-	public void executeWorkerTraining() {
-
-		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) != 0) {
-			return;
-		}
-
-		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
-		if (isInitialBuildOrderFinished == false) {
-			return;
-		}
-
-		// 0628 추가
-		// 12초에 한번만 실행
-		if (frameCount % (24 * 12) != 0) {
-			return;
-		}
-
-		if (self.minerals() >= 50) {
-			// workerCount = 현재 일꾼 수 + 생산중인 일꾼 수
-			int workerCount = self.allUnitCount(UnitType.Terran_SCV);
-
-			for (Unit unit : myUnits) {
-				if (unit.getType().isResourceDepot()) {
-					if (unit.isTraining()) {
-						workerCount += unit.getTrainingQueue().size();
-					}
-				}
-			}
-
-			if (workerCount < 50) {
-				for (Unit unit : myUnits) {
-					if (unit.getType().isResourceDepot()) {
-						unit.train(UnitType.Terran_SCV);
-					}
-				}
-			}
-		}
-	}
-
-	// Supply DeadLock 예방 및 SupplyProvider 가 부족해질 상황 에 대한 선제적 대응으로서<br>
-	// SupplyProvider를 추가 건설/생산한다
-	public void executeSupplyManagement() {
-
-		// BasicBot 1.1 Patch Start
-		// ////////////////////////////////////////////////
-		// 가이드 추가 및 콘솔 출력 명령 주석 처리
-
-		// InitialBuildOrder 진행중 혹은 그후라도 서플라이 건물이 파괴되어 데드락이 발생할 수 있는데, 이 상황에 대한
-		// 해결은 참가자께서 해주셔야 합니다.
-		// 오버로드가 학살당하거나, 서플라이 건물이 집중 파괴되는 상황에 대해 무조건적으로 서플라이 빌드 추가를 실행하기 보다 먼저
-		// 전략적 대책 판단이 필요할 것입니다
-
-		// BWAPI::Broodwar->self()->supplyUsed() >
-		// BWAPI::Broodwar->self()->supplyTotal() 인 상황이거나
-		// BWAPI::Broodwar->self()->supplyUsed() + 빌드매니저 최상단 훈련 대상 유닛의
-		// unit->getType().supplyRequired() >
-		// BWAPI::Broodwar->self()->supplyTotal() 인 경우
-		// 서플라이 추가를 하지 않으면 더이상 유닛 훈련이 안되기 때문에 deadlock 상황이라고 볼 수도 있습니다.
-		// 저그 종족의 경우 일꾼을 건물로 Morph 시킬 수 있기 때문에 고의적으로 이런 상황을 만들기도 하고,
-		// 전투에 의해 유닛이 많이 죽을 것으로 예상되는 상황에서는 고의적으로 서플라이 추가를 하지 않을수도 있기 때문에
-		// 참가자께서 잘 판단하셔서 개발하시기 바랍니다.
-
-		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
-		if (isInitialBuildOrderFinished == false) {
-			return;
-		}
-
-		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
-			return;
-		}
-
-		// 게임에서는 서플라이 값이 200까지 있지만, BWAPI 에서는 서플라이 값이 400까지 있다
-		// 저글링 1마리가 게임에서는 서플라이를 0.5 차지하지만, BWAPI 에서는 서플라이를 1 차지한다
-		if (self.supplyTotal() < 400) {
-
-			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
-			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
-			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
-			int supplyMargin = 12 + (countMgr.getFactory() * 4);
-
-			// currentSupplyShortage 를 계산한다
-			int currentSupplyShortage = self.supplyUsed() + supplyMargin - self.supplyTotal();
-
-			if (currentSupplyShortage > 0) {
-
-				// 생산/건설 중인 Supply를 센다
-				int onBuildingSupplyCount = 0;
-
-				// 저그 종족인 경우, 생산중인 Zerg_Overlord (Zerg_Egg) 를 센다. Hatchery 등 건물은
-				// 세지 않는다
-
-				onBuildingSupplyCount += ConstructionManager.Instance()
-						.getConstructionQueueItemCount(informationMgr.getBasicSupplyProviderUnitType(), null)
-						* informationMgr.getBasicSupplyProviderUnitType().supplyProvided();
-
-				if (currentSupplyShortage > onBuildingSupplyCount) {
-					boolean isToEnqueue = true;
-					if (!BuildManager.Instance().buildQueue.isEmpty()) {
-						BuildOrderItem currentItem = BuildManager.Instance().buildQueue.getHighestPriorityItem();
-						if (currentItem.metaType.isUnit() && currentItem.metaType.getUnitType() == InformationManager
-								.Instance().getBasicSupplyProviderUnitType()) {
-							isToEnqueue = false;
-						}
-					}
-					if (isToEnqueue) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(
-								informationMgr.getBasicSupplyProviderUnitType(),
-								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					}
-				}
-			}
-		}
-
-		// BasicBot 1.1 Patch End
-		// ////////////////////////////////////////////////
-	}
-
-	public void executeSeniorityCombatUnitTraining() {
-
-		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
-		if (isInitialBuildOrderFinished == false) {
-			return;
-		}
-
-		// 1초에 한번만 실행
-		if (frameCount % 24 != 0) {
-			return;
-		}
-
-		// 고급 병력 추가 훈련
-		if (self.supplyUsed() < 390) {
-			for (Unit unit : myUnits) {
-				if (unit.getType() == UnitType.Terran_Factory) {
-					if (unit.isCompleted() && !unit.isTraining()) {
-						UnitType unitType = selectTrainUnitType(unit);
-						if (unitType != null) {
-							unit.train(unitType);
-						}
-					}
-				}
-			}
-		}
 	}
 
 	private UnitType selectTrainUnitType(Unit unit) {
@@ -1159,167 +1301,10 @@ public class StrategyManager {
 		return null;
 	}
 
-	public void executeCombat() {
-
-		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
-		if (isFullScaleAttackStarted == false) {
-			Unit barracks = myUnitMap.get("Barracks");
-			Unit bunker = myUnitMap.get("Bunker");
-			Position rallyPoint = getRallyPosition().toPosition();
-			// 0627 수정 및 추가
-			if (enemy.getRace() != Race.Terran && barracks != null) {
-				rallyPoint = barracks.isLifted() ? getRallyPosition().toPosition()
-						: informationMgr.getFirstChokePoint(self).getCenter();
-			}
-
-			// 0710 추가 - 긴급상황 시 본진 랠리 포인트
-			// 0825 추가 - 첫번째 탱크는 언덕 위에 위치 / 이동 중 공격받을 때 반격 추가
-			for (Unit unit : myUnits) {
-				if (unit.getType().isWorker() || unit.getType().isBuilding()) {
-					continue;
-				}
-				if (unit.getType() == UnitType.Terran_Marine && bunker != null) {
-					if (bunker.isCompleted()) {
-						commandUtil.rightClick(unit, bunker);
-					} else {
-						commandUtil.attackMove(unit, bunker.getPosition());
-					}
-				} else if (enemy.getRace() != Race.Terran && barracks != null && !barracks.isLifted()
-						&& unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode && unit.isCompleted()) {
-					TilePosition targetPosition = getTankPosition();
-					commandUtil.attackMove(unit, targetPosition.toPosition());
-				} else {
-					// 0805 - 최혜진 추가 Mine 심으러 간다고 지정된 Vulture의 경우에는 해당 명령을 받지
-					// 않는다.
-					if (unit.getType() == UnitType.Terran_Vulture
-							&& VultureMineManager.Instance().vultureForMine.containsKey(unit)) {
-						continue;
-					}
-					commandUtil.attackMove(unit, rallyPoint);
-				}
-			}
-
-			if (barracks != null) {
-				if (!barracks.isLifted() && self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 1) {
-					barracks.lift();
-				} else {
-					barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
-				}
-			}
-
-			// 0806 수정
-			if (self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5) {
-				if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
-						&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
-					isFullScaleAttackStarted = true;
-				}
-			}
-
-			// 1초에 한번만 실행
-			if (frameCount % 24 != 0) {
-				return;
-			}
-
-			if (self.hasResearched(TechType.Tank_Siege_Mode)) {
-				for (Unit unit : myUnits) {
-					if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
-						if (!unit.isMoving() && !unit.isAttacking()) {
-							if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-								unit.useTech(TechType.Tank_Siege_Mode);
-							}
-						}
-					}
-				}
-			}
-		}
-		// 공격 모드가 되면, 모든 전투유닛들을 적군 Main BaseLocation 로 공격 가도록 합니다
-		// 0726 추가 - 공격모드가 되면, 모든 시즈탱크가 탱크모드로 변경
-		else
-
-		{
-			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
-					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
-				// 공격 대상 지역 결정
-
-				targetBaseLocation = informationMgr.getMainBaseLocation(enemy);
-
-				Unit barracks = myUnitMap.get("Barracks");
-
-				if (barracks != null && barracks.exists()) {
-					if (barracks.isUnderAttack()) {
-						barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
-					} else if (barracks.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
-						barracks.move(getRallyPosition(targetBaseLocation).toPosition());
-					} else {
-						barracks.stop();
-						// 1초에 한번만 실행
-						if (frameCount % 24 == 0) {
-							if (!informationMgr.isEnemyUnitInSight(barracks)) {
-								if (truceCount++ > 5) {
-									mainDistance -= 100;
-									truceCount = 0;
-								}
-							}
-						}
-					}
-				}
-
-				Unit closestUnit = informationMgr
-						.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Tank_Mode);
-				if (closestUnit != null && informationMgr.isEnemyUnitInSight(closestUnit)) {
-					if (closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-						closestUnit.useTech(TechType.Tank_Siege_Mode);
-					}
-
-					List<Unit> units = closestUnit.getUnitsInRadius(10 * Config.TILE_SIZE);
-
-					for (Unit unit : units) {
-						if (unit.getPlayer() == enemy) {
-							continue;
-						}
-						if (unit.getType().isWorker() || unit.getType().isBuilding()) {
-							continue;
-						}
-						if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-							unit.useTech(TechType.Tank_Siege_Mode);
-						}
-					}
-				}
-				if (targetBaseLocation != null) {
-					for (Unit unit : myUnits) {
-						// 건물은 제외
-						if (unit.getType().isBuilding()) {
-							continue;
-						}
-						// 모든 일꾼은 제외
-						if (unit.getType().isWorker()) {
-							continue;
-						}
-						// canAttack 유닛은 attackMove Command 로 공격을 보냅니다
-						double subDistance = unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode ? mainDistance + 100
-								: mainDistance + 200;
-						if (unit.getDistance(targetBaseLocation.getPosition()) > subDistance) {
-							if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-								if (!informationMgr.isEnemyUnitInSight(unit)) {
-									unit.unsiege();
-								}
-							}
-							commandUtil.attackMove(unit, targetBaseLocation.getPosition());
-						} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-							unit.useTech(TechType.Tank_Siege_Mode);
-						} else {
-							unit.holdPosition();
-						}
-					}
-				}
-			}
-		}
-	}
-
 	public void executeScanAt(Position pos) {
 		for (Unit comsat : informationMgr.getUnitData(self).comsatList) {
 			if (comsat == null || !comsat.isCompleted())
-				return;
+				continue;
 
 			if (comsat.getEnergy() >= 50) {
 				comsat.useTech(TechType.Scanner_Sweep, pos);

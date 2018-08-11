@@ -826,20 +826,10 @@ public class InformationManager {
 
 	/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 	public final boolean isCombatUnitType(UnitType type) {
-		if (type == UnitType.Zerg_Lurker /*
-											 * || type ==
-											 * UnitType.Protoss_Dark_Templar
-											 */) {
-			return false;
-		}
-
 		// check for various types of combat units
-		if (type.canAttack() || type == UnitType.Terran_Medic || type == UnitType.Protoss_Observer
-				|| type == UnitType.Terran_Bunker || type == UnitType.Zerg_Overlord || type == UnitType.Terran_Dropship
-				|| type == UnitType.Protoss_Shuttle) {
+		if (type.canAttack()) {
 			return true;
 		}
-
 		return false;
 	}
 
