@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import bwapi.Race;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -44,7 +45,7 @@ public class UnitData {
 	Map<Integer, List<Integer>> unitListMap = new HashMap<>();
 	
 	List<Unit> comsatList = new ArrayList<>();
-	List<Unit> darkList = new ArrayList<>();
+	List<Unit> scanObjList = new ArrayList<>();
 	
 	public UnitData() 
 	{
@@ -104,9 +105,22 @@ public class UnitData {
 				comsatList.add(unit);
 			}
 			
-			if (unit.getType() == UnitType.Protoss_Dark_Templar
-					&& unit.getPlayer() == MyBotModule.Broodwar.enemy()) {
-				darkList.add(unit);
+			// 적군의 보이지않는 유닛 리스트 만들기 - 스캔 대상
+			if (unit.getPlayer() == MyBotModule.Broodwar.enemy()) {
+				if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+					if (unit.getType() == UnitType.Terran_Wraith
+							|| unit.getType() == UnitType.Terran_Ghost) {
+						scanObjList.add(unit);
+					}
+				} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Protoss) {
+					if (unit.getType() == UnitType.Protoss_Dark_Templar) {
+						scanObjList.add(unit);
+					}
+				} else if (MyBotModule.Broodwar.enemy().getRace() == Race.Zerg) {
+					if (unit.getType() == UnitType.Zerg_Lurker) {
+						scanObjList.add(unit);
+					}
+				}
 			}
 		}
 	}
@@ -141,12 +155,12 @@ public class UnitData {
 	{
 		if (unit == null) { return; }
 		
-		if (unit.getType() == UnitType.Terran_Comsat_Station && comsatList.contains(unit)) {
+		if (comsatList.contains(unit)) {
 			comsatList.remove(unit);
 		}
 		
-		if (unit.getType() == UnitType.Protoss_Dark_Templar && darkList.contains(unit)) {
-			darkList.remove(unit);
+		if (scanObjList.contains(unit)) {
+			scanObjList.remove(unit);
 		}
 		
 		mineralsLost += unit.getType().mineralPrice();
