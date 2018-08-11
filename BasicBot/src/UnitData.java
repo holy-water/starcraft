@@ -98,7 +98,8 @@ public class UnitData {
 			}
 			//numCreatedUnits[unit.getType().getID()]++;
 			//numUnits[unit.getType().getID()]++;
-			if (unit.getType() == UnitType.Terran_Comsat_Station) {
+			if (unit.getType() == UnitType.Terran_Comsat_Station 
+					&& unit.getPlayer() == MyBotModule.Broodwar.self()) {
 				comsatList.add(unit);
 			}
 		}
