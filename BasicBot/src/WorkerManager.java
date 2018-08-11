@@ -174,8 +174,8 @@ public class WorkerManager {
 				// 대상이 파괴되었거나, 수리가 다 끝난 경우, 우리 진영을 벗어난 경우
 				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
 						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()
-						|| BWTA.getRegion(repairTargetUnit.getPosition()) != mainBaseLocation.getRegion()
-						|| BWTA.getRegion(repairTargetUnit.getPosition()) != firstExpansionLocation.getRegion()) {
+						|| (BWTA.getRegion(repairTargetUnit.getPosition()) != mainBaseLocation.getRegion()
+						&& BWTA.getRegion(repairTargetUnit.getPosition()) != firstExpansionLocation.getRegion())) {
 					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
 					currentRepairWorker = null;
 				}
