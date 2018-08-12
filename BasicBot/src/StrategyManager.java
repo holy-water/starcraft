@@ -62,7 +62,7 @@ public class StrategyManager {
 	private boolean enemyBaseLocationScanned;
 	// 0812 - 최혜진 추가 Expansion 순서 지정
 	public Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
-	
+
 	private String[] buildingNames = { "Barracks", "EngineeringBay", "Bunker" };
 
 	private UnitType[] buildingTypes = { UnitType.Terran_Barracks, UnitType.Terran_Engineering_Bay,
@@ -95,7 +95,7 @@ public class StrategyManager {
 	}
 
 	public StrategyManager() {
-		mainDistance = 2000;
+		mainDistance = 2500;
 		isFullScaleAttackStarted = false;
 		isInitialBuildOrderFinished = false;
 	}
@@ -707,7 +707,7 @@ public class StrategyManager {
 			}
 
 			// 0806 수정
-			if (self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5) {
+			if (isFullScaleAttackStart(enemy.getRace())) {
 				if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 						&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
 					isFullScaleAttackStarted = true;
@@ -812,6 +812,16 @@ public class StrategyManager {
 					}
 				}
 			}
+		}
+	}
+
+	private boolean isFullScaleAttackStart(Race race) {
+		if (race == Race.Protoss) {
+			return self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) > 1;
+		} else if (race == Race.Terran) {
+			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5;
+		} else {
+			return self.supplyUsed() > 300;
 		}
 	}
 
