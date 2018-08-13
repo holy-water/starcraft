@@ -450,7 +450,9 @@ public class InformationManager {
 		if (forcePoint > 0) {
 			tempDangerLocation.setBaseLocation(baseLocation);
 			tempDangerLocation.setEnemyCnt(forcePoint);
-
+			tempDangerLocation.setGroundCnt(groundForcePoint);
+			tempDangerLocation.setAirCnt(airForcePoint);
+			
 			if (airForcePoint > 0 && groundForcePoint > 0) {
 				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Both);
 			} else if (airForcePoint > 0) {

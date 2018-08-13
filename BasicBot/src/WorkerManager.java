@@ -339,20 +339,30 @@ public class WorkerManager {
 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit == null) continue;
-			if (BWTA.getRegion(unit.getPosition()) == mainBaseLocation.getRegion()
-					|| BWTA.getRegion(unit.getPosition()) == firstExpansionLocation.getRegion()) {
-				if (unit.getType().isBuilding() && unit.isCompleted() == true
-						&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
-					if (unit.getType() != UnitType.Terran_Bunker) {
-						Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 1000000000);
-						if (repairWorker != null) {
-							setRepairWorker(repairWorker, unit);
-						}
-						break;
+			
+			// 벙커 아닌 건물 - 위치 무관 수리
+			if (unit.getType().isBuilding() && unit.isCompleted() == true
+					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
+				if (unit.getType() != UnitType.Terran_Bunker) {
+					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), Integer.MAX_VALUE);
+					if (repairWorker != null) {
+						setRepairWorker(repairWorker, unit);
 					}
+					break;
 				}
+			}
+			
+			// 메카닉의 경우 먼저 우리 진영 내에 있는지 확인
+			boolean isInBase = false;
+			for (BaseLocation baseLoca: occupiedBaseLocations) {
+				if (BWTA.getRegion(unit.getPosition()) == baseLoca.getRegion()) {
+					isInBase = true;
+					break;
+				}
+			}
+			if (isInBase) {
 				// 메카닉 유닛 (SCV, 시즈탱크, 레이쓰 등)의 경우 근처에 SCV가 있는 경우 수리. 일꾼 한명이 순서대로 수리
-				else if (unit.getType().isMechanical() && unit.isCompleted() == true
+				if (unit.getType().isMechanical() && unit.isCompleted() == true
 						&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
 					// SCV 는 수리 대상에서 제외. 전투 유닛만 수리하도록 한다
 					if (unit.getType() != UnitType.Terran_SCV
@@ -381,7 +391,7 @@ public class WorkerManager {
 		// ////////////////////////////////////////////////
 		// 변수 기본값 수정
 
-		double closestDist = 1000000000;
+		double closestDist = Double.MAX_VALUE;
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
@@ -449,7 +459,7 @@ public class WorkerManager {
 		// ////////////////////////////////////////////////
 		// 변수 기본값 수정
 
-		double closestDist = Config.TILE_SIZE * 10;
+		double closestDist = Config.TILE_SIZE * 15;
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
