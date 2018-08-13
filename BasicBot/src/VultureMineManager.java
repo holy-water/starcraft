@@ -1,22 +1,12 @@
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.Vector;
-
-import bwapi.Color;
 import bwapi.Position;
-import bwapi.Race;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwapi.WalkPosition;
-import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
-import bwta.Region;
 
 public class VultureMineManager {
 
@@ -50,8 +40,6 @@ public class VultureMineManager {
 		MissionComplete /// < 마인 심고 복귀 완료한 상태
 	};
 
-	private CommandUtil commandUtil = new CommandUtil();
-
 	private static VultureMineManager instance = new VultureMineManager();
 
 	/// static singleton 객체를 리턴합니다
@@ -60,14 +48,10 @@ public class VultureMineManager {
 	}
 
 	public void update() {
-		// 1초에 4번만 실행합니다
-		if (MyBotModule.Broodwar.getFrameCount() % 6 != 0)
-			return;
-
+		
 		// VultureUnit 을 지정하고, VultureUnit 의 이동을 컨트롤함.
 		assignVultureIfNeeded();
 		moveVultureUnit();
-
 	}
 
 	private void assignVultureIfNeeded() {
