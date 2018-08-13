@@ -447,7 +447,7 @@ public class InformationManager {
 		}
 
 		// 병력이 있을 때만 위험지역으로 return
-		if (forcePoint > 1) {
+		if (forcePoint > 0) {
 			tempDangerLocation.setBaseLocation(baseLocation);
 			tempDangerLocation.setEnemyCnt(forcePoint);
 
