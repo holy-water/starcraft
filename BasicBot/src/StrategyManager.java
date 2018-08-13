@@ -52,16 +52,18 @@ public class StrategyManager {
 	private boolean isEngineeringBayLifting;
 	// 0805 - 공중공격 대비
 	private boolean isAirAttack;
+	// 0801 - 최혜진 추가 적 본진 및 적 길목 스캔 스위치
+	private boolean enemyBaseLocationScanned;
+	// 0813 - 적 앞마당 근처 도착
+	private boolean isOverLoaction;
 	// 0709 - FrameCount 저장
 	private int frameCount;
-	// 0811 - 적과의 거리
-	private double mainDistance;
 	// 0726 - 휴전 시간 저장
 	private int truceCount;
 	// 0813 - 배럭스 이전 프레임 체력
 	private int lastHitPoint;
-	// 0801 - 최혜진 추가 적 본진 및 적 길목 스캔 스위치
-	private boolean enemyBaseLocationScanned;
+	// 0811 - 적과의 거리
+	private double mainDistance;
 	// 0812 - 최혜진 추가 Expansion 순서 지정
 	public Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
 
@@ -183,12 +185,24 @@ public class StrategyManager {
 
 		countMgr.update();
 
+		updateUnitMap();
+	}
+
+	private void updateUnitMap() {
 		if (myUnitMap.size() == buildingNames.length) {
+			Unit unit = myUnitMap.get("Barracks");
+			if (unit != null && !unit.exists()) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Barracks) == 0) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Barracks,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					myUnitMap.remove("Barracks");
+				}
+			}
 			return;
 		}
 
 		for (Unit unit : myUnits) {
-			if (unit.getType().isWorker()) {
+			if (!unit.getType().isBuilding()) {
 				continue;
 			}
 
@@ -388,6 +402,7 @@ public class StrategyManager {
 						}
 					}
 				}
+				isFullScaleAttackStarted = true;
 			}
 		} else if (enemy.getRace() == Race.Zerg) {
 			if (countMgr.getBunker() == 0) {
@@ -527,8 +542,7 @@ public class StrategyManager {
 		// 0715 추가 - 머신샵 추가
 		// 0722 추가 - 터렛 및 메카닉 업그레이드 추가
 		if (countMgr.getCompletedFactory() > 0) {
-			int count = enemy.getRace() == Race.Protoss ? 1 : 2;
-			if (countMgr.getMachineShop() < Math.max(count, (int) Math.sqrt(countMgr.getCompletedFactory()))) {
+			if (countMgr.getMachineShop() < Math.max(2, (int) Math.sqrt(countMgr.getCompletedFactory()))) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					// 0730 - 최혜진 수정 Factory 건설 전략 적용
@@ -751,14 +765,20 @@ public class StrategyManager {
 					if (barracks.isUnderAttack() || barracks.getHitPoints() < lastHitPoint) {
 						barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
 					} else if (barracks.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
-						barracks.move(getRallyPosition(targetBaseLocation).toPosition());
+						if (isOverLoaction
+								|| barracks.getDistance(getBarracksPosition(targetBaseLocation).toPosition()) < 50) {
+							barracks.move(targetBaseLocation.getPosition());
+							isOverLoaction = true;
+						} else {
+							barracks.move(getBarracksPosition(targetBaseLocation).toPosition());
+						}
 					} else {
 						barracks.stop();
 						// 1초에 한번만 실행
 						if (frameCount % 24 == 0) {
 							if (!informationMgr.isGroundEnemyUnitInSight(barracks)) {
 								if (truceCount++ > 5) {
-									mainDistance -= 100;
+									mainDistance -= 200;
 									truceCount = 0;
 								}
 							}
@@ -785,12 +805,18 @@ public class StrategyManager {
 								if (!informationMgr.isGroundEnemyUnitInSight(unit)) {
 									unit.unsiege();
 								}
+							} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+								if (informationMgr.isGroundEnemyUnitInSight(unit)) {
+									unit.useTech(TechType.Tank_Siege_Mode);
+								}
 							}
 							commandUtil.attackMove(unit, targetBaseLocation.getPosition());
 						} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 							unit.useTech(TechType.Tank_Siege_Mode);
 						} else {
-							unit.attack(unit.getPosition());
+							if (!unit.isHoldingPosition()) {
+								unit.holdPosition();
+							}
 						}
 					}
 				}
@@ -800,7 +826,7 @@ public class StrategyManager {
 
 	private boolean isFullScaleAttackStart(Race race) {
 		if (race == Race.Protoss) {
-			return self.getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) > 1;
+			return self.supplyUsed() > 350;
 		} else if (race == Race.Terran) {
 			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5;
 		} else {
@@ -855,7 +881,8 @@ public class StrategyManager {
 		if (unitType == UnitType.Protoss_Dragoon || unitType == UnitType.Protoss_Reaver
 				|| unitType == UnitType.Terran_Ghost || unitType == UnitType.Terran_Goliath
 				|| unitType == UnitType.Terran_Marine || unitType == UnitType.Terran_Siege_Tank_Siege_Mode
-				|| unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Zerg_Hydralisk) {
+				|| unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Terran_Vulture
+				|| unitType == UnitType.Zerg_Hydralisk) {
 			return true;
 		}
 		return false;
@@ -982,8 +1009,19 @@ public class StrategyManager {
 			}
 
 			if (!unit.isDetected()) {
-				isUsed = true;
-				executeScanAt(unit.getPosition());
+				// 주변에 우리 공격유닛이 있을 때만 스캔을 사용할 것
+				List<Unit> unitList = MyBotModule.Broodwar.getUnitsInRadius(unit.getPosition(), 8 * Config.TILE_SIZE);
+				Unit tempUnit;
+				for (int i = 0; i < unitList.size(); i++) {
+					tempUnit = unitList.get(i);
+					if (tempUnit.getPlayer() == self) {
+						if (informationMgr.isCombatUnitType(tempUnit.getType())) {
+							isUsed = true;
+							executeScanAt(unit.getPosition());
+							break;
+						}
+					}
+				}
 			}
 		}
 
