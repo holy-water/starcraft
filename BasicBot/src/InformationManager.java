@@ -331,6 +331,72 @@ public class InformationManager {
 
 		return false;
 	}
+	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
+	public boolean isGroundEnemyUnitInSight(Unit targetUnit) {
+		if (targetUnit == null)
+			return false;
+
+		// 시야 내에 있는 유닛 리스트
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().sightRange());
+
+		// 적 유닛이 있는지 확인
+		for (Unit unit : list) {
+			if (unit == null)
+				continue;
+			if (unit.getPlayer() == enemyPlayer && isGroundCombatUnitType(unit.getType())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	// 0813 추가 - 지상 유닛
+	public boolean isGroundCombatUnitType(UnitType unitType) {
+		if (enemyRace == Race.Protoss) {
+			if (unitType == UnitType.Protoss_Archon || unitType == UnitType.Protoss_Dark_Archon
+					|| unitType == UnitType.Protoss_Dragoon || unitType == UnitType.Protoss_High_Templar
+					|| unitType == UnitType.Protoss_Reaver || unitType == UnitType.Protoss_Zealot) {
+				return true;
+			}
+		} else if (enemyRace == Race.Terran) {
+			if (unitType == UnitType.Terran_Firebat || unitType == UnitType.Terran_Ghost
+					|| unitType == UnitType.Terran_Goliath || unitType == UnitType.Terran_Marine
+					|| unitType == UnitType.Terran_Siege_Tank_Siege_Mode
+					|| unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Terran_Vulture) {
+				return true;
+			}
+		} else {
+			if (unitType == UnitType.Zerg_Broodling || unitType == UnitType.Zerg_Defiler
+					|| unitType == UnitType.Zerg_Hydralisk || unitType == UnitType.Zerg_Infested_Terran
+					|| unitType == UnitType.Zerg_Lurker || unitType == UnitType.Zerg_Lurker_Egg
+					|| unitType == UnitType.Zerg_Ultralisk || unitType == UnitType.Zerg_Zergling) {
+				return true;
+			}
+		}
+		return false;
+	}
+	// 0813 추가 - 공중 유닛
+	public boolean isAirCombatUnitType(UnitType unitType) {
+		if (enemyRace == Race.Protoss) {
+			if (unitType == UnitType.Protoss_Arbiter || unitType == UnitType.Protoss_Carrier
+					|| unitType == UnitType.Protoss_Corsair || unitType == UnitType.Protoss_Scout
+					|| unitType == UnitType.Protoss_Interceptor) {
+				return true;
+			}
+		} else if (enemyRace == Race.Terran) {
+			if (unitType == UnitType.Terran_Battlecruiser || unitType == UnitType.Terran_Valkyrie
+					|| unitType == UnitType.Terran_Wraith) {
+				return true;
+			}
+		} else {
+			if (unitType == UnitType.Zerg_Guardian || unitType == UnitType.Zerg_Devourer
+					|| unitType == UnitType.Zerg_Mutalisk || unitType == UnitType.Zerg_Scourge) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	// 특정 지역 내에서 아군/적군의 병력 체크
 	public int getForcePoint(Region region, Player player) {

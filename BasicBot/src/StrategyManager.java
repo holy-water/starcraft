@@ -58,6 +58,8 @@ public class StrategyManager {
 	private double mainDistance;
 	// 0726 - 휴전 시간 저장
 	private int truceCount;
+	// 0813 - 배럭스 이전 프레임 체력
+	private int lastHitPoint;
 	// 0801 - 최혜진 추가 적 본진 및 적 길목 스캔 스위치
 	private boolean enemyBaseLocationScanned;
 	// 0812 - 최혜진 추가 Expansion 순서 지정
@@ -95,6 +97,7 @@ public class StrategyManager {
 	}
 
 	public StrategyManager() {
+		lastHitPoint = 1000;
 		mainDistance = 2500;
 		isFullScaleAttackStarted = false;
 		isInitialBuildOrderFinished = false;
@@ -745,7 +748,7 @@ public class StrategyManager {
 				Unit barracks = myUnitMap.get("Barracks");
 
 				if (barracks != null && barracks.exists()) {
-					if (barracks.isUnderAttack()) {
+					if (barracks.isUnderAttack() || barracks.getHitPoints() < lastHitPoint) {
 						barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
 					} else if (barracks.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
 						barracks.move(getRallyPosition(targetBaseLocation).toPosition());
@@ -753,7 +756,7 @@ public class StrategyManager {
 						barracks.stop();
 						// 1초에 한번만 실행
 						if (frameCount % 24 == 0) {
-							if (!informationMgr.isEnemyUnitInSight(barracks)) {
+							if (!informationMgr.isGroundEnemyUnitInSight(barracks)) {
 								if (truceCount++ > 5) {
 									mainDistance -= 100;
 									truceCount = 0;
@@ -761,29 +764,9 @@ public class StrategyManager {
 							}
 						}
 					}
+					lastHitPoint = barracks.getHitPoints();
 				}
 
-				Unit closestUnit = informationMgr
-						.getClosestUnitFromEnemyBaseLocation(UnitType.Terran_Siege_Tank_Tank_Mode);
-				if (closestUnit != null && informationMgr.isEnemyUnitInSight(closestUnit)) {
-					if (closestUnit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-						closestUnit.useTech(TechType.Tank_Siege_Mode);
-					}
-
-					List<Unit> units = closestUnit.getUnitsInRadius(10 * Config.TILE_SIZE);
-
-					for (Unit unit : units) {
-						if (unit.getPlayer() == enemy) {
-							continue;
-						}
-						if (unit.getType().isWorker() || unit.getType().isBuilding()) {
-							continue;
-						}
-						if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-							unit.useTech(TechType.Tank_Siege_Mode);
-						}
-					}
-				}
 				if (targetBaseLocation != null) {
 					for (Unit unit : myUnits) {
 						// 건물은 제외
@@ -799,7 +782,7 @@ public class StrategyManager {
 								: mainDistance + 200;
 						if (unit.getDistance(targetBaseLocation.getPosition()) > subDistance) {
 							if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-								if (!informationMgr.isEnemyUnitInSight(unit)) {
+								if (!informationMgr.isGroundEnemyUnitInSight(unit)) {
 									unit.unsiege();
 								}
 							}
@@ -807,7 +790,7 @@ public class StrategyManager {
 						} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 							unit.useTech(TechType.Tank_Siege_Mode);
 						} else {
-							unit.holdPosition();
+							unit.attack(unit.getPosition());
 						}
 					}
 				}
