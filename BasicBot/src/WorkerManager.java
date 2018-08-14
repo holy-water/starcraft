@@ -477,8 +477,7 @@ public class WorkerManager {
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack)) {
 				double dist = worker.getDistance(p);
 
-				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false
-						&& worker.isCarryingGas() == false)) {
+				if (closestWorker == null || dist < closestDist) {
 					closestWorker = worker;
 					closestDist = dist;
 				}

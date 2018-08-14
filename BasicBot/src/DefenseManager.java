@@ -15,6 +15,7 @@ public class DefenseManager {
 		return instance;
 	}
 	
+	private CommandUtil commandUtil = new CommandUtil();
 	private InformationManager infoMngr = InformationManager.Instance();
 	private Player self = MyBotModule.Broodwar.self();
 	
@@ -34,46 +35,37 @@ public class DefenseManager {
 	public void executeDefense(DangerousLocation curDangerLoca) {
 		
 		BaseLocation dangerLocation = curDangerLoca.getBaseLocation();	// 위험지역의 위치
-		int enemyCnt = curDangerLoca.getEnemyCnt();						// 적의 병력
 		int groundCnt = curDangerLoca.getGroundCnt();					// 적의 지상 병력
 		int airCnt = curDangerLoca.getAirCnt();							// 적의 공중 병력
-		String attackType = curDangerLoca.getAttackType().name();		// 공격 타입
 		
 		// 리스트 초기화
 		defenseList = new ArrayList<>();
 		
-		switch(attackType) {
-		// 지상공격시 - 탱크 + 벌쳐
-		case "Ground":
-			assignGroundCombatUnit(enemyCnt);
-			break;
-		// 공중공격시 - 골리앗
-		case "Air":
-			assignAirCombatUnit(enemyCnt);
-			break;
-		// 지상+공중공격시 - 탱크 + 벌쳐 + 골리앗
-		case "Both":
-			assignBothCombatUnit(groundCnt, airCnt);
-			break;
-		}
+		// 유닛 배정
+		assignGroundCombatUnit(groundCnt);
+		assignAirCombatUnit(airCnt);
 		
 		// 방어병력 위험지역으로 이동
 		if (defenseList.size() > 0) {
-			
+			for (int i=0; i<defenseList.size(); i++) {
+				commandUtil.attackMove(defenseList.get(i), dangerLocation.getPosition());
+			}
 		}
 	}
-
+	
+	// 지상공격시 - 탱크 + 벌쳐
 	private void assignGroundCombatUnit(int enemyCnt) {
+		
+		if (enemyCnt == 0) return;
+		
 		// 탱크와 벌처 보유 중인지 확인하기
-		if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) <= 0) {
-			return;
-		}
-		if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) <= 0) {
-			return;
-		}
-		if (self.completedUnitCount(UnitType.Terran_Vulture) <= 0) {
+		if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) <= 0
+				&& self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) <= 0
+				&& self.completedUnitCount(UnitType.Terran_Vulture) <= 0) {
 			return;
 		}	
+		
+		if (enemyCnt % 2 == 1) enemyCnt++;
 		
 		int tankCnt = 0;
 		int vultureCnt = 0;
@@ -81,16 +73,56 @@ public class DefenseManager {
 		
 		for(Unit unit: unitList) {
 			if (unit == null || !unit.exists() || !unit.isCompleted()) continue;
-			if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode 
-					|| unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-				
+			if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+				if (tankCnt == enemyCnt/2) continue;
+				defenseList.add(unit);
+				tankCnt++;
+			} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+				if (tankCnt == enemyCnt/2) continue;
+				unit.unsiege();
+				defenseList.add(unit);
+				tankCnt++;
 			} else if (unit.getType() == UnitType.Terran_Vulture) {
-				
+				if (vultureCnt == enemyCnt/2) continue;
+				defenseList.add(unit);
+				vultureCnt++;
+			}
+		}
+		
+		// 탱크가 부족한 만큼 벌처로 보완
+		if (tankCnt < enemyCnt/2 && vultureCnt == enemyCnt/2) {
+			for(Unit unit: unitList) {
+				if (unit == null || !unit.exists() || !unit.isCompleted()) continue;
+				if (unit.getType() == UnitType.Terran_Vulture) {
+					defenseList.add(unit);
+					vultureCnt++;
+					if (vultureCnt+tankCnt == enemyCnt) break;
+				}
+			}
+		} 
+		// 벌처가 부족한 만큼 탱크로 보완
+		else if (tankCnt == enemyCnt/2 && vultureCnt < enemyCnt/2) {
+			for(Unit unit: unitList) {
+				if (unit == null || !unit.exists() || !unit.isCompleted()) continue;
+				if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+					defenseList.add(unit);
+					tankCnt++;
+					if (tankCnt+vultureCnt == enemyCnt) break;
+				} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+					unit.unsiege();
+					defenseList.add(unit);
+					tankCnt++;
+					if (tankCnt+vultureCnt == enemyCnt) break;
+				}
 			}
 		}
 	}
 
+	// 공중공격시 - 골리앗
 	private void assignAirCombatUnit(int enemyCnt) {
+		
+		if (enemyCnt == 0) return;
+		
 		// 골리앗 보유 중인지 확인하기
 		if (self.completedUnitCount(UnitType.Terran_Goliath) <= 0) {
 			return;
@@ -110,46 +142,4 @@ public class DefenseManager {
 			}
 		}
 	}
-	
-	private void assignBothCombatUnit(int groundCnt, int airCnt) {
-		// 골리앗, 탱크, 벌처 보유 중인지 확인하기
-		if (self.completedUnitCount(UnitType.Terran_Goliath) <= 0) {
-			return;
-		}
-		if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) <= 0) {
-			return;
-		}
-		if (self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) <= 0) {
-			return;
-		}
-		if (self.completedUnitCount(UnitType.Terran_Vulture) <= 0) {
-			return;
-		}
-		
-		int goliathCnt = 0;
-		int tankCnt = 0;
-		int vultureCnt = 0;
-		List<Unit> unitList = self.getUnits();
-		
-		for(Unit unit: unitList) {
-			if (unit == null || !unit.exists() || !unit.isCompleted()) continue;
-			if (unit.getType() == UnitType.Terran_Goliath) {
-				if (goliathCnt == airCnt) {
-					continue;
-				}
-				defenseList.add(unit);
-				goliathCnt++;
-			} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode 
-					|| unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-				
-			} else if (unit.getType() == UnitType.Terran_Vulture) {
-				
-			}
-		}
-	}
-
-
-	
-	
-	
 }

@@ -35,7 +35,7 @@ public class WorkerData {
 	// BasicBot 1.1 Patch End //////////////////////////////////////////////////
 	
 	// 벙커 수리병 숫자 제한
-	public int optimalBunkerRepairCnt = 2;
+	public int optimalBunkerRepairCnt = 3;
 	public int currentBunkerRepairCnt = 0;
 
 	/// 일꾼 목록
