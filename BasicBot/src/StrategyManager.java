@@ -50,8 +50,6 @@ public class StrategyManager {
 	private boolean isInitialBuildOrderFinished;
 	// 0728 - 최혜진 추가 Engineering Bay Lifting 여부 체크
 	private boolean isEngineeringBayLifting;
-	// 0805 - 공중공격 대비
-	private boolean isAirAttack;
 	// 0801 - 최혜진 추가 적 본진 및 적 길목 스캔 스위치
 	private boolean enemyBaseLocationScanned;
 	// 0813 - 적 앞마당 근처 도착
@@ -62,6 +60,8 @@ public class StrategyManager {
 	private int truceCount;
 	// 0813 - 배럭스 이전 프레임 체력
 	private int lastHitPoint;
+	// 0814 - 공중 공격 위험도
+	private int airAttackLevel;
 	// 0811 - 적과의 거리
 	private double mainDistance;
 	// 0812 - 최혜진 추가 Expansion 순서 지정
@@ -265,7 +265,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 1) {
+		if (frameCount % 24 != 2) {
 			return;
 		}
 
@@ -323,7 +323,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 2) {
+		if (frameCount % 24 != 3) {
 			return;
 		}
 
@@ -346,7 +346,7 @@ public class StrategyManager {
 	private void executeAnalyzeBuild() {
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 3) {
+		if (frameCount % 24 != 5) {
 			return;
 		}
 
@@ -358,6 +358,25 @@ public class StrategyManager {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Bunker,
 							BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 					countMgr.setBunker();
+				}
+			}
+			// 셔틀
+			if (enemy.allUnitCount(UnitType.Protoss_Shuttle) != 0) {
+				if (countMgr.getArmory() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setArmory();
+				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
+					airAttackLevel = 1;
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
+								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
+							// 골리앗 사정거리 업그레이드
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
+									true);
+						}
+					}
 				}
 			}
 			// 다크 템플러
@@ -376,11 +395,6 @@ public class StrategyManager {
 						}
 					}
 				}
-				if (countMgr.getEngineeringBay() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
-							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-					countMgr.setEngineeringBay();
-				}
 			}
 			// 캐리어
 			if (enemy.allUnitCount(UnitType.Protoss_Stargate) != 0
@@ -391,7 +405,7 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					isAirAttack = true;
+					airAttackLevel = 8;
 					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
@@ -452,7 +466,7 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					isAirAttack = true;
+					airAttackLevel = 6;
 					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
@@ -473,8 +487,32 @@ public class StrategyManager {
 					countMgr.setBunker();
 				}
 			}
-			// 레이스, 배틀크루저
-			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0 || enemy.allUnitCount(UnitType.Terran_Physics_Lab) > 0
+			// 레이스
+			if (enemy.allUnitCount(UnitType.Terran_Wraith) > 0) {
+				if (countMgr.getEngineeringBay() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
+							BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+					countMgr.setEngineeringBay();
+				}
+				if (countMgr.getArmory() == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
+							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+					countMgr.setArmory();
+				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
+					airAttackLevel = 2;
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
+						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
+								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
+							// 골리앗 사정거리 업그레이드
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(UpgradeType.Charon_Boosters,
+									true);
+						}
+					}
+				}
+			}
+			// 배틀 크루저
+			if (enemy.allUnitCount(UnitType.Terran_Physics_Lab) > 0
 					|| enemy.allUnitCount(UnitType.Terran_Battlecruiser) > 0) {
 				if (countMgr.getEngineeringBay() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Engineering_Bay,
@@ -486,7 +524,7 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					isAirAttack = true;
+					airAttackLevel = 6;
 					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
@@ -509,7 +547,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 4) {
+		if (frameCount % 24 != 7) {
 			return;
 		}
 
@@ -653,7 +691,7 @@ public class StrategyManager {
 		}
 
 		if (countMgr.getFactory() < self.completedUnitCount(UnitType.Terran_Command_Center) * 4) {
-			if (self.minerals() >= 500 && self.gas() >= 100) {
+			if (self.minerals() >= 600 && self.gas() >= 150) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					// 0730 - 최혜진 수정 Factory 건설 전략 적용
@@ -676,6 +714,10 @@ public class StrategyManager {
 	}
 
 	public void executeCombat() {
+
+		if (frameCount % 3 != 2) {
+			return;
+		}
 
 		// 공격 모드가 아닐 때에는 전투유닛들을 아군 진영 길목에 집결시켜서 방어
 		if (isFullScaleAttackStarted == false) {
@@ -762,7 +804,9 @@ public class StrategyManager {
 				Unit barracks = myUnitMap.get("Barracks");
 
 				if (barracks != null && barracks.exists()) {
-					if (barracks.isUnderAttack() || barracks.getHitPoints() < lastHitPoint) {
+					if (!barracks.isLifted()) {
+						barracks.lift();
+					} else if (barracks.isUnderAttack() || barracks.getHitPoints() < lastHitPoint) {
 						barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
 					} else if (barracks.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
 						if (isOverLoaction
@@ -775,7 +819,7 @@ public class StrategyManager {
 					} else {
 						barracks.stop();
 						// 1초에 한번만 실행
-						if (frameCount % 24 == 0) {
+						if (frameCount % 24 == 5) {
 							if (!informationMgr.isGroundEnemyUnitInSight(barracks)) {
 								if (truceCount++ > 5) {
 									mainDistance -= 200;
@@ -841,9 +885,15 @@ public class StrategyManager {
 			return;
 		}
 
+		// 0.25초에 한번만 실행
+		if (frameCount % 6 != 3) {
+			return;
+		}
+
 		if (isFullScaleAttackStarted) {
 			return;
 		}
+
 		// 0705 추가 - 내 유닛을 공격하는 적 유닛이 있으면 반대로 이동
 		// 0706 수정 - 내 유닛이 공격이 가능 하면 공격, 불가능하면 반대로 이동
 		// 0712 추가 - 해당 위치로 이동할 수 있을 때만 이동
@@ -937,7 +987,7 @@ public class StrategyManager {
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 6) {
+		if (frameCount % 24 != 11) {
 			return;
 		}
 
@@ -993,7 +1043,7 @@ public class StrategyManager {
 	private void executeScan() {
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 7) {
+		if (frameCount % 24 != 13) {
 			return;
 		}
 
@@ -1072,7 +1122,7 @@ public class StrategyManager {
 	private void excuteSpiderMine() {
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 8) {
+		if (frameCount % 24 != 17) {
 			return;
 		}
 
@@ -1321,12 +1371,17 @@ public class StrategyManager {
 	}
 
 	private UnitType selectTrainUnitType(Unit unit) {
-		if (unit.getAddon() != null && self.minerals() >= 150 && self.gas() >= 100
-				&& self.minerals() - self.gas() < 1000) {
+		if (airAttackLevel != 0) {
+			if (self.allUnitCount(UnitType.Terran_Goliath) < airAttackLevel * 3) {
+				if (self.minerals() >= 100 && self.gas() >= 50) {
+					return UnitType.Terran_Goliath;
+				}
+			}
+		}
+		if (unit.getAddon() != null && self.minerals() >= 150 && self.gas() >= 100) {
 			return UnitType.Terran_Siege_Tank_Tank_Mode;
-		} else if (isAirAttack && self.minerals() >= 100 && self.gas() >= 50) {
-			return UnitType.Terran_Goliath;
-		} else if (self.minerals() >= 75) {
+		}
+		if (self.minerals() >= 75) {
 			return UnitType.Terran_Vulture;
 		}
 		return null;
@@ -1350,55 +1405,25 @@ public class StrategyManager {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(32, 39);
 			} else {
-				targetPosition = new TilePosition(25, 34);
+				targetPosition = new TilePosition(34, 41);
 			}
 		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 1) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(95, 39);
 			} else {
-				targetPosition = new TilePosition(102, 34);
+				targetPosition = new TilePosition(88, 28);
 			}
 		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 7) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(33, 88);
 			} else {
-				targetPosition = new TilePosition(25, 93);
+				targetPosition = new TilePosition(40, 98);
 			}
 		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 5) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(94, 88);
 			} else {
-				targetPosition = new TilePosition(102, 93);
-			}
-		}
-		return targetPosition;
-	}
-
-	public TilePosition getRallyPosition(BaseLocation baseLocation) {
-		TilePosition targetPosition = TilePosition.None;
-		if (informationMgr.getDirectionOfStartLocation(baseLocation) == 11) {
-			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-				targetPosition = new TilePosition(25, 34);
-			} else {
-				targetPosition = new TilePosition(25, 34);
-			}
-		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 1) {
-			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-				targetPosition = new TilePosition(102, 34);
-			} else {
-				targetPosition = new TilePosition(102, 34);
-			}
-		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 7) {
-			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-				targetPosition = new TilePosition(25, 93);
-			} else {
-				targetPosition = new TilePosition(25, 93);
-			}
-		} else if (informationMgr.getDirectionOfStartLocation(baseLocation) == 5) {
-			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-				targetPosition = new TilePosition(102, 93);
-			} else {
-				targetPosition = new TilePosition(102, 93);
+				targetPosition = new TilePosition(93, 86);
 			}
 		}
 		return targetPosition;
@@ -1410,25 +1435,25 @@ public class StrategyManager {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(25, 34);
 			} else {
-				targetPosition = new TilePosition(25, 34);
+				targetPosition = new TilePosition(27, 36);
 			}
 		} else if (informationMgr.getDirectionOfStartLocation(self) == 1) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(102, 34);
 			} else {
-				targetPosition = new TilePosition(102, 34);
+				targetPosition = new TilePosition(92, 25);
 			}
 		} else if (informationMgr.getDirectionOfStartLocation(self) == 7) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(25, 93);
 			} else {
-				targetPosition = new TilePosition(25, 93);
+				targetPosition = new TilePosition(34, 102);
 			}
 		} else if (informationMgr.getDirectionOfStartLocation(self) == 5) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				targetPosition = new TilePosition(102, 93);
 			} else {
-				targetPosition = new TilePosition(102, 93);
+				targetPosition = new TilePosition(100, 91);
 			}
 		}
 		return targetPosition;
