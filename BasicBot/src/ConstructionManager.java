@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -28,6 +29,12 @@ public class ConstructionManager {
 	private int reservedGas = 0;
 
 	private static ConstructionManager instance = new ConstructionManager();
+
+	// // 0814 - 최혜진 추가 건설 명령을 내린 후 시간을 재기 위한 맵
+	// private Map<Unit, Long> frameCountForConstructionCommand = new HashMap<>();
+	// // 0814 - 최혜진 추가 유닛에게 건설 명령 내린 장소를 저장하기 위한 맵
+	// private Map<Unit, TilePosition> tilePositionForConstructionCommand = new
+	// HashMap<>();
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionManager Instance() {
@@ -160,8 +167,9 @@ public class ConstructionManager {
 			// 0705 - 최혜진 수정 배럭과 서플라이는 지정된 위치로
 			TilePosition testLocation = b.getDesiredPosition();
 
-			//System.out.println(
-			//		b.getType() + " " + "Selected Location : " + testLocation.getX() + "," + testLocation.getY());
+			// System.out.println(
+			// b.getType() + " " + "Selected Location : " + testLocation.getX() + "," +
+			// testLocation.getY());
 
 			if (testLocation == TilePosition.None || testLocation == TilePosition.Invalid
 					|| testLocation.isValid() == false) {
@@ -183,7 +191,7 @@ public class ConstructionManager {
 					true, b.getLastConstructionWorkerID());
 
 			if (workerToAssign != null) {
-				//System.out.println("set ConstuctionWorker " + workerToAssign.getID());
+				// System.out.println("set ConstuctionWorker " + workerToAssign.getID());
 
 				b.setConstructionWorker(workerToAssign);
 				b.setFinalPosition(testLocation);
@@ -193,6 +201,7 @@ public class ConstructionManager {
 				ConstructionPlaceFinder.Instance().reserveTiles(testLocation, b.getType().tileWidth(),
 						b.getType().tileHeight());
 				b.setLastConstructionWorkerID(b.getConstructionWorker().getID());
+
 			}
 		}
 	}
@@ -253,6 +262,7 @@ public class ConstructionManager {
 				b.setBuildCommandGiven(false);
 				b.setFinalPosition(TilePosition.None);
 				b.setStatus(ConstructionTask.ConstructionStatus.Unassigned.ordinal());
+
 			}
 			// if that worker is not currently constructing
 			// 일꾼이 build command 를 받으면 isConstructing = true 가 되고 건설을 하기위해 이동하는데,
@@ -291,11 +301,15 @@ public class ConstructionManager {
 						// tell worker manager the unit we had is not needed now, since we might not be
 						// able
 						// to get a valid location soon enough
+						
+						// 0814 - 최혜진 추가 이전에 지정되었던 워커는 지정하지 않는다.
+						b.setLastConstructionWorkerID(b.getConstructionWorker().getID());
+
 						WorkerManager.Instance().setIdleWorker(b.getConstructionWorker());
 
 						// free the previous location in reserved
-						ConstructionPlaceFinder.Instance().freeTiles(b.getFinalPosition(), b.getType().tileWidth(),
-								b.getType().tileHeight());
+						// 0814 - 최혜진 삭제 못짓는다고 판단하면 그 위치를 해제하지 않는다.
+						//ConstructionPlaceFinder.Instance().freeTiles(b.getFinalPosition(), b.getType().tileWidth(), b.getType().tileHeight());
 
 						// nullify its current builder unit
 						b.setConstructionWorker(null);
