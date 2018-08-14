@@ -30,12 +30,6 @@ public class ConstructionManager {
 
 	private static ConstructionManager instance = new ConstructionManager();
 
-	// // 0814 - 최혜진 추가 건설 명령을 내린 후 시간을 재기 위한 맵
-	// private Map<Unit, Long> frameCountForConstructionCommand = new HashMap<>();
-	// // 0814 - 최혜진 추가 유닛에게 건설 명령 내린 장소를 저장하기 위한 맵
-	// private Map<Unit, TilePosition> tilePositionForConstructionCommand = new
-	// HashMap<>();
-
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionManager Instance() {
 		return instance;
@@ -301,15 +295,12 @@ public class ConstructionManager {
 						// tell worker manager the unit we had is not needed now, since we might not be
 						// able
 						// to get a valid location soon enough
-						
-						// 0814 - 최혜진 추가 이전에 지정되었던 워커는 지정하지 않는다.
-						b.setLastConstructionWorkerID(b.getConstructionWorker().getID());
 
 						WorkerManager.Instance().setIdleWorker(b.getConstructionWorker());
 
 						// free the previous location in reserved
-						// 0814 - 최혜진 삭제 못짓는다고 판단하면 그 위치를 해제하지 않는다.
-						//ConstructionPlaceFinder.Instance().freeTiles(b.getFinalPosition(), b.getType().tileWidth(), b.getType().tileHeight());
+						ConstructionPlaceFinder.Instance().freeTiles(b.getFinalPosition(), b.getType().tileWidth(),
+								b.getType().tileHeight());
 
 						// nullify its current builder unit
 						b.setConstructionWorker(null);

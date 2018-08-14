@@ -40,7 +40,7 @@ public class ConstructionPlaceFinder {
 	private static boolean isSupplyDepotBuild = false;
 
 	public static int locationOfBase = 0;
-	private static int numberOfSupply = 0;
+	public static int numberOfSupply = 0;
 
 	// 0729 - 최혜진 추가
 	// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 동일하게 지정 추후 전면 수정 필요
@@ -284,7 +284,6 @@ public class ConstructionPlaceFinder {
 						int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
 						int dy = tempBaseLocation.getTilePosition().getY()
 								- tempFirstExpansion.getTilePosition().getY();
-						numberOfSupply = 1;
 						// 0722 - 최혜진 수정 초기 좌표 설정
 						// 0723 - 최혜진 수정 좌표 이상 해결
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
@@ -299,8 +298,8 @@ public class ConstructionPlaceFinder {
 					}
 					isSupplyDepotBuild = true;
 				}
-				tempTilePosition = checkEveryPositionForSupplyDepot();
-				desiredPosition = tempTilePosition.getPoint();
+				// 0814 - 최혜진 수정 getPoint 삭제
+				desiredPosition = checkEveryPositionForSupplyDepot(numberOfSupply);
 				numberOfSupply++;
 				break;
 
@@ -852,7 +851,7 @@ public class ConstructionPlaceFinder {
 				// }
 				if (!orderOfBaseLocations.isEmpty()) {
 					multipleExpansionOrder++;
-					System.out.println(multipleExpansionOrder);
+					// System.out.println(multipleExpansionOrder);
 					BaseLocation nextExpansionBase = orderOfBaseLocations.get(multipleExpansionOrder);
 					desiredPosition = nextExpansionBase.getTilePosition();
 				}
@@ -866,13 +865,13 @@ public class ConstructionPlaceFinder {
 	}
 
 	// 0811 - 최혜진 추가 Supply Depot 처음부터 탐색
-	public final TilePosition checkEveryPositionForSupplyDepot() {
+	public final TilePosition checkEveryPositionForSupplyDepot(int number) {
 		TilePosition tempTilePosition = TilePosition.None;
 
 		int nx = 0;
 		int ny = 0;
 
-		for (int i = 0; i <= numberOfSupply; i++) {
+		for (int i = 0; i <= number; i++) {
 			if (i == 0) {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
@@ -976,17 +975,21 @@ public class ConstructionPlaceFinder {
 
 			tempTilePosition = new TilePosition(nx, ny);
 			if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)) {
+				// System.out.println(nx + " " + ny);
 				break;
+			} else {
+				tempTilePosition = TilePosition.None;
+				// 0814 - 최혜진 재귀 대신 for문 내에서 해결하도록 수정
+				if (i == number) {
+					number++;
+				}
 			}
-			tempTilePosition = TilePosition.None;
 		}
 
-		if (tempTilePosition != TilePosition.None || tempTilePosition != null) {
-			return tempTilePosition.getPoint();
-		} else {
-			numberOfSupply++;
-			return checkEveryPositionForSupplyDepot();
-		}
+		reserveTiles(tempTilePosition, UnitType.Terran_Supply_Depot.tileWidth(),
+				UnitType.Terran_Supply_Depot.tileHeight());
+		// 0814 - 최혜진 수정 getPoint 삭제
+		return tempTilePosition;
 
 	}
 

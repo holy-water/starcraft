@@ -250,8 +250,7 @@ public class BuildManager {
 							// desiredPosition 주위에서 찾을 것이다
 							TilePosition desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation,
 									currentItem.seedLocationStrategy);
-							// System.out.println(desiredPosition.getX()+"
-							// "+desiredPosition.getY());
+							// System.out.println(desiredPosition.getX() + " " + desiredPosition.getY());
 							// std::cout << "BuildManager " +
 							// currentItem.metaType.getUnitType().getName().c_str()
 							// + " desiredPosition " + desiredPosition.x + "," +
