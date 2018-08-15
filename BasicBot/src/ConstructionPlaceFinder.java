@@ -269,12 +269,28 @@ public class ConstructionPlaceFinder {
 						// 0723 - 최혜진 수정 좌표 이상 해결
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
 							locationOfBase = 1;
+							// 0815 - 최혜진 수정 가스와 커맨드 사이에는 Supply Depot 건설하지 않도록 reserve 타일 설정
+							reserveTiles(new TilePosition(6, 6), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
+							reserveTiles(new TilePosition(9, 6), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
 							locationOfBase = 2;
+							// 0815 - 최혜진 수정 가스와 커맨드 사이에는 Supply Depot 건설하지 않도록 reserve 타일 설정
+							reserveTiles(new TilePosition(119, 6), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
+							reserveTiles(new TilePosition(116, 6), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
 							locationOfBase = 3;
+							// 0815 - 최혜진 수정 미네랄과 커맨드 사이에는 Supply Depot 건설하지 않도록 reserve 타일 설정
+							reserveTiles(new TilePosition(8, 121), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
 							locationOfBase = 4;
+							// 0815 - 최혜진 수정 미네랄과 커맨드 사이에는 Supply Depot 건설하지 않도록 reserve 타일 설정
+							reserveTiles(new TilePosition(120, 125), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						}
 					} else {
 						// 0726 - 최혜진 추가 투혼 맵 적용
@@ -974,7 +990,9 @@ public class ConstructionPlaceFinder {
 			}
 
 			tempTilePosition = new TilePosition(nx, ny);
-			if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)) {
+			// 0814 - 최혜진 수정 reserved tile인지 검사하는 로직 추가
+			if (MyBotModule.Broodwar.canBuildHere(tempTilePosition, UnitType.Terran_Supply_Depot)
+					&& !isReservedTile(tempTilePosition.getX(), tempTilePosition.getY())) {
 				// System.out.println(nx + " " + ny);
 				break;
 			} else {
