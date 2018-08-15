@@ -590,18 +590,16 @@ public class StrategyManager {
 				}
 			}
 
-			if (self.minerals() > 500 || countMgr.getAcademy() > 0) {
-				if (countMgr.getAcademy() == 0) {
-					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
-							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
-					countMgr.setAcademy();
-				} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
-					if (countMgr.getComsatStation() == 0) {
-						for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
-							BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
-									BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
-							countMgr.setComsatStation();
-						}
+			if (countMgr.getAcademy() == 0) {
+				BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Academy,
+						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
+				countMgr.setAcademy();
+			} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
+				if (countMgr.getComsatStation() == 0) {
+					for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+						countMgr.setComsatStation();
 					}
 				}
 			}
@@ -726,8 +724,7 @@ public class StrategyManager {
 			Position rallyPoint = getRallyPosition().toPosition();
 			// 0627 수정 및 추가
 			if (enemy.getRace() != Race.Terran && barracks != null) {
-				rallyPoint = barracks.isLifted() ? getRallyPosition().toPosition()
-						: informationMgr.getFirstChokePoint(self).getCenter();
+				rallyPoint = barracks.isLifted() ? getRallyPosition().toPosition() : barracks.getPosition();
 			}
 
 			// 0710 추가 - 긴급상황 시 본진 랠리 포인트
@@ -1221,8 +1218,14 @@ public class StrategyManager {
 				// 20 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 3 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 21 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
+				// 4 Marine
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Factory - 0702 최혜진 수정 입구로
 				// 0730 - 최혜진 수정 Factory 건설 전략 적용
@@ -1371,6 +1374,9 @@ public class StrategyManager {
 	}
 
 	private UnitType selectTrainUnitType(Unit unit) {
+		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop) != 0) {
+			return null;
+		}
 		if (airAttackLevel != 0) {
 			if (self.allUnitCount(UnitType.Terran_Goliath) < airAttackLevel * 3) {
 				if (self.minerals() >= 100 && self.gas() >= 50) {
@@ -1378,7 +1384,9 @@ public class StrategyManager {
 				}
 			}
 		}
-		if (unit.getAddon() != null && self.minerals() >= 150 && self.gas() >= 100) {
+		if (unit.getAddon() != null && self.minerals() >= 150 && self.gas() >= 100
+				&& BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) == 0
+				&& BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) == 0) {
 			return UnitType.Terran_Siege_Tank_Tank_Mode;
 		}
 		if (self.minerals() >= 75) {
