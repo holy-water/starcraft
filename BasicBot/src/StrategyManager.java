@@ -31,7 +31,7 @@ public class StrategyManager {
 	private InformationManager informationMgr = InformationManager.Instance();
 	// 0723 추가 - CountManager 추가
 	private CountManager countMgr = CountManager.Instance();
-	
+
 	private DefenseManager defenseMgr = DefenseManager.Instance();
 
 	private Player self = MyBotModule.Broodwar.self();
@@ -165,7 +165,7 @@ public class StrategyManager {
 		// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
 		excuteSpiderMine();
 		// 0816 추가
-		executeDefense();
+		// executeDefense();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -1393,9 +1393,6 @@ public class StrategyManager {
 	}
 
 	private UnitType selectTrainUnitType(Unit unit) {
-		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop) != 0) {
-			return null;
-		}
 		if (airAttackLevel != 0) {
 			if (self.allUnitCount(UnitType.Terran_Goliath) < airAttackLevel * 3) {
 				if (self.minerals() >= 100 && self.gas() >= 50) {

@@ -63,6 +63,14 @@ public class InformationManager {
 	/// 위험지역
 	public DangerousLocation currentDangerousLocation = null;
 
+	// 0817 추가 
+	public Map<Unit, UnitJob> unitJobMap = new HashMap<>();
+	
+	// 0817 추가
+	public enum UnitJob {
+		Mine, Defense, Check
+	}
+
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -331,6 +339,7 @@ public class InformationManager {
 
 		return false;
 	}
+
 	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
 	public boolean isGroundEnemyUnitInSight(Unit targetUnit) {
 		if (targetUnit == null)
@@ -350,6 +359,7 @@ public class InformationManager {
 
 		return false;
 	}
+
 	// 0813 추가 - 지상 유닛
 	public boolean isGroundCombatUnitType(UnitType unitType) {
 		if (enemyRace == Race.Protoss) {
@@ -375,6 +385,7 @@ public class InformationManager {
 		}
 		return false;
 	}
+
 	// 0813 추가 - 공중 유닛
 	public boolean isAirCombatUnitType(UnitType unitType) {
 		if (enemyRace == Race.Protoss) {
@@ -452,7 +463,7 @@ public class InformationManager {
 			tempDangerLocation.setEnemyCnt(forcePoint);
 			tempDangerLocation.setGroundCnt(groundForcePoint);
 			tempDangerLocation.setAirCnt(airForcePoint);
-			
+
 			if (airForcePoint > 0 && groundForcePoint > 0) {
 				tempDangerLocation.setAttackType(DangerousLocation.AttackType.Both);
 			} else if (airForcePoint > 0) {
