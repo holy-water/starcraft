@@ -31,6 +31,8 @@ public class StrategyManager {
 	private InformationManager informationMgr = InformationManager.Instance();
 	// 0723 추가 - CountManager 추가
 	private CountManager countMgr = CountManager.Instance();
+	
+	private DefenseManager defenseMgr = DefenseManager.Instance();
 
 	private Player self = MyBotModule.Broodwar.self();
 
@@ -162,6 +164,8 @@ public class StrategyManager {
 		executeScan();
 		// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
 		excuteSpiderMine();
+		// 0816 추가
+		executeDefense();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -733,6 +737,12 @@ public class StrategyManager {
 				if (unit.getType().isWorker() || unit.getType().isBuilding()) {
 					continue;
 				}
+				// 0816 추가
+				if (informationMgr.currentDangerousLocation != null) {
+					if (defenseMgr.defenseList.contains(unit)) {
+						continue;
+					}
+				}
 				if (unit.getType() == UnitType.Terran_Marine && bunker != null) {
 					if (bunker.isCompleted()) {
 						commandUtil.rightClick(unit, bunker);
@@ -1130,6 +1140,15 @@ public class StrategyManager {
 		if (self.completedUnitCount(UnitType.Terran_Vulture) >= 3) {
 			VultureMineManager.Instance().update();
 		}
+	}
+
+	private void executeDefense() {
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 19) {
+			return;
+		}
+
+		defenseMgr.update();
 	}
 
 	public void setInitialBuildOrder() {
