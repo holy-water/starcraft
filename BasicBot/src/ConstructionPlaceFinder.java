@@ -78,8 +78,8 @@ public class ConstructionPlaceFinder {
 	// 0807 - 최혜진 앞마당 막기 좌표 수정
 	private static int[] expansionXLocaitonForCircuit = { 13, 8, 11, 112, 117, 114, 11, 8, 14, 113, 117, 111 };
 	private static int[] expansionYLocaitonForCircuit = { 30, 32, 33, 30, 32, 33, 94, 95, 97, 94, 95, 97 };
-	private static int[] expansionXLocaitonForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	private static int[] expansionYLocaitonForSpirit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static int[] expansionXLocaitonForSpirit = { 18, 15, 18, 87, 88, 91, 36, 37, 34, 106, 110, 107 };
+	private static int[] expansionYLocaitonForSpirit = { 34, 36, 37, 18, 16, 16, 107, 110, 110, 92, 91, 90 };
 	private static int expansionOrder;
 
 	// 0811 - 최혜진 추가 순서가 아직 정해진지 여부를 판단
@@ -309,12 +309,26 @@ public class ConstructionPlaceFinder {
 						// 0723 - 최혜진 수정 좌표 이상 해결
 						if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
 							locationOfBase = 1;
+							reserveTiles(new TilePosition(6, 3), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
+							reserveTiles(new TilePosition(9, 3), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
 							locationOfBase = 2;
+							reserveTiles(new TilePosition(119, 4), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
+							reserveTiles(new TilePosition(116, 4), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
 							locationOfBase = 3;
+							reserveTiles(new TilePosition(6, 119), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
+							reserveTiles(new TilePosition(9, 119), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
 							locationOfBase = 4;
+							reserveTiles(new TilePosition(119, 121), UnitType.Terran_Supply_Depot.tileWidth(),
+									UnitType.Terran_Supply_Depot.tileHeight());
 						}
 					}
 					isSupplyDepotBuild = true;
@@ -359,21 +373,32 @@ public class ConstructionPlaceFinder {
 					}
 				} else {
 					if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
-						if (expansionOrder == 1) {
-							desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
-									BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition);
-						} else if (expansionOrder == 2) {
+						if (expansionOrder == 0) {
+							int index = expansionOrder + ((locationOfBase - 1) * 3);
+							if (index < 12) {
+								blockx = expansionXLocaitonForSpirit[index];
+								blocky = expansionYLocaitonForSpirit[index];
+								expansionOrder++;
+							}
+						} else if (expansionOrder == 1) {
 							desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
 									BuildOrderItem.SeedPositionStrategy.SecondChokePoint);
+							expansionOrder++;
+							break;
+						} else if (expansionOrder == 2) {
+							desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
+									BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition);
+							expansionOrder++;
+							break;
+
 						}
-						expansionOrder++;
-						break;
-					}
-					int index = expansionOrder + ((locationOfBase - 1) * 3);
-					if (index < 12) {
-						blockx = expansionXLocaitonForSpirit[index];
-						blocky = expansionYLocaitonForSpirit[index];
-						expansionOrder++;
+					} else {
+						int index = expansionOrder + ((locationOfBase - 1) * 3);
+						if (index < 12) {
+							blockx = expansionXLocaitonForSpirit[index];
+							blocky = expansionYLocaitonForSpirit[index];
+							expansionOrder++;
+						}
 					}
 				}
 				tempTilePosition = new TilePosition(blockx, blocky);
