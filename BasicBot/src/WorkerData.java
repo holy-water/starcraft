@@ -36,7 +36,6 @@ public class WorkerData {
 	
 	// 벙커 수리병 숫자 제한
 	public int optimalBunkerRepairCnt = 3;
-	public int currentBunkerRepairCnt = 0;
 
 	/// 일꾼 목록
 	private ArrayList<Unit> workers = new ArrayList<Unit>();
@@ -53,6 +52,7 @@ public class WorkerData {
 	private Map<Integer, Unit> workerMineralMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRefineryMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerRepairMap = new HashMap<Integer, Unit>();
+	private Map<Integer, Unit> workerRepairBunkerMap = new HashMap<Integer, Unit>();
 	private Map<Integer, Unit> workerAttackMap = new HashMap<Integer, Unit>();
 	
 	private CommandUtil commandUtil = new CommandUtil();
@@ -110,6 +110,9 @@ public class WorkerData {
 					}
 					if (workerRepairMap.containsKey(worker.getID())) {
 						workerRepairMap.remove(worker.getID());
+					}
+					if (workerRepairBunkerMap.containsKey(worker.getID())) {
+						workerRepairBunkerMap.remove(worker.getID());
 					}
 					if (workerAttackMap.containsKey(worker.getID())) {
 						workerAttackMap.remove(worker.getID());
@@ -327,14 +330,14 @@ public class WorkerData {
 	    	if (unit.getType() == UnitType.Terran_SCV) {
 	    		
 	    		// set the unit the worker is to repair
-	    		workerRepairMap.put(unit.getID(), jobUnit);
+	    		workerRepairBunkerMap.put(unit.getID(), jobUnit);
 	    		
 	    		// start repairing if it is not repairing 
 	    		// 기존이 이미 수리를 하고 있으면 계속 기존 것을 수리한다
 	    		if (!unit.isRepairing())
 	    		{
 	    			commandUtil.repair(unit, jobUnit);
-	    			currentBunkerRepairCnt++;
+	    			System.out.println("벙커수리병: "+unit.getID()+" / 현재: "+getNumRepairBunkerWorkers()+"개 배정");
 	    		}
 	    	}
 	    }
@@ -438,8 +441,7 @@ public class WorkerData {
 		}
 		else if (previousJob == WorkerJob.RepairBunker)
 		{
-			workerRepairMap.remove(unit.getID()); // C++ : workerRepairMap.erase(unit);
-			currentBunkerRepairCnt--;
+			workerRepairBunkerMap.remove(unit.getID()); // C++ : workerRepairMap.erase(unit);
 		}
 		else if (previousJob == WorkerJob.Attack)
 		{
@@ -499,6 +501,11 @@ public class WorkerData {
 			}
 		}
 		return num;
+	}
+	
+	public final int getNumRepairBunkerWorkers()
+	{
+		return workerRepairBunkerMap.size();
 	}
 
 	public WorkerData.WorkerJob getWorkerJob(Unit unit)
@@ -699,6 +706,17 @@ public class WorkerData {
 		
 		if(workerRepairMap.containsKey(unit.getID())){
 			return workerRepairMap.get(unit.getID());
+		}
+
+		return null;
+	}
+	
+	public Unit getWorkerRepairBunkerUnit(Unit unit)
+	{
+		if (unit == null) { return null; }
+		
+		if(workerRepairBunkerMap.containsKey(unit.getID())){
+			return workerRepairBunkerMap.get(unit.getID());
 		}
 
 		return null;

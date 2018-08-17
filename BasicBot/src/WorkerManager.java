@@ -1,7 +1,5 @@
 import java.util.List;
-import java.util.Map;
 
-import bwapi.Color;
 import bwapi.Position;
 import bwapi.Race;
 import bwapi.TilePosition;
@@ -170,20 +168,29 @@ public class WorkerManager {
 			// if its job is repair
 			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Repair) {
 				Unit repairTargetUnit = workerData.getWorkerRepairUnit(worker);
-
-				// 대상이 파괴되었거나, 수리가 다 끝난 경우, 우리 진영을 벗어난 경우
-				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
-						|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()
-						|| (BWTA.getRegion(repairTargetUnit.getPosition()) != mainBaseLocation.getRegion()
-						&& BWTA.getRegion(repairTargetUnit.getPosition()) != firstExpansionLocation.getRegion())) {
-					workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
-					currentRepairWorker = null;
+				
+				if (repairTargetUnit.getType().isMechanical()) {
+					// 대상이 파괴되었거나, 수리가 다 끝난 경우, 우리 진영을 벗어난 경우
+					if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
+							|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()
+							|| (BWTA.getRegion(repairTargetUnit.getPosition()) != mainBaseLocation.getRegion()
+							&& BWTA.getRegion(repairTargetUnit.getPosition()) != firstExpansionLocation.getRegion())) {
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
+						currentRepairWorker = null;
+					}					
+				} else {
+					// 대상이 파괴되었거나, 수리가 다 끝난 경우
+					if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
+							|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()) {
+						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
+						currentRepairWorker = null;
+					}
 				}
 			}
 		
 			// if its job is repairBunker
 			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RepairBunker) {
-				Unit repairTargetUnit = workerData.getWorkerRepairUnit(worker);
+				Unit repairTargetUnit = workerData.getWorkerRepairBunkerUnit(worker);
 				
 				// 대상이 파괴되었거나, 수리가 다 끝난 경우
 				if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
@@ -433,17 +440,26 @@ public class WorkerManager {
 		if (MyBotModule.Broodwar.self().getRace() != Race.Terran) {
 			return;
 		}
+		
+		if (MyBotModule.Broodwar.self().completedUnitCount(UnitType.Terran_Bunker) == 0) {
+			return;
+		}
+		
+		if (workerData.getNumRepairBunkerWorkers() >= workerData.optimalBunkerRepairCnt) {
+			return;
+		}
 
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
 			if (unit == null) continue;
 			if (unit.getType() == UnitType.Terran_Bunker && unit.isCompleted() == true
 					&& unit.getHitPoints() < unit.getType().maxHitPoints()) {
 				// 벙커의 경우 일꾼이 여러명이 수리하게 설정
-				int currentCt = workerData.currentBunkerRepairCnt;
+				int currentCt = workerData.getNumRepairBunkerWorkers();
 				for (int i=0; i<workerData.optimalBunkerRepairCnt-currentCt; i++) {
 					Unit bunkerRepairWorker = chooseRepairWorkerClosestToBunker(unit.getPosition());
 					setRepairWorker(bunkerRepairWorker, unit);						
 				}
+				break;
 			}
 		}
 	}
@@ -459,7 +475,7 @@ public class WorkerManager {
 		// ////////////////////////////////////////////////
 		// 변수 기본값 수정
 
-		double closestDist = Config.TILE_SIZE * 15;
+		double closestDist = Config.TILE_SIZE * 10;
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
@@ -477,7 +493,7 @@ public class WorkerManager {
 					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack)) {
 				double dist = worker.getDistance(p);
 
-				if (closestWorker == null || dist < closestDist) {
+				if (dist < closestDist) {
 					closestWorker = worker;
 					closestDist = dist;
 				}
