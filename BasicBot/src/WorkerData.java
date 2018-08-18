@@ -337,7 +337,6 @@ public class WorkerData {
 	    		if (!unit.isRepairing())
 	    		{
 	    			commandUtil.repair(unit, jobUnit);
-	    			System.out.println("벙커수리병: "+unit.getID()+" / 현재: "+getNumRepairBunkerWorkers()+"개 배정");
 	    		}
 	    	}
 	    }
