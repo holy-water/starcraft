@@ -290,7 +290,7 @@ public class VultureMineManager {
 							|| vultureForMine.get(vulture) == VultureStatus.RunningAwayFromEnemy.ordinal()) {
 						// 0808 - 최혜진 수정 도착 인식 지점 변경
 						if (vulture.getPosition()
-								.getDistance(StrategyManager.Instance().getRallyPosition().toPosition()) < 100) {
+								.getDistance(StrategyManager.Instance().getRallyPosition().toPosition()) < 200) {
 							vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
 						} else if (vulture.isIdle()) {
 							vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
@@ -303,7 +303,7 @@ public class VultureMineManager {
 
 			}
 			// 0818 - 최혜진 수정 모두 완료된 후에 VultureForMine Map을 다 삭제한다
-			if (vultureForMine.size() == complete) {
+			if (informationMgr.getUnitData(self).unitJobMap.size() == complete) {
 				removeFromVultureForMine();
 			}
 		}
