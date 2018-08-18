@@ -1,5 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
+
+import bwapi.Player;
 import bwapi.Position;
 import bwapi.TechType;
 import bwapi.TilePosition;
@@ -30,6 +32,10 @@ public class VultureMineManager {
 
 	public static int complete;
 
+	private static boolean isExecuted;
+
+	private InformationManager informationMgr = InformationManager.Instance();
+
 	public enum VultureStatus {
 		TargetNotAssigned, /// < 벌쳐 유닛의 target 위치 지정이 안된 상태
 		MovingToEnemyBridge, /// < 적군의 다리 앞으로 마인을 심으러 가는 상태
@@ -41,6 +47,7 @@ public class VultureMineManager {
 	};
 
 	private static VultureMineManager instance = new VultureMineManager();
+	private Player self = MyBotModule.Broodwar.self();
 
 	/// static singleton 객체를 리턴합니다
 	public static VultureMineManager Instance() {
@@ -48,10 +55,12 @@ public class VultureMineManager {
 	}
 
 	public void update() {
-		
-		// VultureUnit 을 지정하고, VultureUnit 의 이동을 컨트롤함.
-		assignVultureIfNeeded();
-		moveVultureUnit();
+
+		if (isExecuted == false) {
+			// VultureUnit 을 지정하고, VultureUnit 의 이동을 컨트롤함.
+			assignVultureIfNeeded();
+			moveVultureUnit();
+		}
 	}
 
 	private void assignVultureIfNeeded() {
@@ -64,12 +73,15 @@ public class VultureMineManager {
 					if (vultureForMine.containsKey(unit)) {
 						continue;
 					}
-					if (unit.isAttacking() == false && unit.isMoving() == false) {
+					if (unit.isAttacking() == false && unit.isMoving() == false
+							&& informationMgr.getUnitData(self).unitJobMap.containsKey(unit) == false) {
 						vultureForMine.put(unit, VultureStatus.TargetNotAssigned.ordinal());
+						informationMgr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Mine);
 					}
 				}
 			}
 		}
+
 	}
 
 	private void moveVultureUnit() {
@@ -270,7 +282,8 @@ public class VultureMineManager {
 								vultureForMine.replace(vulture, VultureStatus.ComingBacktoMainBaseLocation.ordinal());
 							}
 						}
-					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
+					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()
+							|| vultureForMine.get(vulture) == VultureStatus.RunningAwayFromEnemy.ordinal()) {
 						// 0808 - 최혜진 수정 도착 인식 지점 변경
 						if (vulture.getPosition()
 								.getDistance(StrategyManager.Instance().getRallyPosition().toPosition()) < 100) {
@@ -278,18 +291,32 @@ public class VultureMineManager {
 						} else if (vulture.isIdle()) {
 							vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
 						}
-
 					} else if (vultureForMine.get(vulture) == VultureStatus.MissionComplete.ordinal()) {
 						complete++;
 					}
 
 				}
 
-				// if (vultureForMine.size() == complete) {
-				// vultureForMine.clear();
-				// }
+				// 0818 - 최혜진 수정 모두 완료된 후에 VultureForMine Map을 다 삭제한다
+				if (vultureForMine.size() == complete) {
+					removeFromVultureForMine();
+				}
 			}
 		}
+	}
+
+	public void removeFromVultureForMine(Unit unit) {
+		vultureForMine.remove(unit);
+	}
+
+	private void removeFromVultureForMine() {
+		for (Unit unit : informationMgr.getUnitData(self).unitJobMap.keySet()) {
+			if (informationMgr.getUnitData(self).unitJobMap.get(unit) == UnitData.UnitJob.Mine) {
+				informationMgr.getUnitData(self).unitJobMap.remove(unit);
+			}
+		}
+		vultureForMine.clear();
+		isExecuted = true;
 	}
 
 	// 0805 - 최혜진 추가 Vulture가 Sprider Mine을 심을 위치를 찾아주는 메서드
@@ -332,8 +359,9 @@ public class VultureMineManager {
 	}
 
 	// 0804 - 최혜진 추가 원하는 위치에 해당 vulture가 Spider Mine을 심는 메서드
-	private void useSpiderMineTech(Unit vulture, Position position) {
-		vulture.useTech(TechType.Spider_Mines, minePlacementPosition);
+	// 0818 - 최혜진 수정 public으로 바꾸고 position 수정
+	public void useSpiderMineTech(Unit vulture, Position position) {
+		vulture.useTech(TechType.Spider_Mines, position);
 	}
 
 }
