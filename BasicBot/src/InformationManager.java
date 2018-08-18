@@ -344,8 +344,10 @@ public class InformationManager {
 		for (Unit unit : list) {
 			if (unit == null)
 				continue;
-			if (unit.getPlayer() == enemyPlayer && isGroundCombatUnitType(unit.getType())) {
-				return true;
+			if (unit.getPlayer() == enemyPlayer) {
+				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+					return true;
+				}
 			}
 		}
 

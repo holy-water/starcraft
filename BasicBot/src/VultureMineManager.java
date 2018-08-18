@@ -303,7 +303,7 @@ public class VultureMineManager {
 
 			}
 			// 0818 - 최혜진 수정 모두 완료된 후에 VultureForMine Map을 다 삭제한다
-			if (informationMgr.getUnitData(self).unitJobMap.size() == complete) {
+			if (complete > 4) {
 				removeFromVultureForMine();
 			}
 		}
@@ -314,7 +314,6 @@ public class VultureMineManager {
 	}
 
 	private void removeFromVultureForMine() {
-
 		for (Unit unit : vultureForMine.keySet()) {
 			informationMgr.getUnitData(self).unitJobMap.remove(unit);
 		}
