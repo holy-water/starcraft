@@ -175,8 +175,8 @@ public class UnitData {
 			VultureMineManager.Instance().vultureForMine.remove(unit);
 		}
 		
-		if (MultipleCheckManager.Instance().checkListMap.containsKey(unit.getID())) {
-			MultipleCheckManager.Instance().checkListMap.remove(unit.getID());
+		if (MultipleCheckManager.Instance().vultureMultiCheckList.contains(unit)) {
+			MultipleCheckManager.Instance().vultureMultiCheckList.remove(unit);
 		}
 
 		mineralsLost += unit.getType().mineralPrice();

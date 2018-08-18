@@ -1,10 +1,8 @@
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwta.BWTA;
 import bwta.BaseLocation;
 
 public class MultipleExpansionManager {
@@ -26,7 +24,7 @@ public class MultipleExpansionManager {
 	// 0811 - 최혜진 추가 순서가 아직 정해진지 여부를 판단
 	private static boolean isMultipleExpansionOrderDecided;
 	private static Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
-	public static Map<Integer, BaseLocation> orderOfBaseLocations = new HashMap<>();
+	public Map<Integer, BaseLocation> orderOfBaseLocations = new HashMap<>();
 	private static int multipleExpansionOrder;
 
 	private static Map<BaseLocation, Unit> scoutSCV = new HashMap<>();
@@ -263,7 +261,7 @@ public class MultipleExpansionManager {
 						currentScoutTargetBaseLocation.getTilePosition(), UnitType.Terran_Command_Center));
 				WorkerManager.Instance().setIdleWorker(SCV);
 				scoutSCV.remove(baseLocation);
-				scoutSCV.remove(SCV);
+				statusSCV.remove(SCV);
 				// 적이 점령하지 않은 경우
 				if (MyBotModule.Broodwar.canBuildHere(currentScoutTargetBaseLocation.getTilePosition(),
 						UnitType.Terran_Command_Center)) {
