@@ -74,6 +74,9 @@ public class VultureMineManager {
 					if (vultureForMine.containsKey(unit)) {
 						continue;
 					}
+					if (vultureForMine.size() > 6) {
+						break;
+					}
 					if (unit.isAttacking() == false && unit.isMoving() == false
 							&& informationMgr.getUnitData(self).unitJobMap.containsKey(unit) == false) {
 						vultureForMine.put(unit, VultureStatus.TargetNotAssigned.ordinal());
