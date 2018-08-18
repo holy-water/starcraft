@@ -31,6 +31,14 @@ public class UnitData {
 	/// JAVA 에서는 UnitType 의 열거형 값이 부재하므로 Unit.getType() 값을 Key 로 사용함
 	Map<String,Integer> numUnits = new HashMap<String,Integer>();
 	
+	/// Unit 역할 부여
+	public Map<Unit, UnitJob> unitJobMap = new HashMap<>();
+	
+	// 역할의 종류
+	public enum UnitJob {
+		Mine, Defense, Check
+	}
+	
 	/// 사망한 유닛을 생산하는데 소요되었던 Mineral 의 누적값 (얼마나 손해를 보았는가 계산하기 위함임)
 	private int mineralsLost = 0;
 	/// 사망한 유닛을 생산하는데 소요되었던 Gas 의 누적값 (얼마나 손해를 보았는가 계산하기 위함임)
@@ -161,6 +169,10 @@ public class UnitData {
 		
 		if (scanObjList.contains(unit)) {
 			scanObjList.remove(unit);
+		}
+		
+		if (unitJobMap.containsKey(unit)) {
+			unitJobMap.remove(unit);
 		}
 		
 		mineralsLost += unit.getType().mineralPrice();

@@ -63,14 +63,6 @@ public class InformationManager {
 	/// 위험지역
 	public DangerousLocation currentDangerousLocation = null;
 
-	// 0817 추가 
-	public Map<Unit, UnitJob> unitJobMap = new HashMap<>();
-	
-	// 0817 추가
-	public enum UnitJob {
-		Mine, Defense, Check
-	}
-
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
