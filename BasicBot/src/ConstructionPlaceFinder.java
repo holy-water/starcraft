@@ -66,8 +66,8 @@ public class ConstructionPlaceFinder {
 	// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
 	// 0806 - 최혜진 수정 투혼 맵 Factory 좌표 입구와 가깝게 수정
 	// 0807 - 최혜진 수정 서킷 맵 Factory y 좌표 수정
-	private static int[] FactoryXLocationForCircuit = { 0, 7, 11, 15, 122, 117, 113, 109, 0 };
-	private static int[] FactoryYLocationForCircuit = { 20, 16, 105, 109, 0 };
+	private static int[] FactoryXLocationForCircuit = { 0, 7, 11, 15, 122, 117, 113, 109 };
+	private static int[] FactoryYLocationForCircuit = { 20, 16, 105, 109 };
 	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 109, 116, 120, 124, 13, 8, 4, 0, 122, 117, 113,
 			109 };
 	private static int[] FactoryYLocationForSpirit = { 24, 20, 14, 18, 108, 104, 103, 107 };
@@ -90,8 +90,6 @@ public class ConstructionPlaceFinder {
 
 	// 0814 - 최혜진 추가
 	public static Queue<BaseLocation> multipleExpansionBuildQueue = new LinkedList<>();
-
-	private static boolean isFirstMachineShopAdded;
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
@@ -588,73 +586,54 @@ public class ConstructionPlaceFinder {
 			case FactoryInMainBaseLocation:
 				int fx = 0;
 				int fy = 0;
+
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[0];
-								fy = FactoryYLocationForCircuit[0];
-							} else {
-								fx = FactoryXLocationForCircuit[0];
-								fy = FactoryYLocationForCircuit[1];
-							}
+						if (numberOfFactoryBuilt == 0) {
+							fx = 0;
+							fy = 24;
 						} else {
-							int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = changedNumberOfFactoryBuilt / 2;
 							if (numberOfFactoryBuiltInt < 8) {
 								fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForCircuit[numberOfFactoryBuilt % 2];
+								fy = FactoryYLocationForCircuit[changedNumberOfFactoryBuilt % 2];
 							}
 						}
 					} else if (locationOfBase == 2) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[4];
-								fy = FactoryYLocationForCircuit[0];
-							} else {
-								fx = FactoryXLocationForCircuit[4];
-								fy = FactoryYLocationForCircuit[1];
-							}
+						if (numberOfFactoryBuilt == 0) {
+							fx = 122;
+							fy = 24;
 						} else {
-							int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = (changedNumberOfFactoryBuilt / 2) + 4;
 							if (numberOfFactoryBuiltInt < 8) {
 								fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForCircuit[numberOfFactoryBuilt % 2];
+								fy = FactoryYLocationForCircuit[changedNumberOfFactoryBuilt % 2];
 							}
 						}
 					} else if (locationOfBase == 3) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[0];
-								fy = FactoryYLocationForCircuit[2];
-							} else {
-								fx = FactoryXLocationForCircuit[0];
-								fy = FactoryYLocationForCircuit[3];
-							}
+						if (numberOfFactoryBuilt == 0) {
+							fx = 0;
+							fy = 101;
 						} else {
-							int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = changedNumberOfFactoryBuilt / 2;
 							if (numberOfFactoryBuiltInt < 8) {
 								fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForCircuit[(numberOfFactoryBuilt % 2) + 2];
+								fy = FactoryYLocationForCircuit[(changedNumberOfFactoryBuilt % 2) + 2];
 							}
 						}
 					} else if (locationOfBase == 4) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[4];
-								fy = FactoryYLocationForCircuit[2];
-							} else {
-								fx = FactoryXLocationForCircuit[4];
-								fy = FactoryYLocationForCircuit[3];
-							}
+						if (numberOfFactoryBuilt == 0) {
+							fx = 122;
+							fy = 101;
 						} else {
-							int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = (changedNumberOfFactoryBuilt / 2) + 4;
 							if (numberOfFactoryBuiltInt < 8) {
 								fx = FactoryXLocationForCircuit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForCircuit[(numberOfFactoryBuilt % 2) + 2];
+								fy = FactoryYLocationForCircuit[(changedNumberOfFactoryBuilt % 2) + 2];
 							}
 						}
 					}
@@ -662,72 +641,28 @@ public class ConstructionPlaceFinder {
 					// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
 					// 0806 - 최혜진 수정 투혼 맵 Factory 입구와 가깝게 좌표 수정
 					if (locationOfBase == 1) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[0];
-								fy = FactoryYLocationForCircuit[0];
-							} else {
-								fx = FactoryXLocationForCircuit[0];
-								fy = FactoryYLocationForCircuit[1];
-							}
-						} else {
-							int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
-							if (numberOfFactoryBuiltInt < 16) {
-								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
-							}
+						int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
+						if (numberOfFactoryBuiltInt < 16) {
+							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+							fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
 						}
 					} else if (locationOfBase == 2) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[4];
-								fy = FactoryYLocationForCircuit[2];
-							} else {
-								fx = FactoryXLocationForCircuit[4];
-								fy = FactoryYLocationForCircuit[3];
-							}
-						} else {
-							int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
-							if (numberOfFactoryBuiltInt < 16) {
-								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
-							}
+						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
+						if (numberOfFactoryBuiltInt < 16) {
+							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
 						}
 					} else if (locationOfBase == 3) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[8];
-								fy = FactoryYLocationForCircuit[4];
-							} else {
-								fx = FactoryXLocationForCircuit[8];
-								fy = FactoryYLocationForCircuit[5];
-							}
-						} else {
-							int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 8;
-							if (numberOfFactoryBuiltInt < 16) {
-								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 4];
-							}
+						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 8;
+						if (numberOfFactoryBuiltInt < 16) {
+							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 4];
 						}
 					} else if (locationOfBase == 4) {
-						if (buildingType == UnitType.Terran_Machine_Shop) {
-							if (isFirstMachineShopAdded == false) {
-								isFirstMachineShopAdded = true;
-								fx = FactoryXLocationForCircuit[12];
-								fy = FactoryYLocationForCircuit[6];
-							} else {
-								fx = FactoryXLocationForCircuit[12];
-								fy = FactoryYLocationForCircuit[7];
-							}
-						} else {
-							int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 12;
-							if (numberOfFactoryBuiltInt < 16) {
-								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-								fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 6];
-							}
+						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 12;
+						if (numberOfFactoryBuiltInt < 16) {
+							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 6];
 						}
 					}
 				}
