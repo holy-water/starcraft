@@ -26,7 +26,7 @@ public class MultipleExpansionManager {
 	// 0811 - 최혜진 추가 순서가 아직 정해진지 여부를 판단
 	private static boolean isMultipleExpansionOrderDecided;
 	private static Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
-	private static TreeMap<Integer, BaseLocation> orderOfBaseLocations = new TreeMap<>();
+	public static TreeMap<Integer, BaseLocation> orderOfBaseLocations = new TreeMap<>();
 	private static int multipleExpansionOrder;
 
 	private static Map<BaseLocation, Unit> scoutSCV = new HashMap<>();
