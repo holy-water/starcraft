@@ -28,23 +28,31 @@ public class DefenseManager {
 		DangerousLocation curDangerLoca = infoMngr.currentDangerousLocation;
 		if (curDangerLoca != null) {
 			executeDefense(curDangerLoca);
+		} else {
+			// 병력 역할 해제
+			deactivateDefense();
 		}
 	}
 
 	// 방어병력 투입
 	public void executeDefense(DangerousLocation curDangerLoca) {
 
-		BaseLocation dangerLocation = curDangerLoca.getBaseLocation(); // 위험지역의
-																		// 위치
+		BaseLocation dangerLocation = curDangerLoca.getBaseLocation(); // 위험지역 위치
+
 		int groundCnt = curDangerLoca.getGroundCnt(); // 적의 지상 병력
 		int airCnt = curDangerLoca.getAirCnt(); // 적의 공중 병력
 
 		// 리스트 초기화
-		defenseList = new ArrayList<>();
-
-		// 유닛 배정
-		assignGroundCombatUnit(groundCnt);
-		assignAirCombatUnit(airCnt);
+		defenseList.clear();
+		
+		if (curDangerLoca.getEnemyCnt() >= 6) {
+			// 위험 지역에 병력 모두 투입
+			assignAllCombatUnit();
+		} else {
+			// 유닛 배정
+			assignGroundCombatUnit(groundCnt);
+			assignAirCombatUnit(airCnt);			
+		}
 
 		// 방어병력 위험지역으로 이동
 		if (defenseList.size() > 0) {
@@ -54,6 +62,21 @@ public class DefenseManager {
 		}
 	}
 
+	// 총공격
+	private void assignAllCombatUnit() {
+	
+		List<Unit> unitList = self.getUnits();
+		for (Unit unit : unitList) {
+			if (unit == null || !unit.exists() || !unit.isCompleted()) {
+				continue;				
+			}
+			if (infoMngr.isCombatUnitType(unit.getType())) {
+				defenseList.add(unit);
+				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
+			}
+		}
+	}
+	
 	// 지상공격시 - 탱크 + 벌쳐
 	private void assignGroundCombatUnit(int enemyCnt) {
 
@@ -75,23 +98,33 @@ public class DefenseManager {
 		List<Unit> unitList = self.getUnits();
 
 		for (Unit unit : unitList) {
-			if (unit == null || !unit.exists() || !unit.isCompleted())
-				continue;
+			// 유닛이 정상 유닛이고 임무가 없는 상태인 경우에만 선택
+			if (unit == null || !unit.exists() || !unit.isCompleted()
+					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+				continue;				
+			}
+			
 			if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-				if (tankCnt == enemyCnt / 2)
+				if (tankCnt == enemyCnt / 2) {
 					continue;
+				}
 				defenseList.add(unit);
+				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				tankCnt++;
 			} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-				if (tankCnt == enemyCnt / 2)
+				if (tankCnt == enemyCnt / 2) {
 					continue;
+				}
 				unit.unsiege();
 				defenseList.add(unit);
+				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				tankCnt++;
 			} else if (unit.getType() == UnitType.Terran_Vulture) {
-				if (vultureCnt == enemyCnt / 2)
-					continue;
+				if (vultureCnt == enemyCnt / 2) {
+					continue;					
+				}
 				defenseList.add(unit);
+				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				vultureCnt++;
 			}
 		}
@@ -99,10 +132,13 @@ public class DefenseManager {
 		// 탱크가 부족한 만큼 벌처로 보완
 		if (tankCnt < enemyCnt / 2 && vultureCnt == enemyCnt / 2) {
 			for (Unit unit : unitList) {
-				if (unit == null || !unit.exists() || !unit.isCompleted())
-					continue;
+				if (unit == null || !unit.exists() || !unit.isCompleted()
+						|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+					continue;					
+				}
 				if (unit.getType() == UnitType.Terran_Vulture) {
 					defenseList.add(unit);
+					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					vultureCnt++;
 					if (vultureCnt + tankCnt == enemyCnt)
 						break;
@@ -112,21 +148,43 @@ public class DefenseManager {
 		// 벌처가 부족한 만큼 탱크로 보완
 		else if (tankCnt == enemyCnt / 2 && vultureCnt < enemyCnt / 2) {
 			for (Unit unit : unitList) {
-				if (unit == null || !unit.exists() || !unit.isCompleted())
-					continue;
+				if (unit == null || !unit.exists() || !unit.isCompleted()
+					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+					continue;					
+				}
 				if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 					defenseList.add(unit);
+					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					tankCnt++;
 					if (tankCnt + vultureCnt == enemyCnt)
 						break;
 				} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
 					unit.unsiege();
 					defenseList.add(unit);
+					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					tankCnt++;
 					if (tankCnt + vultureCnt == enemyCnt)
 						break;
 				}
 			}
+		}
+		
+		// 그래도 부족한 경우 Mine, Check 임무 가지고 있는 벌처로 보완
+		if (vultureCnt + tankCnt < enemyCnt) {
+			for (Unit unit : infoMngr.getUnitData(self).unitJobMap.keySet()) {
+				if (unit == null || !unit.exists() || !unit.isCompleted()
+						|| infoMngr.getUnitData(self).unitJobMap.get(unit) == UnitData.UnitJob.Defense) {
+					continue;					
+				}
+				if (unit.getType() == UnitType.Terran_Vulture) {
+					defenseList.add(unit);
+					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
+					VultureMineManager.Instance().removeFromVultureForMine(unit);
+					vultureCnt++;
+					if (vultureCnt + tankCnt == enemyCnt)
+						break;
+				}
+			}			
 		}
 	}
 
@@ -145,15 +203,33 @@ public class DefenseManager {
 		List<Unit> unitList = self.getUnits();
 
 		for (Unit unit : unitList) {
-			if (unit == null || !unit.exists() || !unit.isCompleted())
-				continue;
+			if (unit == null || !unit.exists() || !unit.isCompleted()
+					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+				continue;				
+			}
 			if (unit.getType() == UnitType.Terran_Goliath) {
 				defenseList.add(unit);
+				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				goliathCnt++;
 				if (goliathCnt == enemyCnt) {
 					break;
 				}
 			}
 		}
+	}
+	
+	// 방어병력 공격모드 해제
+	private void deactivateDefense() {
+		if (defenseList == null || defenseList.isEmpty()) {
+			return;
+		}
+		
+		Unit defenseUnit;
+		for (int i=0; i<defenseList.size(); i++) {
+			defenseUnit = defenseList.get(i);
+			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
+		}
+		
+		defenseList.clear();
 	}
 }
