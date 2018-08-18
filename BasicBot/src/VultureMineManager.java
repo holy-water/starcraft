@@ -298,10 +298,10 @@ public class VultureMineManager {
 
 				}
 
-				// 0818 - 최혜진 수정 모두 완료된 후에 VultureForMine Map을 다 삭제한다
-				if (vultureForMine.size() == complete) {
-					removeFromVultureForMine();
-				}
+			}
+			// 0818 - 최혜진 수정 모두 완료된 후에 VultureForMine Map을 다 삭제한다
+			if (vultureForMine.size() == complete) {
+				removeFromVultureForMine();
 			}
 		}
 	}
