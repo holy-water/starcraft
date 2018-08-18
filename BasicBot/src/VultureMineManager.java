@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import bwapi.Player;
@@ -310,10 +311,9 @@ public class VultureMineManager {
 	}
 
 	private void removeFromVultureForMine() {
-		for (Unit unit : informationMgr.getUnitData(self).unitJobMap.keySet()) {
-			if (informationMgr.getUnitData(self).unitJobMap.get(unit) == UnitData.UnitJob.Mine) {
-				informationMgr.getUnitData(self).unitJobMap.remove(unit);
-			}
+
+		for (Unit unit : vultureForMine.keySet()) {
+			informationMgr.getUnitData(self).unitJobMap.remove(unit);
 		}
 		vultureForMine.clear();
 		isExecuted = true;
