@@ -101,8 +101,8 @@ public class StrategyManager {
 	}
 
 	public StrategyManager() {
-		Arrays.fill(lastHitPoints, 1000);
 		mainDistance = 2500;
+		Arrays.fill(lastHitPoints, 1000);
 		isFullScaleAttackStarted = false;
 		isInitialBuildOrderFinished = false;
 	}
@@ -795,7 +795,11 @@ public class StrategyManager {
 
 		{
 			// 병력이 일정 수 이하이면 공격 모드 해제
-
+			if (isNotFullScaleAttackStart(enemy.getRace())) {
+				isFullScaleAttackStarted = false;
+				mainDistance = 2500;
+				return;
+			}
 			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
 				// 공격 대상 지역 결정
@@ -883,11 +887,22 @@ public class StrategyManager {
 
 	private boolean isFullScaleAttackStart(Race race) {
 		if (race == Race.Protoss) {
-			return self.supplyUsed() > 350;
+			return self.supplyUsed() > 360;
 		} else if (race == Race.Terran) {
 			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5;
 		} else {
 			return self.supplyUsed() > 300;
+		}
+	}
+
+	private boolean isNotFullScaleAttackStart(Race race) {
+		if (race == Race.Protoss) {
+			return self.supplyUsed() < 200;
+		} else if (race == Race.Terran) {
+			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode)
+					+ self.allUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) < 5;
+		} else {
+			return self.supplyUsed() < 160;
 		}
 	}
 
@@ -1405,16 +1420,20 @@ public class StrategyManager {
 		}
 		if (airAttackLevel != 0) {
 			if (self.allUnitCount(UnitType.Terran_Goliath) < airAttackLevel * 3) {
-				if (self.minerals() >= 100 && self.gas() >= 50) {
+				if (self.minerals() > 100 && self.gas() >= 50) {
 					return UnitType.Terran_Goliath;
 				}
 			}
 		}
-		if (unit.getAddon() != null && self.minerals() >= 150 && self.gas() >= 100) {
-			return UnitType.Terran_Siege_Tank_Tank_Mode;
+		if (unit.getAddon() != null) {
+			if (self.minerals() >= 150 && self.gas() >= 100) {
+				return UnitType.Terran_Siege_Tank_Tank_Mode;
+			} else if (self.gas() >= 300) {
+				return null;
+			}
 		}
-		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop) == 0 && self.minerals() >= 100
-				&& self.gas() < 300) {
+		if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop) == 0
+				&& self.minerals() >= 100) {
 			return UnitType.Terran_Vulture;
 		}
 		return null;
