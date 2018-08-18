@@ -60,56 +60,6 @@ public class WorkerManager {
 
 	public void updateWorkerStatus() {
 		
-		// 위험도 체크 후 비상일 경우 scv Job > Attack 전환
-		// 본진에 적군 쳐들어온 경우
-		// if 드랍 -> scv 전체 튄다
-		// else -> scv 싸운다
-		/*Map<String, Unit> reasonMap;
-		if (infoMngr.isEnemyUnitInRadius(mainBaseLocation.getPosition(), 10)) {
-			reasonMap = infoMngr.getReasonForEnemysAppearance();
-			if (reasonMap.containsKey("Drop")) {
-				for (Unit worker : workerData.getWorkers()) {
-					if (worker.isCompleted()) {
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, firstExpansionLocation.getStaticMinerals().get(0));
-					}
-				}
-				return;
-			} else if (reasonMap.containsKey("Attack")) {
-				if (reasonMap.get("Attack") != null) {
-					Unit targetUnit = reasonMap.get("Attack");
-					// 공격 대상 존재 - 건물 - 한 놈만 뽑아서 보내고 싶다
-					if (targetUnit.getType().isBuilding()) {
-						Unit worker = getClosestAttackWorkerTo(targetUnit.getPosition());
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));						
-					}
-					// 공격 대상 존재 - 일꾼 - 공격 당한 놈이 복수한다
-					else {
-						workerData.setWorkerJob(targetUnit.getOrderTarget(), WorkerData.WorkerJob.Attack, reasonMap.get("Attack"));
-					}
-					return;
-				}
-			}
-		}
-		
-		Map<String, Unit> reasonMapForMulti;
-		if (infoMngr.isEnemyUnitInRadius(firstExpansionLocation.getPosition(), 10)) {
-			reasonMapForMulti = infoMngr.getReasonForEnemysAppearanceAtMulti();
-			if (reasonMapForMulti.containsKey("Attack")) {
-				Unit targetUnit = reasonMapForMulti.get("Attack");
-				if (targetUnit != null) {
-					workerData.setWorkerJob(targetUnit.getOrderTarget(), WorkerData.WorkerJob.Attack, reasonMapForMulti.get("Attack"));
-					return;
-				}
-			} else if (reasonMapForMulti.containsKey("RunAway")) {
-				for (Unit worker : workerData.getWorkers()) {
-					if (worker.isCompleted() && BWTA.getRegion(worker.getPosition()) == firstExpansionLocation.getRegion()) {
-						workerData.setWorkerJob(worker, WorkerData.WorkerJob.RunAway, mainBaseLocation.getStaticMinerals().get(0));
-					}
-				}
-				return;
-			}
-		}*/
-		
 		// for each of our Workers
 		for (Unit worker : workerData.getWorkers()) {
 			if (worker == null || !worker.isCompleted()) {
@@ -170,14 +120,26 @@ public class WorkerManager {
 				Unit repairTargetUnit = workerData.getWorkerRepairUnit(worker);
 				
 				if (repairTargetUnit.getType().isMechanical()) {
-					// 대상이 파괴되었거나, 수리가 다 끝난 경우, 우리 진영을 벗어난 경우
+					// 대상이 파괴되었거나, 수리가 다 끝난 경우
 					if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
-							|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()
-							|| (BWTA.getRegion(repairTargetUnit.getPosition()) != mainBaseLocation.getRegion()
-							&& BWTA.getRegion(repairTargetUnit.getPosition()) != firstExpansionLocation.getRegion())) {
+							|| repairTargetUnit.getHitPoints() == repairTargetUnit.getType().maxHitPoints()) {
 						workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
 						currentRepairWorker = null;
-					}					
+					}
+					// 우리 진영을 벗어난 경우
+					else {
+						boolean isInBaseLoca = false;
+						for(BaseLocation baseLoca: occupiedBaseLocations) {
+							if (baseLoca.getRegion() == BWTA.getRegion(repairTargetUnit.getPosition())) {
+								isInBaseLoca = true;
+								break;
+							}
+						}
+						if (!isInBaseLoca) {
+							workerData.setWorkerJob(worker, WorkerData.WorkerJob.Idle, (Unit) null);
+							currentRepairWorker = null;
+						}
+					}
 				} else {
 					// 대상이 파괴되었거나, 수리가 다 끝난 경우
 					if (repairTargetUnit == null || !repairTargetUnit.exists() || repairTargetUnit.getHitPoints() <= 0
