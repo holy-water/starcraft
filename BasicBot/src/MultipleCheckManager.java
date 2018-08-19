@@ -121,6 +121,7 @@ public class MultipleCheckManager {
 	
 	// 벌처의 견제모드 해제
 	private void deactivateCheckMode() {
+		
 		if (vultureMultiCheckList == null || vultureMultiCheckList.isEmpty()) {
 			return;
 		}
@@ -131,7 +132,7 @@ public class MultipleCheckManager {
 			}
 			infoMngr.getUnitData(self).unitJobMap.remove(unit);
 		}
-
+		
 		vultureMultiCheckList.clear();
 	}
 	

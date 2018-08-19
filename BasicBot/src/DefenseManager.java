@@ -10,7 +10,6 @@ public class DefenseManager {
 
 	private static DefenseManager instance = new DefenseManager();
 
-	/// static singleton 객체를 리턴합니다
 	public static DefenseManager Instance() {
 		return instance;
 	}
