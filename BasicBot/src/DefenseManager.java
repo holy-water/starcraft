@@ -180,6 +180,7 @@ public class DefenseManager {
 					defenseList.add(unit);
 					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					VultureMineManager.Instance().removeFromVultureForMine(unit);
+					MultipleCheckManager.Instance().deactivateCheckMode(unit);
 					vultureCnt++;
 					if (vultureCnt + tankCnt == enemyCnt)
 						break;
