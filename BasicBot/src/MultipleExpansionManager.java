@@ -1,9 +1,11 @@
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwta.BaseLocation;
+import bwta.Chokepoint;
 
 public class MultipleExpansionManager {
 
@@ -31,7 +33,7 @@ public class MultipleExpansionManager {
 	private static Map<Unit, Integer> statusSCV = new HashMap<>();
 
 	public enum ScoutStatus {
-		Assign, MovingToBaseLocation
+		Assign, MovingToBaseLocation, Arrived
 
 	};
 
@@ -46,14 +48,37 @@ public class MultipleExpansionManager {
 	public void initialUpdate() {
 
 		int locationOfBase = ConstructionPlaceFinder.locationOfBase;
-		int enemyLocation = VultureMineManager.Instance().enemyLocationOfBase;
+
+		int enemyLocationOfBase = 0;
+
+		BaseLocation enemyBaseLocation = InformationManager.Instance()
+				.getMainBaseLocation(MyBotModule.Broodwar.enemy());
+		BaseLocation enemyFirstExpansion = InformationManager.Instance()
+				.getFirstExpansionLocation(MyBotModule.Broodwar.enemy());
+		Chokepoint enemySecondChockPoint = InformationManager.Instance()
+				.getSecondChokePoint(MyBotModule.Broodwar.enemy());
+		// 0806 - 최혜진 추가 적 본진 모를때 로직 수행 불가
+		if (enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
+			return;
+		}
+		int dx = enemyBaseLocation.getX() - enemySecondChockPoint.getCenter().getX();
+		int dy = enemyBaseLocation.getTilePosition().getY() - enemyFirstExpansion.getTilePosition().getY();
+		if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
+			enemyLocationOfBase = 1;
+		} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
+			enemyLocationOfBase = 2;
+		} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
+			enemyLocationOfBase = 3;
+		} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
+			enemyLocationOfBase = 4;
+		}
+
 		numberOfBaseLocations = StrategyManager.Instance().numberOfBaseLocations;
 		// 본진 위치, 적 본진 위치를 알고, 아직 순서가 정해지지 않은 경우 순서를 정한다
-		if (locationOfBase != 0 && enemyLocation != 0 && isMultipleExpansionOrderDecided == false) {
-
+		if (locationOfBase != 0 && enemyLocationOfBase != 0 && isMultipleExpansionOrderDecided == false) {
 			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 				if (locationOfBase == 1) {
-					if (enemyLocation == 2) {
+					if (enemyLocationOfBase == 2) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
@@ -65,7 +90,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocation == 3) {
+					} else if (enemyLocationOfBase == 3) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
@@ -77,7 +102,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(13));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(12));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(7));
-					} else if (enemyLocation == 4) {
+					} else if (enemyLocationOfBase == 4) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
@@ -91,7 +116,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
 					}
 				} else if (locationOfBase == 2) {
-					if (enemyLocation == 1) {
+					if (enemyLocationOfBase == 1) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(14));
@@ -103,7 +128,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(9));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocation == 3) {
+					} else if (enemyLocationOfBase == 3) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
@@ -115,7 +140,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
-					} else if (enemyLocation == 4) {
+					} else if (enemyLocationOfBase == 4) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
@@ -129,7 +154,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
 					}
 				} else if (locationOfBase == 3) {
-					if (enemyLocation == 1) {
+					if (enemyLocationOfBase == 1) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(14));
@@ -141,7 +166,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocation == 2) {
+					} else if (enemyLocationOfBase == 2) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
@@ -153,7 +178,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocation == 4) {
+					} else if (enemyLocationOfBase == 4) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
@@ -167,7 +192,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
 					}
 				} else if (locationOfBase == 4) {
-					if (enemyLocation == 1) {
+					if (enemyLocationOfBase == 1) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
@@ -179,7 +204,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocation == 2) {
+					} else if (enemyLocationOfBase == 2) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
@@ -191,7 +216,7 @@ public class MultipleExpansionManager {
 						orderOfBaseLocations.put(9, numberOfBaseLocations.get(2));
 						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocation == 3) {
+					} else if (enemyLocationOfBase == 3) {
 						orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
 						orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
 						orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
@@ -219,9 +244,9 @@ public class MultipleExpansionManager {
 	public void scountBaseLocation(BaseLocation baseLocation) {
 		// 정찰 SCV 선정
 		Unit SCV = assignScoutIfNeeded(baseLocation);
-		if (SCV != null && SCV.exists() == true && SCV.getHitPoints() > 0) {
-			System.out.println("SCV " + SCV.getID());
-		}
+		// if (SCV != null && SCV.exists() == true && SCV.getHitPoints() > 0) {
+		// System.out.println("SCV " + SCV.getID());
+		// }
 		moveScoutUnit(baseLocation, SCV);
 	}
 
@@ -253,19 +278,16 @@ public class MultipleExpansionManager {
 			if (statusSCV.get(SCV) == ScoutStatus.Assign.ordinal()) {
 				commandUtil.move(SCV, currentScoutTargetBaseLocation.getPosition());
 				statusSCV.replace(SCV, ScoutStatus.MovingToBaseLocation.ordinal());
-			}
-			System.out.println(SCV.getDistance(currentScoutTargetBaseLocation.getPosition()));
-			if (SCV.getDistance(currentScoutTargetBaseLocation.getPosition()) < 100) {
-				// 도착시 워커 해제
-				System.out.println("도착 " + MyBotModule.Broodwar.canBuildHere(
-						currentScoutTargetBaseLocation.getTilePosition(), UnitType.Terran_Command_Center));
-				WorkerManager.Instance().setIdleWorker(SCV);
-				scoutSCV.remove(baseLocation);
-				statusSCV.remove(SCV);
+			} else if (statusSCV.get(SCV) == ScoutStatus.MovingToBaseLocation.ordinal()) {
+				// System.out.println(SCV.getDistance(currentScoutTargetBaseLocation.getPosition()));
+				if (SCV.getDistance(currentScoutTargetBaseLocation.getPosition()) < 100) {
+					statusSCV.replace(SCV, ScoutStatus.Arrived.ordinal());
+				}
+			} else if (statusSCV.get(SCV) == ScoutStatus.Arrived.ordinal()) {
+
 				// 적이 점령하지 않은 경우
-				if (MyBotModule.Broodwar.canBuildHere(currentScoutTargetBaseLocation.getTilePosition(),
-						UnitType.Terran_Command_Center)) {
-					System.out.println("can build here");
+				if (MyBotModule.Broodwar.isBuildable(currentScoutTargetBaseLocation.getTilePosition())) {
+					// System.out.println("can build here");
 					int orderNumber = 0;
 					for (int i : orderOfBaseLocations.keySet()) {
 						if (orderOfBaseLocations.get(i).getTilePosition().getX() == baseLocation.getTilePosition()
@@ -278,8 +300,10 @@ public class MultipleExpansionManager {
 					}
 					isBuildableBase[orderNumber] = true;
 				}
+				WorkerManager.Instance().setIdleWorker(SCV);
+				scoutSCV.remove(baseLocation);
+				statusSCV.remove(SCV);
 			}
-
 		}
 	}
 
@@ -327,28 +351,64 @@ public class MultipleExpansionManager {
 					statusSCV.put(currentScoutUnit, ScoutStatus.Assign.ordinal());
 				}
 			}
+			return unit;
+		} else {
+			return scoutSCV.get(baseLocation);
 		}
-
-		return unit;
 	}
 
 	// Command Center를 해당 멀티에 가서 짓는다.
 	public void buildCommandCenter(BaseLocation baseLocation) {
-		BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Command_Center,
-				BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
-		ConstructionPlaceFinder.multipleExpansionBuildQueue.add(baseLocation);
-		// 건물 지었으니 false 처리
-		isBuildableBase[multipleExpansionOrder] = false;
-		multipleExpansionOrder++;
-		if (multipleExpansionOrder <= 11) {
-			thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
-		} else {
-			thisMulti = null;
+
+		int number = 0;
+		for (int i : orderOfBaseLocations.keySet()) {
+			if (orderOfBaseLocations.get(i).getTilePosition().getX() == baseLocation.getTilePosition().getX()
+					&& orderOfBaseLocations.get(i).getTilePosition().getY() == baseLocation.getTilePosition().getY()) {
+				number = i;
+				break;
+			}
 		}
-		if (multipleExpansionOrder + 1 <= 11) {
-			nextMulti = orderOfBaseLocations.get(multipleExpansionOrder + 1);
-		} else {
-			nextMulti = null;
+		if (isBuildableBase[number] == true) {
+			if (MyBotModule.Broodwar.canBuildHere(baseLocation.getTilePosition(), UnitType.Terran_Command_Center)) {
+				if (!ConstructionPlaceFinder.multipleExpansionBuildMap.containsKey(baseLocation)) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Command_Center,
+							BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
+					ConstructionPlaceFinder.multipleExpansionBuildMap.put(baseLocation, false);
+				}
+			}
+		}
+
+		checkIfCompleted(baseLocation);
+	}
+
+	private void checkIfCompleted(BaseLocation baseLocation) {
+
+		boolean isCompleted = false;
+
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit.getType() == UnitType.Terran_Command_Center && unit.isCompleted()) {
+				if (unit.getDistance(baseLocation.getPosition()) < 50) {
+					isCompleted = true;
+					ConstructionPlaceFinder.multipleExpansionBuildMap.replace(baseLocation, true);
+				}
+			}
+		}
+
+		if (isCompleted) {
+
+			isBuildableBase[multipleExpansionOrder] = false;
+			multipleExpansionOrder++;
+			System.out.println(multipleExpansionOrder);
+			if (multipleExpansionOrder <= 11) {
+				thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
+			} else {
+				thisMulti = null;
+			}
+			if (multipleExpansionOrder + 1 <= 11) {
+				nextMulti = orderOfBaseLocations.get(multipleExpansionOrder + 1);
+			} else {
+				nextMulti = null;
+			}
 		}
 	}
 
@@ -361,6 +421,7 @@ public class MultipleExpansionManager {
 	public void buildRefinery(BaseLocation baseLocation) {
 		BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
 				BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
+		ConstructionPlaceFinder.multipleRefineryBuildMap.put(baseLocation, false);
 	}
 
 	// 해당 멀티에 Command Center 지을 수 있는지 여부 리턴

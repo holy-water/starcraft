@@ -1158,6 +1158,9 @@ public class StrategyManager {
 		}
 	}
 
+	// 0815 - 최혜진 추가
+	private MultipleExpansionManager multipleExpansionManager = new MultipleExpansionManager().Instance();
+
 	// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
 	private void excuteSpiderMine() {
 
@@ -1172,6 +1175,33 @@ public class StrategyManager {
 		// 0804 - 최혜진 수정 Vulture 갯수 세는 로직 수정
 		if (self.completedUnitCount(UnitType.Terran_Vulture) >= 3) {
 			VultureMineManager.Instance().update();
+
+		}
+
+		// MultipleExpansionManager 튜토리얼
+		// 1. 진행할 멀티 순서를 정해주는 메서드 
+		//    - 가끔 적 본진 정찰에 실패하는 경우가 있으므로 매번 수행해줄 것을 권장함!!
+		multipleExpansionManager.initialUpdate();
+
+		// 2. 수행하기 전 이번 멀티와 다음 멀티를 불러온다.
+		//    - 계속 값이 갱신되므로 수행 전에 불러오기!!
+		BaseLocation thismulti = multipleExpansionManager.thisMulti;
+		BaseLocation nextmulti = multipleExpansionManager.nextMulti;
+		
+		// 3. 반드시 수행하기 전에 null 체크를 한다.
+		if (thismulti != null) {
+			// 4. 정찰을 보내는 메서드
+			multipleExpansionManager.scountBaseLocation(thismulti);
+			// 5. 정찰 후 해당 멀티가 적이 점령한 상태가 아니면 true가 리턴된다.
+			if (multipleExpansionManager.isCommandCenterBuildable(thismulti)) {
+				// 6. 해당 멀티에 Command Center를 건설
+				//    건설이 완료되면 thismulti와 nextmulti 값이 갱신된다.
+				multipleExpansionManager.buildCommandCenter(thismulti);
+			}
+			    // 7. 가스는 아직 구현중
+//			if (!multipleExpansionManager.isMineralOnly(thismulti)) {
+//				multipleExpansionManager.buildRefinery(thismulti);
+//			}
 		}
 	}
 

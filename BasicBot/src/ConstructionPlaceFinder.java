@@ -89,7 +89,8 @@ public class ConstructionPlaceFinder {
 	private static int multipleExpansionOrder;
 
 	// 0814 - 최혜진 추가
-	public static Queue<BaseLocation> multipleExpansionBuildQueue = new LinkedList<>();
+	public static Map<BaseLocation, Boolean> multipleExpansionBuildMap = new HashMap<>();
+	public static Map<BaseLocation, Boolean> multipleRefineryBuildMap = new HashMap<>();
 
 	/// static singleton 객체를 리턴합니다
 	public static ConstructionPlaceFinder Instance() {
@@ -761,8 +762,19 @@ public class ConstructionPlaceFinder {
 
 			// 0811 - 최혜진 추가 다른 지역으로의 추가적인 확장
 			case MultipleExpansion:
-				BaseLocation tempMulti = multipleExpansionBuildQueue.poll();
-				desiredPosition = tempMulti.getTilePosition();
+				if (buildingType == UnitType.Terran_Command_Center) {
+					BaseLocation tempMulti = null;
+					if (!multipleExpansionBuildMap.isEmpty()) {
+						for (BaseLocation multi : multipleExpansionBuildMap.keySet()) {
+							if (multipleExpansionBuildMap.get(multi) == false) {
+								tempMulti = multi;
+							}
+						}
+					}
+					desiredPosition = tempMulti.getTilePosition();
+				} else {
+
+				}
 				break;
 			}
 		}
