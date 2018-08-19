@@ -619,6 +619,11 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 					countMgr.setRefinery();
 				}
+			} else if (self.completedUnitCount(UnitType.Terran_Command_Center) < countMgr.getRefinery()) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
+					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
+							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
+				}
 			}
 		}
 
@@ -901,10 +906,13 @@ public class StrategyManager {
 
 	private boolean isNotFullScaleAttackStart(Race race) {
 		if (race == Race.Protoss) {
+			if (airAttackLevel != 0) {
+				return self.allUnitCount(UnitType.Terran_Goliath) < 8;
+			}
 			return self.supplyUsed() < 200;
 		} else if (race == Race.Terran) {
 			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode)
-					+ self.allUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) < 5;
+					+ self.allUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) < 6;
 		} else {
 			return self.supplyUsed() < 160;
 		}
