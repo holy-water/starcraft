@@ -280,7 +280,7 @@ public class StrategyManager {
 			// 서플라이가 다 꽉찼을때 새 서플라이를 지으면 지연이 많이 일어나므로, supplyMargin (게임에서의 서플라이
 			// 마진 값의 2배)만큼 부족해지면 새 서플라이를 짓도록 한다
 			// 이렇게 값을 정해놓으면, 게임 초반부에는 서플라이를 너무 일찍 짓고, 게임 후반부에는 서플라이를 너무 늦게 짓게 된다
-			int supplyMargin = 12 + (countMgr.getFactory() * 4);
+			int supplyMargin = 12 + (countMgr.getFactory() * 6);
 
 			// currentSupplyShortage 를 계산한다
 			int currentSupplyShortage = self.supplyUsed() + supplyMargin - self.supplyTotal();
@@ -400,10 +400,9 @@ public class StrategyManager {
 					}
 				}
 			}
-			// 캐리어
+			// 캐리어 생산
 			if (enemy.allUnitCount(UnitType.Protoss_Stargate) != 0
-					|| enemy.allUnitCount(UnitType.Protoss_Fleet_Beacon) != 0
-					|| enemy.allUnitCount(UnitType.Protoss_Carrier) != 0) {
+					|| enemy.allUnitCount(UnitType.Protoss_Fleet_Beacon) != 0) {
 				if (countMgr.getArmory() == 0) {
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Armory,
 							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
@@ -420,6 +419,9 @@ public class StrategyManager {
 						}
 					}
 				}
+			}
+			// 캐리어 발견
+			if (enemy.allUnitCount(UnitType.Protoss_Carrier) != 0) {
 				isFullScaleAttackStarted = true;
 			}
 		} else if (enemy.getRace() == Race.Zerg) {
@@ -601,7 +603,7 @@ public class StrategyManager {
 			} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
 				if (countMgr.getComsatStation() == 0) {
 					for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Comsat_Station,
+						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Comsat_Station,
 								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 						countMgr.setComsatStation();
 					}
@@ -859,6 +861,8 @@ public class StrategyManager {
 									changeDistance = false;
 								}
 							}
+						} else if (informationMgr.isGroundEnemyUnitInSight(unit)) {
+							commandUtil.attackMove(unit, targetBaseLocation.getPosition());
 						} else if (!unit.isHoldingPosition()) {
 							unit.holdPosition();
 						}
@@ -914,9 +918,9 @@ public class StrategyManager {
 		}
 
 		// 0.25초에 한번만 실행
-		if (frameCount % 6 != 3) {
-			return;
-		}
+		// if (frameCount % 6 != 3) {
+		// return;
+		// }
 
 		if (isFullScaleAttackStarted) {
 			return;
@@ -1414,9 +1418,11 @@ public class StrategyManager {
 	}
 
 	private UnitType selectTrainUnitType(Unit unit) {
-		if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) != 0
-				|| BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) != 0) {
-			return null;
+		if (self.completedUnitCount(UnitType.Terran_Science_Facility) != 0) {
+			if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) != 0
+					|| BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) != 0) {
+				return null;
+			}
 		}
 		if (airAttackLevel != 0) {
 			if (self.allUnitCount(UnitType.Terran_Goliath) < airAttackLevel * 3) {
