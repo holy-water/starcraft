@@ -28,6 +28,8 @@ public class MultipleCheckManager {
 	
 	// 돌아야할 위치 리스트
 	Map<Integer, BaseLocation> checkListMap = new HashMap<>();
+	Map<BaseLocation, Boolean> isCheckedMap = new HashMap<>();
+	
 	BaseLocation targetLocation = null;
 	
 	public List<Unit> vultureMultiCheckList = new ArrayList<>();
@@ -39,11 +41,21 @@ public class MultipleCheckManager {
 		if (isAllChecked) {
 			return;
 		}
-		if (checkListMap.isEmpty()) {
+		
+		// 적진 위치를 기준으로 한 멀티 체크 리스트
+		if (checkListMap == null || checkListMap.isEmpty()) {
 			checkListMap = multiExpMngr.orderOfBaseLocations;
+			for(int i=0; i<checkListMap.size(); i++) {
+				isCheckedMap.put(checkListMap.get(i), false);
+			}
 		}
-		if (vultureMultiCheckList.isEmpty()) {
-			assignVultureForCheck();			
+		if (checkListMap == null || checkListMap.isEmpty()) {
+			return;
+		}
+		
+		if (vultureMultiCheckList.size() < 6) {
+			assignVultureForCheck();
+			System.out.println("배정완료");
 		}
 		executeMultiCheck();
 	}
@@ -51,7 +63,7 @@ public class MultipleCheckManager {
 	// 멀티 견제용 벌처를 6마리 이내로 뽑는다.
 	private void assignVultureForCheck() {
 		
-		if (self.completedUnitCount(UnitType.Terran_Vulture) <= 0) {
+		if (self.completedUnitCount(UnitType.Terran_Vulture) <= 6) {
 			return;
 		}
 		
@@ -74,21 +86,27 @@ public class MultipleCheckManager {
 	// 적의 본진에서 가까운 데부터 시작해서 탐색
 	// 아무도 없으면 마인 심기(한마리) / 먹혔으면 공격
 	private void executeMultiCheck() {
+
+		if (checkListMap.isEmpty()) {
+			return;
+		}
 		if (vultureMultiCheckList.size() <= 0) {
 			return;
 		}
+		
 		/// 다음 멀티 위치 정하고 이동
 		if (targetLocation == null) {
 			BaseLocation tempLoca;
-			for (int i=0; i<checkListMap.size(); i++) {
+			for (int i=checkListMap.size()-1; i>=0; i--) {
 				tempLoca = checkListMap.get(i);
-				if (!MyBotModule.Broodwar.isExplored(tempLoca.getTilePosition())) {
+				if (!isCheckedMap.get(tempLoca)) {
 					targetLocation = tempLoca;
 					break;
 				}
 			}
 			/// 다 돌았으면 체크모드 해제
 			if (targetLocation == null) {
+				System.out.println("다했다!");
 				isAllChecked = true;
 				deactivateCheckMode();
 				return;
@@ -103,17 +121,35 @@ public class MultipleCheckManager {
 		/// 목표지에 도달했을 경우
 		else if (targetLocation != null 
 					&& vultureMultiCheckList.get(0).getDistance(targetLocation.getPosition()) < 5 * Config.TILE_SIZE) {
-			List<BaseLocation> enemyBaseList = infoMngr.getOccupiedBaseLocations(enemy);
-			// 적이 있으면 어택땅으로 출발했기 때문에 추가 구현 불필요
-			// 적이 없으면 벌처 한마리 골라서 마인 심기
-			if (!enemyBaseList.contains(targetLocation)) {
+			if (!isCheckedMap.get(targetLocation)) {
+				List<BaseLocation> enemyBaseList = infoMngr.getOccupiedBaseLocations(enemy);
+				// 적이 있으면 어택땅으로 출발했기 때문에 추가 구현 불필요
+				// 적이 없으면 벌처 한마리 골라서 마인 심기
+				if (!enemyBaseList.contains(targetLocation)) {
+					for (Unit unit: vultureMultiCheckList) {
+						if (unit == null || !unit.exists() || unit.getSpiderMineCount() <= 0) {
+							continue;
+						}
+						unit.useTech(TechType.Spider_Mines, targetLocation.getPosition());
+						targetLocation = null;
+						break;
+					}
+				}
+				isCheckedMap.put(targetLocation, true);				
+			} else {
+				
+				boolean isAttackMode = false;
 				for (Unit unit: vultureMultiCheckList) {
-					if (unit == null || !unit.exists() || unit.getSpiderMineCount() <= 0) {
+					if (unit == null || !unit.exists()) {
 						continue;
 					}
-					unit.useTech(TechType.Spider_Mines, targetLocation.getPosition());
+					if (unit.isAttacking()) {
+						isAttackMode = true; 
+						break;
+					}
+				}
+				if (!isAttackMode) {
 					targetLocation = null;
-					break;
 				}
 			}
 		}

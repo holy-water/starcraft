@@ -1159,7 +1159,7 @@ public class StrategyManager {
 	}
 
 	// 0815 - 최혜진 추가
-	private MultipleExpansionManager multipleExpansionManager = new MultipleExpansionManager().Instance();
+	private MultipleExpansionManager multipleExpansionManager = MultipleExpansionManager.Instance();
 
 	// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
 	private void excuteSpiderMine() {
