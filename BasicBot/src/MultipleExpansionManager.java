@@ -55,6 +55,7 @@ public class MultipleExpansionManager {
 
 		if (thisMulti != null) {
 			scountBaseLocation(thisMulti);
+			scountBaseLocation(nextMulti);
 			if (isCommandCenterBuildable(thisMulti)) {
 				buildCommandCenter(thisMulti);
 			}
@@ -464,7 +465,7 @@ public class MultipleExpansionManager {
 			if (!isMineralOnly(thisMulti)) {
 				buildRefinery(thisMulti);
 			}
-			
+
 			isBuildableBase[multipleExpansionOrder] = false;
 			multipleExpansionOrder++;
 			// System.out.println(multipleExpansionOrder);
@@ -498,6 +499,7 @@ public class MultipleExpansionManager {
 
 		TilePosition refinery = ConstructionPlaceFinder.Instance()
 				.getRefineryPositionNear(baseLocation.getTilePosition());
+		//System.out.println("refinery " + refinery.getX() + " " + refinery.getY());
 		if (refinery != null && MyBotModule.Broodwar.canBuildHere(refinery, UnitType.Terran_Refinery)) {
 			if (!ConstructionPlaceFinder.multipleRefineryBuildMap.containsKey(baseLocation)) {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,

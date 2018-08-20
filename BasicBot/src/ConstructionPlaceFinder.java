@@ -768,20 +768,22 @@ public class ConstructionPlaceFinder {
 						for (BaseLocation multi : multipleExpansionBuildMap.keySet()) {
 							if (multipleExpansionBuildMap.get(multi) == false) {
 								tempMulti = multi;
+								break;
 							}
 						}
 					}
 					desiredPosition = tempMulti.getTilePosition();
 				} else {
-					BaseLocation tempMulti = null;
+					TilePosition tempRefinery = null;
 					if (!multipleRefineryBuildMap.isEmpty()) {
 						for (BaseLocation multi : multipleRefineryBuildMap.keySet()) {
 							if (multipleRefineryBuildMap.get(multi) == false) {
-								tempMulti = multi;
+								tempRefinery = getRefineryPositionNear(multi.getTilePosition());
+								break;
 							}
 						}
 					}
-					desiredPosition = tempMulti.getTilePosition();
+					desiredPosition = tempRefinery;
 				}
 				break;
 			}
