@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
-
 import bwapi.Player;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -51,18 +49,17 @@ public class DefenseManager {
 		int groundCnt = curDangerLoca.getGroundCnt(); // 적의 지상 병력
 		int airCnt = curDangerLoca.getAirCnt(); // 적의 공중 병력
 		
+		
 		if (curDangerLoca.getEnemyCnt() >= 6) {
 			// 위험 지역에 병력 모두 투입
 			assignAllCombatUnit();
 		} else {
 			// 지상 유닛 배정
 			if (groundDefenseList.size() < groundCnt) {
-				System.out.println("지상유닛배정");
 				assignGroundCombatUnit(groundCnt - groundDefenseList.size());
 			}
 			// 공중 유닛 배정
 			if (airDefenseList.size() < airCnt) {
-				System.out.println("공중유닛배정");
 				assignAirCombatUnit(airCnt - airDefenseList.size());			
 			}
 		}
@@ -81,13 +78,21 @@ public class DefenseManager {
 
 	// 총공격
 	private void assignAllCombatUnit() {
-	
+		
 		List<Unit> unitList = self.getUnits();
 		for (Unit unit : unitList) {
-			if (unit == null || !unit.exists() || !unit.isCompleted()
-					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+			if (unit == null || !unit.exists() || !unit.isCompleted()) {
 				continue;				
 			}
+			
+			if (unit.getType().isWorker() || unit.getType().isBuilding()) {
+				continue;
+	        }
+			
+			if (infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+               continue;
+            }
+			
 			if (infoMngr.isCombatUnitType(unit.getType())) {
 				if (unit.getType().isFlyer()) {
 					airDefenseList.add(unit);
@@ -102,7 +107,7 @@ public class DefenseManager {
 	// 지상공격시 - 탱크 + 벌쳐
 	private void assignGroundCombatUnit(int enemyCnt) {
 
-		if (enemyCnt == 0)
+		if (enemyCnt <= 0)
 			return;
 
 		// 탱크와 벌처 보유 중인지 확인하기
@@ -214,7 +219,7 @@ public class DefenseManager {
 	// 공중공격시 - 골리앗
 	private void assignAirCombatUnit(int enemyCnt) {
 
-		if (enemyCnt == 0)
+		if (enemyCnt <= 0)
 			return;
 
 		// 골리앗 보유 중인지 확인하기
@@ -253,7 +258,6 @@ public class DefenseManager {
 			defenseUnit = airDefenseList.get(i);
 			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
 		}
-		System.out.println("해제");
 		defenseFlag = false;
 		groundDefenseList.clear();
 		airDefenseList.clear();

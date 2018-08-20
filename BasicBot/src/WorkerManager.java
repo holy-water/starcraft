@@ -480,7 +480,29 @@ public class WorkerManager {
 		}
 	}
 
-	
+	/// target Location의 worker 유닛 리턴
+	public Unit getWorkerInTargetLocation(BaseLocation baseLocation) {
+		
+		Unit returnUnit = null;
+		
+		for(Unit worker: workerData.getWorkers()) {
+			if (worker == null) {
+				continue;
+			}
+
+			if (worker.isCompleted() && BWTA.getRegion(worker.getPosition()) ==  baseLocation.getRegion()
+					&& (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Minerals
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Idle
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Move
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.RunAway
+					|| workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Attack)) {
+				returnUnit = worker;
+				break;
+			}
+		}
+		
+		return returnUnit;
+	}
 	
 	/// target 으로부터 가장 가까운 Mineral 일꾼 유닛을 리턴합니다
 	public Unit getClosestMineralWorkerTo(Position target) {

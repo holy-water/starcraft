@@ -1,11 +1,8 @@
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import bwapi.Player;
 import bwapi.Race;
-import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -403,7 +400,7 @@ public class MultipleExpansionManager {
 			if (firstBuilding != null) {
 				// grab the closest worker to the first building to send to
 				// scout
-				unit = WorkerManager.Instance().getClosestMineralWorkerTo(firstBuilding.getPosition());
+				unit = WorkerManager.Instance().getWorkerInTargetLocation(firstBuilding);
 
 				// if we find a worker (which we should) add it to the scout
 				// units
