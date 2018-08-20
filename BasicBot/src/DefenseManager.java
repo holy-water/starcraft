@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
+
 import bwapi.Player;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -55,12 +57,14 @@ public class DefenseManager {
 		} else {
 			// 지상 유닛 배정
 			if (groundDefenseList.size() < groundCnt) {
+				System.out.println("지상유닛배정");
 				assignGroundCombatUnit(groundCnt - groundDefenseList.size());
 			}
 			// 공중 유닛 배정
 			if (airDefenseList.size() < airCnt) {
+				System.out.println("공중유닛배정");
 				assignAirCombatUnit(airCnt - airDefenseList.size());			
-			}			
+			}
 		}
 		// 방어병력 위험지역으로 이동
 		if (groundDefenseList.size() > 0) {
@@ -239,10 +243,6 @@ public class DefenseManager {
 	
 	// 방어병력 공격모드 해제
 	private void deactivateDefense() {
-		if ((groundDefenseList == null || groundDefenseList.isEmpty()) 
-				&& (airDefenseList == null || airDefenseList.isEmpty())) {
-			return;
-		}
 		
 		Unit defenseUnit;
 		for (int i=0; i<groundDefenseList.size(); i++) {
@@ -253,6 +253,7 @@ public class DefenseManager {
 			defenseUnit = airDefenseList.get(i);
 			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
 		}
+		System.out.println("해제");
 		defenseFlag = false;
 		groundDefenseList.clear();
 		airDefenseList.clear();

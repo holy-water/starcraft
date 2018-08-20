@@ -178,6 +178,9 @@ public class UnitData {
 		if (MultipleCheckManager.Instance().vultureMultiCheckList.contains(unit)) {
 			MultipleCheckManager.Instance().vultureMultiCheckList.remove(unit);
 		}
+		
+		DefenseManager.Instance().groundDefenseList.remove(unit);
+		DefenseManager.Instance().airDefenseList.remove(unit);
 
 		mineralsLost += unit.getType().mineralPrice();
 		gasLost += unit.getType().gasPrice();
