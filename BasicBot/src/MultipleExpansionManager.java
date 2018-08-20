@@ -54,15 +54,10 @@ public class MultipleExpansionManager {
 		initialUpdate();
 
 		if (thisMulti != null) {
-
 			scountBaseLocation(thisMulti);
 			if (isCommandCenterBuildable(thisMulti)) {
 				buildCommandCenter(thisMulti);
 			}
-			// 7. 가스는 아직 구현중
-			// if (!multipleExpansionManager.isMineralOnly(thismulti)) {
-			// multipleExpansionManager.buildRefinery(thismulti);
-			// }
 		}
 	}
 
@@ -362,7 +357,17 @@ public class MultipleExpansionManager {
 					statusSCV.replace(SCV, ScoutStatus.RemoveSpiderMines.ordinal());
 				}
 			} else if (statusSCV.get(SCV) == ScoutStatus.RemoveSpiderMines.ordinal()) {
-				SCV.attack(baseLocation.getPosition());
+
+				List<Unit> enemyList = MyBotModule.Broodwar.getUnitsInRadius(baseLocation.getPosition(),
+						8 * Config.TILE_SIZE);
+
+				if (!enemyList.isEmpty()) {
+					SCV.attack(enemyList.get(0));
+				} else {
+					WorkerManager.Instance().setIdleWorker(SCV);
+					scoutSCV.remove(baseLocation);
+					statusSCV.remove(SCV);
+				}
 			}
 		}
 	}
@@ -456,6 +461,10 @@ public class MultipleExpansionManager {
 
 		if (isCompleted) {
 
+			if (!isMineralOnly(thisMulti)) {
+				buildRefinery(thisMulti);
+			}
+			
 			isBuildableBase[multipleExpansionOrder] = false;
 			multipleExpansionOrder++;
 			// System.out.println(multipleExpansionOrder);
@@ -475,7 +484,9 @@ public class MultipleExpansionManager {
 	// Refinary 존재 여부
 	public boolean isMineralOnly(BaseLocation baseLocation) {
 		boolean cannotBuildRefinery = true;
-		if (!baseLocation.isMineralOnly()
+		if (!baseLocation.isMineralOnly() && ConstructionPlaceFinder.multipleExpansionBuildMap != null
+				&& !ConstructionPlaceFinder.multipleExpansionBuildMap.isEmpty()
+				&& ConstructionPlaceFinder.multipleExpansionBuildMap.containsKey(baseLocation)
 				&& ConstructionPlaceFinder.multipleExpansionBuildMap.get(baseLocation) == true) {
 			cannotBuildRefinery = false;
 		}
@@ -488,7 +499,7 @@ public class MultipleExpansionManager {
 		TilePosition refinery = ConstructionPlaceFinder.Instance()
 				.getRefineryPositionNear(baseLocation.getTilePosition());
 		if (refinery != null && MyBotModule.Broodwar.canBuildHere(refinery, UnitType.Terran_Refinery)) {
-			if (!ConstructionPlaceFinder.multipleExpansionBuildMap.containsKey(baseLocation)) {
+			if (!ConstructionPlaceFinder.multipleRefineryBuildMap.containsKey(baseLocation)) {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
 						BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
 				ConstructionPlaceFinder.multipleRefineryBuildMap.put(baseLocation, false);

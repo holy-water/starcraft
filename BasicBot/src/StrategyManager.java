@@ -192,7 +192,7 @@ public class StrategyManager {
 			return;
 		}
 
-		MultipleExpansionManager.Instance().initialUpdate();
+		MultipleExpansionManager.Instance().update();
 
 	}
 

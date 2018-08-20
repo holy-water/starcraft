@@ -295,7 +295,7 @@ public class ConstructionPlaceFinder {
 						} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
 							locationOfBase = 4;
 							// 0815 - 최혜진 수정 미네랄과 커맨드 사이에는 Supply Depot 건설하지 않도록 reserve 타일 설정
-							reserveTiles(new TilePosition(120, 125), UnitType.Terran_Supply_Depot.tileWidth(),
+							reserveTiles(new TilePosition(119, 121), UnitType.Terran_Supply_Depot.tileWidth(),
 									UnitType.Terran_Supply_Depot.tileHeight());
 						}
 					} else {
