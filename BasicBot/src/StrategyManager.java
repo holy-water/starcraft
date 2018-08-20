@@ -165,7 +165,7 @@ public class StrategyManager {
 		// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
 		excuteSpiderMine();
 		// 0816 추가
-		// executeDefense();
+		executeDefense();
 		// 0820 - 최혜진 추가 Multiple Expansion
 		executeMultipleExpansion();
 
@@ -426,7 +426,7 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					airAttackLevel = 8;
+					airAttackLevel = 6;
 					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
@@ -439,7 +439,7 @@ public class StrategyManager {
 				}
 			}
 			// 캐리어 발견
-			if (enemy.allUnitCount(UnitType.Protoss_Carrier) != 0) {
+			if (enemy.allUnitCount(UnitType.Protoss_Carrier) > 1) {
 				isFullScaleAttackStarted = true;
 			}
 		} else if (enemy.getRace() == Race.Zerg) {
@@ -490,7 +490,7 @@ public class StrategyManager {
 							BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
-					airAttackLevel = 6;
+					airAttackLevel = 4;
 					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
@@ -717,7 +717,8 @@ public class StrategyManager {
 			}
 		}
 
-		if (countMgr.getFactory() < self.completedUnitCount(UnitType.Terran_Command_Center) * 4) {
+		// 0820 수정 - 최대 팩토리 개수 9개
+		if (countMgr.getFactory() < 9) {
 			if (self.minerals() >= 600 && self.gas() >= 150) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Factory, null) == 0) {
 					// 0702 - 최혜진 수정 입구로
@@ -916,7 +917,8 @@ public class StrategyManager {
 		if (race == Race.Protoss) {
 			return self.supplyUsed() > 360;
 		} else if (race == Race.Terran) {
-			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5;
+			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5
+					&& self.allUnitCount(UnitType.Terran_Vulture) > 5;
 		} else {
 			return self.supplyUsed() > 300;
 		}
@@ -924,9 +926,6 @@ public class StrategyManager {
 
 	private boolean isNotFullScaleAttackStart(Race race) {
 		if (race == Race.Protoss) {
-			if (airAttackLevel != 0) {
-				return self.allUnitCount(UnitType.Terran_Goliath) < 8;
-			}
 			return self.supplyUsed() < 200;
 		} else if (race == Race.Terran) {
 			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode)
