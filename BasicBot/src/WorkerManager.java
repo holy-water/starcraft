@@ -12,7 +12,7 @@ import bwta.BaseLocation;
 public class WorkerManager {
 
 	/// 각 Worker 에 대한 WorkerJob 상황을 저장하는 자료구조 객체
-	private WorkerData workerData = new WorkerData();
+	public WorkerData workerData = new WorkerData();
 
 	private CommandUtil commandUtil = new CommandUtil();
 

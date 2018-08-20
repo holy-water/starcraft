@@ -166,6 +166,8 @@ public class StrategyManager {
 		excuteSpiderMine();
 		// 0816 추가
 		// executeDefense();
+		// 0820 - 최혜진 추가 Multiple Expansion
+		executeMultipleExpansion();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -176,6 +178,22 @@ public class StrategyManager {
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
+	}
+
+	private void executeMultipleExpansion() {
+
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 21) {
+			return;
+		}
+
+		MultipleExpansionManager.Instance().initialUpdate();
+
 	}
 
 	// 0709 추가
@@ -1158,9 +1176,6 @@ public class StrategyManager {
 		}
 	}
 
-	// 0815 - 최혜진 추가
-	private MultipleExpansionManager multipleExpansionManager = MultipleExpansionManager.Instance();
-
 	// 0801 - 최혜진 추가 Spider Mine 심기 컨트롤
 	private void excuteSpiderMine() {
 
@@ -1178,31 +1193,6 @@ public class StrategyManager {
 
 		}
 
-		// MultipleExpansionManager 튜토리얼
-		// 1. 진행할 멀티 순서를 정해주는 메서드 
-		//    - 가끔 적 본진 정찰에 실패하는 경우가 있으므로 매번 수행해줄 것을 권장함!!
-		multipleExpansionManager.initialUpdate();
-
-		// 2. 수행하기 전 이번 멀티와 다음 멀티를 불러온다.
-		//    - 계속 값이 갱신되므로 수행 전에 불러오기!!
-		BaseLocation thismulti = multipleExpansionManager.thisMulti;
-		BaseLocation nextmulti = multipleExpansionManager.nextMulti;
-		
-		// 3. 반드시 수행하기 전에 null 체크를 한다.
-		if (thismulti != null) {
-			// 4. 정찰을 보내는 메서드
-			multipleExpansionManager.scountBaseLocation(thismulti);
-			// 5. 정찰 후 해당 멀티가 적이 점령한 상태가 아니면 true가 리턴된다.
-			if (multipleExpansionManager.isCommandCenterBuildable(thismulti)) {
-				// 6. 해당 멀티에 Command Center를 건설
-				//    건설이 완료되면 thismulti와 nextmulti 값이 갱신된다.
-				multipleExpansionManager.buildCommandCenter(thismulti);
-			}
-			    // 7. 가스는 아직 구현중
-//			if (!multipleExpansionManager.isMineralOnly(thismulti)) {
-//				multipleExpansionManager.buildRefinery(thismulti);
-//			}
-		}
 	}
 
 	private void executeDefense() {

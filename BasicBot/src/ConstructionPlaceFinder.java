@@ -773,7 +773,15 @@ public class ConstructionPlaceFinder {
 					}
 					desiredPosition = tempMulti.getTilePosition();
 				} else {
-
+					BaseLocation tempMulti = null;
+					if (!multipleRefineryBuildMap.isEmpty()) {
+						for (BaseLocation multi : multipleRefineryBuildMap.keySet()) {
+							if (multipleRefineryBuildMap.get(multi) == false) {
+								tempMulti = multi;
+							}
+						}
+					}
+					desiredPosition = tempMulti.getTilePosition();
 				}
 				break;
 			}

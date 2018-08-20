@@ -1,7 +1,12 @@
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import bwapi.Player;
+import bwapi.Race;
+import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwta.BaseLocation;
@@ -33,7 +38,7 @@ public class MultipleExpansionManager {
 	private static Map<Unit, Integer> statusSCV = new HashMap<>();
 
 	public enum ScoutStatus {
-		Assign, MovingToBaseLocation, Arrived
+		Assign, MovingToBaseLocation, Arrived, RemoveSpiderMines
 
 	};
 
@@ -44,199 +49,218 @@ public class MultipleExpansionManager {
 		return instance;
 	}
 
+	public void update() {
+
+		initialUpdate();
+
+		if (thisMulti != null) {
+
+			scountBaseLocation(thisMulti);
+			if (isCommandCenterBuildable(thisMulti)) {
+				buildCommandCenter(thisMulti);
+			}
+			// 7. 가스는 아직 구현중
+			// if (!multipleExpansionManager.isMineralOnly(thismulti)) {
+			// multipleExpansionManager.buildRefinery(thismulti);
+			// }
+		}
+	}
+
 	// 적 본진을 알게 되었을 때 확장 순서를 결정한다.
 	public void initialUpdate() {
 
-		int locationOfBase = ConstructionPlaceFinder.locationOfBase;
+		if (isMultipleExpansionOrderDecided == false) {
+			int locationOfBase = ConstructionPlaceFinder.locationOfBase;
 
-		int enemyLocationOfBase = 0;
+			int enemyLocationOfBase = 0;
 
-		BaseLocation enemyBaseLocation = InformationManager.Instance()
-				.getMainBaseLocation(MyBotModule.Broodwar.enemy());
-		BaseLocation enemyFirstExpansion = InformationManager.Instance()
-				.getFirstExpansionLocation(MyBotModule.Broodwar.enemy());
-		Chokepoint enemySecondChockPoint = InformationManager.Instance()
-				.getSecondChokePoint(MyBotModule.Broodwar.enemy());
-		// 0806 - 최혜진 추가 적 본진 모를때 로직 수행 불가
-		if (enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
-			return;
-		}
-		int dx = enemyBaseLocation.getX() - enemySecondChockPoint.getCenter().getX();
-		int dy = enemyBaseLocation.getTilePosition().getY() - enemyFirstExpansion.getTilePosition().getY();
-		if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
-			enemyLocationOfBase = 1;
-		} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
-			enemyLocationOfBase = 2;
-		} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
-			enemyLocationOfBase = 3;
-		} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
-			enemyLocationOfBase = 4;
-		}
-
-		numberOfBaseLocations = StrategyManager.Instance().numberOfBaseLocations;
-		// 본진 위치, 적 본진 위치를 알고, 아직 순서가 정해지지 않은 경우 순서를 정한다
-		if (locationOfBase != 0 && enemyLocationOfBase != 0 && isMultipleExpansionOrderDecided == false) {
-			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-				if (locationOfBase == 1) {
-					if (enemyLocationOfBase == 2) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(9));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocationOfBase == 3) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(15));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(7));
-					} else if (enemyLocationOfBase == 4) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(10));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(9));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
-					}
-				} else if (locationOfBase == 2) {
-					if (enemyLocationOfBase == 1) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(14));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(15));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(10));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(9));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocationOfBase == 3) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(1));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
-					} else if (enemyLocationOfBase == 4) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(1));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(10));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(9));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
-					}
-				} else if (locationOfBase == 3) {
-					if (enemyLocationOfBase == 1) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(14));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(15));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(6));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocationOfBase == 2) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(1));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocationOfBase == 4) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(1));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(3));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(6));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
-					}
-				} else if (locationOfBase == 4) {
-					if (enemyLocationOfBase == 1) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(6));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocationOfBase == 2) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(0));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(1));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
-					} else if (enemyLocationOfBase == 3) {
-						orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
-						orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
-						orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
-						orderOfBaseLocations.put(4, numberOfBaseLocations.get(6));
-						orderOfBaseLocations.put(5, numberOfBaseLocations.get(4));
-						orderOfBaseLocations.put(6, numberOfBaseLocations.get(3));
-						orderOfBaseLocations.put(7, numberOfBaseLocations.get(0));
-						orderOfBaseLocations.put(8, numberOfBaseLocations.get(2));
-						orderOfBaseLocations.put(9, numberOfBaseLocations.get(1));
-						orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
-						orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
-					}
-				}
-			} else { // 투혼 맵
-
+			BaseLocation enemyBaseLocation = InformationManager.Instance()
+					.getMainBaseLocation(MyBotModule.Broodwar.enemy());
+			BaseLocation enemyFirstExpansion = InformationManager.Instance()
+					.getFirstExpansionLocation(MyBotModule.Broodwar.enemy());
+			Chokepoint enemySecondChockPoint = InformationManager.Instance()
+					.getSecondChokePoint(MyBotModule.Broodwar.enemy());
+			// 0806 - 최혜진 추가 적 본진 모를때 로직 수행 불가
+			if (enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
+				return;
 			}
-			isMultipleExpansionOrderDecided = true;
-			multipleExpansionOrder = 1;
-			thisMulti = orderOfBaseLocations.get(1);
-			nextMulti = orderOfBaseLocations.get(2);
+			int dx = enemyBaseLocation.getX() - enemySecondChockPoint.getCenter().getX();
+			int dy = enemyBaseLocation.getTilePosition().getY() - enemyFirstExpansion.getTilePosition().getY();
+			if (dx < 0 && dy < 0) { // BaseLocation이 좌상단 위치
+				enemyLocationOfBase = 1;
+			} else if (dx > 0 && dy < 0) { // BaseLocation이 우상단 위치
+				enemyLocationOfBase = 2;
+			} else if (dx < 0 && dy > 0) { // BaseLocation이 좌하단 위치
+				enemyLocationOfBase = 3;
+			} else if (dx > 0 && dy > 0) { // BaseLocation이 우하단 위치
+				enemyLocationOfBase = 4;
+			}
+
+			numberOfBaseLocations = StrategyManager.Instance().numberOfBaseLocations;
+			// 본진 위치, 적 본진 위치를 알고, 아직 순서가 정해지지 않은 경우 순서를 정한다
+			if (locationOfBase != 0 && enemyLocationOfBase != 0) {
+				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+					if (locationOfBase == 1) {
+						if (enemyLocationOfBase == 2) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+						} else if (enemyLocationOfBase == 3) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(15));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(7));
+						} else if (enemyLocationOfBase == 4) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+						}
+					} else if (locationOfBase == 2) {
+						if (enemyLocationOfBase == 1) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(14));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(15));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+						} else if (enemyLocationOfBase == 3) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+						} else if (enemyLocationOfBase == 4) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+						}
+					} else if (locationOfBase == 3) {
+						if (enemyLocationOfBase == 1) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(14));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(15));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+						} else if (enemyLocationOfBase == 2) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(14));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+						} else if (enemyLocationOfBase == 4) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+						}
+					} else if (locationOfBase == 4) {
+						if (enemyLocationOfBase == 1) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+						} else if (enemyLocationOfBase == 2) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+						} else if (enemyLocationOfBase == 3) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(9, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+						}
+					}
+				} else { // 투혼 맵
+
+				}
+				isMultipleExpansionOrderDecided = true;
+				multipleExpansionOrder = 1;
+				thisMulti = orderOfBaseLocations.get(1);
+				nextMulti = orderOfBaseLocations.get(2);
+			}
 		}
 	}
 
@@ -285,6 +309,7 @@ public class MultipleExpansionManager {
 				}
 			} else if (statusSCV.get(SCV) == ScoutStatus.Arrived.ordinal()) {
 
+				boolean isJobDone = true;
 				// 적이 점령하지 않은 경우
 				if (MyBotModule.Broodwar.isBuildable(currentScoutTargetBaseLocation.getTilePosition())) {
 					// System.out.println("can build here");
@@ -299,10 +324,45 @@ public class MultipleExpansionManager {
 						}
 					}
 					isBuildableBase[orderNumber] = true;
+
+					if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+						List<Unit> enemyList = MyBotModule.Broodwar.getUnitsInRadius(baseLocation.getPosition(),
+								8 * Config.TILE_SIZE);
+
+						for (Unit enemy : enemyList) {
+							if (enemy != null && enemy.exists() && !enemy.isDetected()) {
+								StrategyManager.Instance().executeScanAt(baseLocation.getPosition());
+								isJobDone = false;
+								break;
+							}
+						}
+					}
+				} else {
+
+					isBuildableBase[multipleExpansionOrder] = false;
+					multipleExpansionOrder++;
+					// System.out.println(multipleExpansionOrder);
+					if (multipleExpansionOrder <= 11) {
+						thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
+					} else {
+						thisMulti = null;
+					}
+					if (multipleExpansionOrder + 1 <= 11) {
+						nextMulti = orderOfBaseLocations.get(multipleExpansionOrder + 1);
+					} else {
+						nextMulti = null;
+					}
+
 				}
-				WorkerManager.Instance().setIdleWorker(SCV);
-				scoutSCV.remove(baseLocation);
-				statusSCV.remove(SCV);
+				if (isJobDone) {
+					WorkerManager.Instance().setIdleWorker(SCV);
+					scoutSCV.remove(baseLocation);
+					statusSCV.remove(SCV);
+				} else {
+					statusSCV.replace(SCV, ScoutStatus.RemoveSpiderMines.ordinal());
+				}
+			} else if (statusSCV.get(SCV) == ScoutStatus.RemoveSpiderMines.ordinal()) {
+				SCV.attack(baseLocation.getPosition());
 			}
 		}
 	}
@@ -398,7 +458,7 @@ public class MultipleExpansionManager {
 
 			isBuildableBase[multipleExpansionOrder] = false;
 			multipleExpansionOrder++;
-			System.out.println(multipleExpansionOrder);
+			// System.out.println(multipleExpansionOrder);
 			if (multipleExpansionOrder <= 11) {
 				thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
 			} else {
@@ -414,14 +474,39 @@ public class MultipleExpansionManager {
 
 	// Refinary 존재 여부
 	public boolean isMineralOnly(BaseLocation baseLocation) {
-		return baseLocation.isMineralOnly();
+		boolean cannotBuildRefinery = true;
+		if (!baseLocation.isMineralOnly()
+				&& ConstructionPlaceFinder.multipleExpansionBuildMap.get(baseLocation) == true) {
+			cannotBuildRefinery = false;
+		}
+		return cannotBuildRefinery;
 	}
 
 	// Refinery를 해당 멀티에 가서 짓는다.
 	public void buildRefinery(BaseLocation baseLocation) {
-		BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
-				BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
-		ConstructionPlaceFinder.multipleRefineryBuildMap.put(baseLocation, false);
+
+		TilePosition refinery = ConstructionPlaceFinder.Instance()
+				.getRefineryPositionNear(baseLocation.getTilePosition());
+		if (refinery != null && MyBotModule.Broodwar.canBuildHere(refinery, UnitType.Terran_Refinery)) {
+			if (!ConstructionPlaceFinder.multipleExpansionBuildMap.containsKey(baseLocation)) {
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
+						BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
+				ConstructionPlaceFinder.multipleRefineryBuildMap.put(baseLocation, false);
+			}
+		}
+		checkIfRefineryCompleted(baseLocation);
+	}
+
+	private void checkIfRefineryCompleted(BaseLocation baseLocation) {
+
+		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			if (unit.getType() == UnitType.Terran_Refinery && unit.isCompleted()) {
+				if (unit.getDistance(baseLocation.getPosition()) < 200) {
+					ConstructionPlaceFinder.multipleRefineryBuildMap.replace(baseLocation, true);
+				}
+			}
+		}
+
 	}
 
 	// 해당 멀티에 Command Center 지을 수 있는지 여부 리턴
@@ -434,6 +519,7 @@ public class MultipleExpansionManager {
 				break;
 			}
 		}
+
 		return isBuildableBase[number];
 
 	}
