@@ -19,17 +19,25 @@ public class DefenseManager {
 	private Player self = MyBotModule.Broodwar.self();
 
 	// 위험지역으로 파견될 방어 병력 리스트 - Unit 리스트
-	public List<Unit> defenseList = new ArrayList<>();
+	public List<Unit> groundDefenseList = new ArrayList<>();
+	public List<Unit> airDefenseList = new ArrayList<>();
 
+	private boolean defenseFlag = false;
+	
 	public void update() {
 		// 1초에 한번 실행 > StrategyManager에서 수행하게 할 것
 		// 위험지역이 존재할 경우 방어병력 투입
 		DangerousLocation curDangerLoca = infoMngr.currentDangerousLocation;
 		if (curDangerLoca != null) {
+			if (!defenseFlag) {
+				defenseFlag = true;
+			}
 			executeDefense(curDangerLoca);
 		} else {
 			// 병력 역할 해제
-			deactivateDefense();
+			if (defenseFlag) {
+				deactivateDefense();				
+			}
 		}
 	}
 
@@ -40,23 +48,29 @@ public class DefenseManager {
 
 		int groundCnt = curDangerLoca.getGroundCnt(); // 적의 지상 병력
 		int airCnt = curDangerLoca.getAirCnt(); // 적의 공중 병력
-
-		// 리스트 초기화
-		defenseList.clear();
 		
 		if (curDangerLoca.getEnemyCnt() >= 6) {
 			// 위험 지역에 병력 모두 투입
 			assignAllCombatUnit();
 		} else {
-			// 유닛 배정
-			assignGroundCombatUnit(groundCnt);
-			assignAirCombatUnit(airCnt);			
+			// 지상 유닛 배정
+			if (groundDefenseList.size() < groundCnt) {
+				assignGroundCombatUnit(groundCnt - groundDefenseList.size());
+			}
+			// 공중 유닛 배정
+			if (airDefenseList.size() < airCnt) {
+				assignAirCombatUnit(airCnt - airDefenseList.size());			
+			}			
 		}
-
 		// 방어병력 위험지역으로 이동
-		if (defenseList.size() > 0) {
-			for (int i = 0; i < defenseList.size(); i++) {
-				commandUtil.attackMove(defenseList.get(i), dangerLocation.getPosition());
+		if (groundDefenseList.size() > 0) {
+			for (int i = 0; i < groundDefenseList.size(); i++) {
+				commandUtil.attackMove(groundDefenseList.get(i), dangerLocation.getPosition());
+			}
+		}
+		if (airDefenseList.size() > 0) {
+			for (int i = 0; i < airDefenseList.size(); i++) {
+				commandUtil.attackMove(airDefenseList.get(i), dangerLocation.getPosition());
 			}
 		}
 	}
@@ -66,11 +80,16 @@ public class DefenseManager {
 	
 		List<Unit> unitList = self.getUnits();
 		for (Unit unit : unitList) {
-			if (unit == null || !unit.exists() || !unit.isCompleted()) {
+			if (unit == null || !unit.exists() || !unit.isCompleted()
+					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
 				continue;				
 			}
 			if (infoMngr.isCombatUnitType(unit.getType())) {
-				defenseList.add(unit);
+				if (unit.getType().isFlyer()) {
+					airDefenseList.add(unit);
+				} else {
+					groundDefenseList.add(unit);					
+				}
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 			}
 		}
@@ -107,7 +126,7 @@ public class DefenseManager {
 				if (tankCnt == enemyCnt / 2) {
 					continue;
 				}
-				defenseList.add(unit);
+				groundDefenseList.add(unit);
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				tankCnt++;
 			} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
@@ -115,14 +134,14 @@ public class DefenseManager {
 					continue;
 				}
 				unit.unsiege();
-				defenseList.add(unit);
+				groundDefenseList.add(unit);
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				tankCnt++;
 			} else if (unit.getType() == UnitType.Terran_Vulture) {
 				if (vultureCnt == enemyCnt / 2) {
 					continue;					
 				}
-				defenseList.add(unit);
+				groundDefenseList.add(unit);
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				vultureCnt++;
 			}
@@ -136,7 +155,7 @@ public class DefenseManager {
 					continue;					
 				}
 				if (unit.getType() == UnitType.Terran_Vulture) {
-					defenseList.add(unit);
+					groundDefenseList.add(unit);
 					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					vultureCnt++;
 					if (vultureCnt + tankCnt == enemyCnt)
@@ -152,14 +171,14 @@ public class DefenseManager {
 					continue;					
 				}
 				if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
-					defenseList.add(unit);
+					groundDefenseList.add(unit);
 					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					tankCnt++;
 					if (tankCnt + vultureCnt == enemyCnt)
 						break;
 				} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
 					unit.unsiege();
-					defenseList.add(unit);
+					groundDefenseList.add(unit);
 					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					tankCnt++;
 					if (tankCnt + vultureCnt == enemyCnt)
@@ -176,7 +195,7 @@ public class DefenseManager {
 					continue;					
 				}
 				if (unit.getType() == UnitType.Terran_Vulture) {
-					defenseList.add(unit);
+					groundDefenseList.add(unit);
 					infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 					VultureMineManager.Instance().removeFromVultureForMine(unit);
 					MultipleCheckManager.Instance().deactivateCheckMode(unit);
@@ -208,7 +227,7 @@ public class DefenseManager {
 				continue;				
 			}
 			if (unit.getType() == UnitType.Terran_Goliath) {
-				defenseList.add(unit);
+				airDefenseList.add(unit);
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 				goliathCnt++;
 				if (goliathCnt == enemyCnt) {
@@ -220,16 +239,22 @@ public class DefenseManager {
 	
 	// 방어병력 공격모드 해제
 	private void deactivateDefense() {
-		if (defenseList == null || defenseList.isEmpty()) {
+		if ((groundDefenseList == null || groundDefenseList.isEmpty()) 
+				&& (airDefenseList == null || airDefenseList.isEmpty())) {
 			return;
 		}
 		
 		Unit defenseUnit;
-		for (int i=0; i<defenseList.size(); i++) {
-			defenseUnit = defenseList.get(i);
+		for (int i=0; i<groundDefenseList.size(); i++) {
+			defenseUnit = groundDefenseList.get(i);
 			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
 		}
-		
-		defenseList.clear();
+		for (int i=0; i<airDefenseList.size(); i++) {
+			defenseUnit = airDefenseList.get(i);
+			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
+		}
+		defenseFlag = false;
+		groundDefenseList.clear();
+		airDefenseList.clear();
 	}
 }
