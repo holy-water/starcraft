@@ -528,7 +528,7 @@ public class MultipleExpansionManager {
 			// 첫번째 multi 인 경우 본진에서 출발
 			// 두번째 multi 인 경웨 이전 멀티에 출발
 			if (orderNumber == 1) {
-				firstBuilding = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
+				firstBuilding = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
 			} else {
 				firstBuilding = orderOfBaseLocations.get(orderNumber - 1);
 			}

@@ -70,7 +70,7 @@ public class ConstructionPlaceFinder {
 	private static int[] FactoryYLocationForCircuit = { 20, 16, 105, 109 };
 	private static int[] FactoryXLocationForSpirit = { 0, 7, 11, 15, 109, 116, 120, 124, 13, 8, 4, 0, 122, 117, 113,
 			109 };
-	private static int[] FactoryYLocationForSpirit = { 24, 20, 14, 18, 108, 104, 103, 107 };
+	private static int[] FactoryYLocationForSpirit = { 22, 18, 14, 18, 108, 104, 103, 107 };
 
 	// 0805 - 최혜진 추가 투혼 맵 1시 방향 Bunker 올바른 위치 건설 위한 변수
 	public static boolean zergNot4Drone;
@@ -642,28 +642,52 @@ public class ConstructionPlaceFinder {
 					// 0802 - 최혜진 수정 투혼 맵에 Factory 좌표 지정
 					// 0806 - 최혜진 수정 투혼 맵 Factory 입구와 가깝게 좌표 수정
 					if (locationOfBase == 1) {
-						int numberOfFactoryBuiltInt = numberOfFactoryBuilt / 2;
-						if (numberOfFactoryBuiltInt < 16) {
-							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[numberOfFactoryBuilt % 2];
+						if (numberOfFactoryBuilt == 0) {
+							fx = 0;
+							fy = 26;
+						} else {
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = changedNumberOfFactoryBuilt / 2;
+							if (numberOfFactoryBuiltInt < 16) {
+								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+								fy = FactoryYLocationForSpirit[changedNumberOfFactoryBuilt % 2];
+							}
 						}
 					} else if (locationOfBase == 2) {
-						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 4;
-						if (numberOfFactoryBuiltInt < 16) {
-							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 2];
+						if (numberOfFactoryBuilt == 0) {
+							fx = 109;
+							fy = 10;
+						} else {
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = (changedNumberOfFactoryBuilt / 2) + 4;
+							if (numberOfFactoryBuiltInt < 16) {
+								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+								fy = FactoryYLocationForSpirit[(changedNumberOfFactoryBuilt % 2) + 2];
+							}
 						}
 					} else if (locationOfBase == 3) {
-						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 8;
-						if (numberOfFactoryBuiltInt < 16) {
-							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 4];
+						if (numberOfFactoryBuilt == 0) {
+							fx = 20;
+							fy = 109;
+						} else {
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = (changedNumberOfFactoryBuilt / 2) + 8;
+							if (numberOfFactoryBuiltInt < 16) {
+								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+								fy = FactoryYLocationForSpirit[(changedNumberOfFactoryBuilt % 2) + 4];
+							}
 						}
 					} else if (locationOfBase == 4) {
-						int numberOfFactoryBuiltInt = (numberOfFactoryBuilt / 2) + 12;
-						if (numberOfFactoryBuiltInt < 16) {
-							fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
-							fy = FactoryYLocationForSpirit[(numberOfFactoryBuilt % 2) + 6];
+						if (numberOfFactoryBuilt == 0) {
+							fx = 122;
+							fy = 99;
+						} else {
+							int changedNumberOfFactoryBuilt = numberOfFactoryBuilt - 1;
+							int numberOfFactoryBuiltInt = (changedNumberOfFactoryBuilt / 2) + 12;
+							if (numberOfFactoryBuiltInt < 16) {
+								fx = FactoryXLocationForSpirit[numberOfFactoryBuiltInt];
+								fy = FactoryYLocationForSpirit[(changedNumberOfFactoryBuilt % 2) + 6];
+							}
 						}
 					}
 				}
@@ -722,10 +746,10 @@ public class ConstructionPlaceFinder {
 						if (isFirstBuilt == false) {
 							isFirstBuilt = true;
 							ox = 0;
-							oy = 17;
+							oy = 15;
 						} else {
 							ox = 6;
-							oy = 17;
+							oy = 15;
 						}
 					} else if (locationOfBase == 2) {
 						if (isFirstBuilt == false) {
