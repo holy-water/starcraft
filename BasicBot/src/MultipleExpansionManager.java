@@ -106,6 +106,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(4));
 						} else if (enemyLocationOfBase == 3) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
@@ -118,6 +119,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(13));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(12));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(11));
 						} else if (enemyLocationOfBase == 4) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
@@ -130,6 +132,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(11));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(13));
 						}
 					} else if (locationOfBase == 2) {
 						if (enemyLocationOfBase == 1) {
@@ -144,6 +147,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(9));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(2));
 						} else if (enemyLocationOfBase == 3) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
@@ -156,6 +160,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(11));
 						} else if (enemyLocationOfBase == 4) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(4));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
@@ -168,6 +173,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(11));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(13));
 						}
 					} else if (locationOfBase == 3) {
 						if (enemyLocationOfBase == 1) {
@@ -182,6 +188,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(2));
 						} else if (enemyLocationOfBase == 2) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
@@ -194,6 +201,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(15));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(4));
 						} else if (enemyLocationOfBase == 4) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(7));
@@ -206,6 +214,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(6));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(13));
 						}
 					} else if (locationOfBase == 4) {
 						if (enemyLocationOfBase == 1) {
@@ -220,6 +229,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(4));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(2));
 						} else if (enemyLocationOfBase == 2) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(12));
@@ -232,6 +242,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(2));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(8));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(4));
 						} else if (enemyLocationOfBase == 3) {
 							orderOfBaseLocations.put(1, numberOfBaseLocations.get(13));
 							orderOfBaseLocations.put(2, numberOfBaseLocations.get(8));
@@ -244,6 +255,7 @@ public class MultipleExpansionManager {
 							orderOfBaseLocations.put(9, numberOfBaseLocations.get(1));
 							orderOfBaseLocations.put(10, numberOfBaseLocations.get(7));
 							orderOfBaseLocations.put(11, numberOfBaseLocations.get(12));
+							orderOfBaseLocations.put(12, numberOfBaseLocations.get(11));
 						}
 					}
 				} else { // 투혼 맵
@@ -496,9 +508,10 @@ public class MultipleExpansionManager {
 
 		TilePosition refinery = ConstructionPlaceFinder.Instance()
 				.getRefineryPositionNear(baseLocation.getTilePosition());
-		//System.out.println("refinery " + refinery.getX() + " " + refinery.getY());
+		// System.out.println("refinery " + refinery.getX() + " " + refinery.getY());
 		if (refinery != null && MyBotModule.Broodwar.canBuildHere(refinery, UnitType.Terran_Refinery)) {
-			if (!ConstructionPlaceFinder.multipleRefineryBuildMap.containsKey(baseLocation)) {
+			if (!ConstructionPlaceFinder.multipleRefineryBuildMap.containsKey(baseLocation)
+					&& BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
 						BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
 				ConstructionPlaceFinder.multipleRefineryBuildMap.put(baseLocation, false);

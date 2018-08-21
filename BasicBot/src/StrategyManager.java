@@ -68,6 +68,8 @@ public class StrategyManager {
 	private UnitType[] buildingTypes = { UnitType.Terran_Barracks, UnitType.Terran_Engineering_Bay,
 			UnitType.Terran_Bunker };
 
+	// 0821 - 최혜진 추가 Refinery 앞마당 위치
+	private TilePosition firstChokePointRefinery;
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 	// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가를 위한 변수 및 메소드 선언
 
@@ -606,17 +608,24 @@ public class StrategyManager {
 		}
 
 		// 0721 수정
+		// 0821 - 최혜진 수정 앞마당에 가스 있는지 검사한 후 없으면 건설 (부셔지는 경우도 대비)
 		if (countMgr.getMachineShop() > 1) {
-			if (self.completedUnitCount(UnitType.Terran_Command_Center) > countMgr.getRefinery()) {
+			boolean shouldContruct = true;
+			for (Unit refinery : myUnits) {
+				if (refinery.getType() == UnitType.Terran_Refinery
+						&& (refinery.isConstructing() || refinery.isCompleted())
+						&& refinery.getTilePosition().getX() == firstChokePointRefinery.getX()
+						&& refinery.getTilePosition().getY() == firstChokePointRefinery.getY()) {
+					shouldContruct = false;
+					break;
+				}
+			}
+
+			if (shouldContruct == true) {
 				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
 					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
 							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 					countMgr.setRefinery();
-				}
-			} else if (self.completedUnitCount(UnitType.Terran_Command_Center) < countMgr.getRefinery()) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
-					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
-							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 				}
 			}
 		}
@@ -1334,6 +1343,8 @@ public class StrategyManager {
 	private void setNumberOfBaseLocations() {
 		List<BaseLocation> multipleExpansionList = BWTA.getBaseLocations();
 		if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+			firstChokePointRefinery = ConstructionPlaceFinder.Instance()
+					.getRefineryPositionNear(informationMgr.getFirstExpansionLocation(self).getTilePosition());
 			for (BaseLocation tempBaseLocations : multipleExpansionList) {
 				int x = tempBaseLocations.getTilePosition().getX();
 				int y = tempBaseLocations.getTilePosition().getY();
