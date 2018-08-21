@@ -354,6 +354,28 @@ public class InformationManager {
 		return false;
 	}
 
+	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
+	public boolean isGroundEnemyUnitInWeaponRange(Unit targetUnit) {
+		if (targetUnit == null)
+			return false;
+
+		// 시야 내에 있는 유닛 리스트
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange());
+
+		// 적 유닛이 있는지 확인
+		for (Unit unit : list) {
+			if (unit == null)
+				continue;
+			if (unit.getPlayer() == enemyPlayer) {
+				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	// 0813 추가 - 지상 유닛
 	public boolean isGroundCombatUnitType(UnitType unitType) {
 		if (enemyRace == Race.Protoss) {

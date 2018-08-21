@@ -563,7 +563,14 @@ public class StrategyManager {
 				// 0729 - 최혜진 테스트
 				// 0805 - 최혜진 추가 Turret 최대 갯수 서킷 맵 5개 투혼 맵 6개
 				int limit = MyBotModule.Broodwar.mapFileName().contains("Circuit") ? 5 : 6;
+				Unit barracks = myUnitMap.get("Barracks");
 				if (countMgr.getTurret() == 0) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
+						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
+								BuildOrderItem.SeedPositionStrategy.TurretAround, true);
+						countMgr.setTurret();
+					}
+				} else if (countMgr.getTurret() == 1 && barracks != null && barracks.isLifted()) {
 					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Missile_Turret, null) == 0) {
 						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Missile_Turret,
 								BuildOrderItem.SeedPositionStrategy.TurretAround, true);
@@ -842,6 +849,7 @@ public class StrategyManager {
 				if (targetBaseLocation != null) {
 					double distance = mainDistance;
 					boolean changeDistance = true;
+					int weight = enemy.getRace() == Race.Terran ? 25 : 50;
 					for (Unit unit : myUnits) {
 						// 일꾼, 건물은 제외
 						if (unit.getType().isWorker() || unit.getType().isBuilding()) {
@@ -856,7 +864,7 @@ public class StrategyManager {
 						if (unit.getDistance(targetBaseLocation.getPosition()) > subDistance) {
 							// 지정된 거리보다 멀리 있을 때
 							if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-								if (!informationMgr.isGroundEnemyUnitInSight(unit)) {
+								if (!informationMgr.isGroundEnemyUnitInWeaponRange(unit)) {
 									unit.unsiege();
 								}
 							} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
@@ -879,8 +887,8 @@ public class StrategyManager {
 						} else if (frameCount % (24 * 5) == 5) {
 							if (changeDistance && unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
 								if (unit.getGroundWeaponCooldown() == 0
-										&& !informationMgr.isGroundEnemyUnitInSight(unit)) {
-									mainDistance -= 50;
+										&& !informationMgr.isGroundEnemyUnitInWeaponRange(unit)) {
+									mainDistance -= weight;
 									changeDistance = false;
 								}
 							}
@@ -1066,8 +1074,7 @@ public class StrategyManager {
 			return;
 		}
 
-		if (scanCount++ < 60) {
-			System.out.println(scanCount);
+		if (scanCount++ < 50) {
 			return;
 		}
 
@@ -1437,7 +1444,7 @@ public class StrategyManager {
 		if (unit.getAddon() != null) {
 			if (self.minerals() >= 150 && self.gas() >= 100) {
 				return UnitType.Terran_Siege_Tank_Tank_Mode;
-			} else if (self.gas() >= 300) {
+			} else if (self.gas() >= 250) {
 				return null;
 			}
 		}
