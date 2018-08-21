@@ -26,6 +26,9 @@ public class MultipleCheckManager {
 	// 모든 지역 체크 완료했는지 판단하는 flag
 	private boolean isAllChecked = false;
 	
+	// 마지막으로 체크할 멀티진영 번호
+	private int minCheckNum;
+	
 	// 돌아야할 위치 리스트
 	Map<Integer, BaseLocation> checkListMap = new HashMap<>();
 	Map<BaseLocation, Boolean> isCheckedMap = new HashMap<>();
@@ -44,18 +47,26 @@ public class MultipleCheckManager {
 		
 		// 적진 위치를 기준으로 한 멀티 체크 리스트
 		if (checkListMap == null || checkListMap.isEmpty()) {
+			multiExpMngr.initialUpdate();
 			checkListMap = multiExpMngr.orderOfBaseLocations;
-			for(int i=0; i<checkListMap.size(); i++) {
-				isCheckedMap.put(checkListMap.get(i), false);
+			if (checkListMap == null || checkListMap.isEmpty()) {
+				return;
+			}
+			BaseLocation tempLoca;
+			for(int i=1; i<=checkListMap.size(); i++) {
+				tempLoca = checkListMap.get(i);
+				isCheckedMap.put(tempLoca, false);
+			}
+			// 맵별 마지막 견제 장소 세팅
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				minCheckNum = 6;
+			} else {
+				minCheckNum = 3;
 			}
 		}
-		if (checkListMap == null || checkListMap.isEmpty()) {
-			return;
-		}
-		
+				
 		if (vultureMultiCheckList.size() < 6) {
 			assignVultureForCheck();
-			System.out.println("배정완료");
 		}
 		executeMultiCheck();
 	}
@@ -73,8 +84,11 @@ public class MultipleCheckManager {
 			}
 			if (unit == null || !unit.exists() || !unit.isCompleted()
 					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)
-					|| vultureMultiCheckList.contains(unit)
-					|| unit.isAttacking() || unit.isMoving()) {
+					|| vultureMultiCheckList.contains(unit)) {
+				continue;
+			}
+			// 마인 2개 이상 가지고 있는 벌처만 뽑기
+			if (unit.getSpiderMineCount() < 2) {
 				continue;
 			}
 			vultureMultiCheckList.add(unit);
@@ -97,7 +111,7 @@ public class MultipleCheckManager {
 		/// 다음 멀티 위치 정하고 이동
 		if (targetLocation == null) {
 			BaseLocation tempLoca;
-			for (int i=checkListMap.size()-1; i>=0; i--) {
+			for (int i=checkListMap.size(); i>=minCheckNum; i--) {
 				tempLoca = checkListMap.get(i);
 				if (!isCheckedMap.get(tempLoca)) {
 					targetLocation = tempLoca;
