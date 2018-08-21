@@ -34,6 +34,9 @@ public class MultipleExpansionManager {
 	private static Map<BaseLocation, Unit> scoutSCV = new HashMap<>();
 	private static Map<Unit, Integer> statusSCV = new HashMap<>();
 
+	/// 각 Worker 에 대한 WorkerJob 상황을 저장하는 자료구조 객체
+	public WorkerData workerData = new WorkerData();
+
 	public enum ScoutStatus {
 		Assign, MovingToBaseLocation, Arrived, RemoveSpiderMines
 
@@ -51,8 +54,8 @@ public class MultipleExpansionManager {
 		initialUpdate();
 
 		if (thisMulti != null) {
-			scountBaseLocation(thisMulti);
-			scountBaseLocation(nextMulti);
+			scoutBaseLocation(thisMulti);
+			scoutBaseLocation(nextMulti);
 			if (isCommandCenterBuildable(thisMulti)) {
 				buildCommandCenter(thisMulti);
 			}
@@ -259,7 +262,123 @@ public class MultipleExpansionManager {
 						}
 					}
 				} else { // 투혼 맵
-
+					if (locationOfBase == 1) {
+						if (enemyLocationOfBase == 2) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(5));
+						} else if (enemyLocationOfBase == 3) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(8));
+						} else if (enemyLocationOfBase == 4) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(11));
+						}
+					} else if (locationOfBase == 2) {
+						if (enemyLocationOfBase == 1) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(2));
+						} else if (enemyLocationOfBase == 3) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(8));
+						} else if (enemyLocationOfBase == 4) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(11));
+						}
+					} else if (locationOfBase == 3) {
+						if (enemyLocationOfBase == 1) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(2));
+						} else if (enemyLocationOfBase == 2) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(9));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(10));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(5));
+						} else if (enemyLocationOfBase == 4) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(11));
+						}
+					} else if (locationOfBase == 4) {
+						if (enemyLocationOfBase == 1) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(2));
+						} else if (enemyLocationOfBase == 2) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(6));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(7));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(8));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(5));
+						} else if (enemyLocationOfBase == 3) {
+							orderOfBaseLocations.put(1, numberOfBaseLocations.get(11));
+							orderOfBaseLocations.put(2, numberOfBaseLocations.get(3));
+							orderOfBaseLocations.put(3, numberOfBaseLocations.get(4));
+							orderOfBaseLocations.put(4, numberOfBaseLocations.get(5));
+							orderOfBaseLocations.put(5, numberOfBaseLocations.get(0));
+							orderOfBaseLocations.put(6, numberOfBaseLocations.get(1));
+							orderOfBaseLocations.put(7, numberOfBaseLocations.get(2));
+							orderOfBaseLocations.put(8, numberOfBaseLocations.get(8));
+						}
+					}
 				}
 				isMultipleExpansionOrderDecided = true;
 				multipleExpansionOrder = 1;
@@ -270,7 +389,7 @@ public class MultipleExpansionManager {
 	}
 
 	// 정찰 보내기 포함
-	public void scountBaseLocation(BaseLocation baseLocation) {
+	public void scoutBaseLocation(BaseLocation baseLocation) {
 		// 정찰 SCV 선정
 		Unit SCV = assignScoutIfNeeded(baseLocation);
 		// if (SCV != null && SCV.exists() == true && SCV.getHitPoints() > 0) {
@@ -305,6 +424,11 @@ public class MultipleExpansionManager {
 		if (SCV != null) {
 			// 아직 가보지 않은 곳이라면 move 명령
 			if (statusSCV.get(SCV) == ScoutStatus.Assign.ordinal()) {
+				// workerData.setWorkerJob(SCV, WorkerData.WorkerJob.Scout,
+				// currentScoutTargetBaseLocation.getStaticMinerals().get(0));
+				// commandUtil.move(SCV,
+				// currentScoutTargetBaseLocation.getStaticMinerals().get(0).getPosition());
+				// System.out.println(currentScoutTargetBaseLocation.getStaticMinerals().get(0).getPosition().getX());
 				commandUtil.move(SCV, currentScoutTargetBaseLocation.getPosition());
 				statusSCV.replace(SCV, ScoutStatus.MovingToBaseLocation.ordinal());
 			} else if (statusSCV.get(SCV) == ScoutStatus.MovingToBaseLocation.ordinal()) {
@@ -478,16 +602,30 @@ public class MultipleExpansionManager {
 			isBuildableBase[multipleExpansionOrder] = false;
 			multipleExpansionOrder++;
 			// System.out.println(multipleExpansionOrder);
-			if (multipleExpansionOrder <= 11) {
-				thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
+			if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
+				if (multipleExpansionOrder <= 11) {
+					thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
+				} else {
+					thisMulti = null;
+				}
+				if (multipleExpansionOrder + 1 <= 11) {
+					nextMulti = orderOfBaseLocations.get(multipleExpansionOrder + 1);
+				} else {
+					nextMulti = null;
+				}
 			} else {
-				thisMulti = null;
+				if (multipleExpansionOrder <= 8) {
+					thisMulti = orderOfBaseLocations.get(multipleExpansionOrder);
+				} else {
+					thisMulti = null;
+				}
+				if (multipleExpansionOrder + 1 <= 8) {
+					nextMulti = orderOfBaseLocations.get(multipleExpansionOrder + 1);
+				} else {
+					nextMulti = null;
+				}
 			}
-			if (multipleExpansionOrder + 1 <= 11) {
-				nextMulti = orderOfBaseLocations.get(multipleExpansionOrder + 1);
-			} else {
-				nextMulti = null;
-			}
+
 		}
 	}
 

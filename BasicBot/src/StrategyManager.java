@@ -1342,9 +1342,9 @@ public class StrategyManager {
 	// 0812 - 최혜진 추가 Expansion 위치에 번호 부여
 	private void setNumberOfBaseLocations() {
 		List<BaseLocation> multipleExpansionList = BWTA.getBaseLocations();
+		firstChokePointRefinery = ConstructionPlaceFinder.Instance()
+				.getRefineryPositionNear(informationMgr.getFirstExpansionLocation(self).getTilePosition());
 		if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-			firstChokePointRefinery = ConstructionPlaceFinder.Instance()
-					.getRefineryPositionNear(informationMgr.getFirstExpansionLocation(self).getTilePosition());
 			for (BaseLocation tempBaseLocations : multipleExpansionList) {
 				int x = tempBaseLocations.getTilePosition().getX();
 				int y = tempBaseLocations.getTilePosition().getY();
@@ -1383,7 +1383,35 @@ public class StrategyManager {
 				}
 			}
 		} else {
-
+			for (BaseLocation tempBaseLocations : multipleExpansionList) {
+				int x = tempBaseLocations.getTilePosition().getX();
+				int y = tempBaseLocations.getTilePosition().getY();
+				if (x == 7 && y == 6) {
+					numberOfBaseLocations.put(0, tempBaseLocations);
+				} else if (x == 14 && y == 38) {
+					numberOfBaseLocations.put(1, tempBaseLocations);
+				} else if (x == 50 && y == 6) {
+					numberOfBaseLocations.put(2, tempBaseLocations);
+				} else if (x == 117 && y == 7) {
+					numberOfBaseLocations.put(3, tempBaseLocations);
+				} else if (x == 88 && y == 13) {
+					numberOfBaseLocations.put(4, tempBaseLocations);
+				} else if (x == 117 && y == 52) {
+					numberOfBaseLocations.put(5, tempBaseLocations);
+				} else if (x == 7 && y == 116) {
+					numberOfBaseLocations.put(6, tempBaseLocations);
+				} else if (x == 36 && y == 112) {
+					numberOfBaseLocations.put(7, tempBaseLocations);
+				} else if (x == 7 && y == 72) {
+					numberOfBaseLocations.put(8, tempBaseLocations);
+				} else if (x == 117 && y == 117) {
+					numberOfBaseLocations.put(9, tempBaseLocations);
+				} else if (x == 110 && y == 88) {
+					numberOfBaseLocations.put(10, tempBaseLocations);
+				} else if (x == 75 && y == 118) {
+					numberOfBaseLocations.put(11, tempBaseLocations);
+				}
+			}
 		}
 	}
 
