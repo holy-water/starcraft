@@ -49,10 +49,10 @@ public class StrategyManager {
 	private boolean isFullScaleAttackStarted;
 
 	private boolean isInitialBuildOrderFinished;
-	// 0813 - 적 앞마당 근처 도착
-	private boolean isOverLoaction;
 	// 0709 - FrameCount 저장
 	private int frameCount;
+	// 0821 - ScanCount 저장
+	private int scanCount;
 	// 0814 - 공중 공격 위험도
 	private int airAttackLevel;
 	// 0811 - 적과의 거리
@@ -583,7 +583,7 @@ public class StrategyManager {
 		// 0722 추가 - 터렛 및 메카닉 업그레이드 추가
 		if (countMgr.getCompletedFactory() > 0) {
 			if (countMgr.getMachineShop() < Math.max(2, (int) Math.sqrt(countMgr.getCompletedFactory()))) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop, null) == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Machine_Shop) == 0) {
 					// 0702 - 최혜진 수정 입구로
 					// 0730 - 최혜진 수정 Factory 건설 전략 적용
 					BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Machine_Shop,
@@ -597,8 +597,8 @@ public class StrategyManager {
 						BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 				countMgr.setAcademy();
 			} else if (self.completedUnitCount(UnitType.Terran_Academy) > 0) {
-				if (countMgr.getComsatStation() == 0) {
-					for (int i = 0; i < self.completedUnitCount(UnitType.Terran_Command_Center); i++) {
+				if (countMgr.getComsatStation() != self.completedUnitCount(UnitType.Terran_Command_Center)) {
+					if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Comsat_Station) == 0) {
 						BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Comsat_Station,
 								BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 						countMgr.setComsatStation();
@@ -622,7 +622,7 @@ public class StrategyManager {
 			}
 
 			if (shouldContruct == true) {
-				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
+				if (BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery) == 0) {
 					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
 							BuildOrderItem.SeedPositionStrategy.FirstChokePoint, true);
 					countMgr.setRefinery();
@@ -771,9 +771,12 @@ public class StrategyManager {
 			if (barracks != null) {
 				if (!barracks.isLifted() && self.completedUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 1) {
 					barracks.lift();
+				} else if (barracks.isUnderAttack() || barracks.getHitPoints() < lastHitPoints[0]) {
+					barracks.move(informationMgr.getMainBaseLocation(self).getPosition());
 				} else {
 					barracks.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
 				}
+				lastHitPoints[0] = barracks.getHitPoints();
 			}
 
 			if (engineeringBay != null) {
@@ -851,6 +854,7 @@ public class StrategyManager {
 						double subDistance = unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode ? distance + 100
 								: distance + 300;
 						if (unit.getDistance(targetBaseLocation.getPosition()) > subDistance) {
+							// 지정된 거리보다 멀리 있을 때
 							if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
 								if (!informationMgr.isGroundEnemyUnitInSight(unit)) {
 									unit.unsiege();
@@ -870,6 +874,7 @@ public class StrategyManager {
 							}
 							commandUtil.attackMove(unit, targetBaseLocation.getPosition());
 						} else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+							// 지정된 거리보다 가까이 있을 때
 							unit.useTech(TechType.Tank_Siege_Mode);
 						} else if (frameCount % (24 * 5) == 5) {
 							if (changeDistance && unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
@@ -897,12 +902,9 @@ public class StrategyManager {
 		} else if (unit.isUnderAttack() || unit.getHitPoints() < lastHitPoints[index]) {
 			unit.move(getBarracksPosition(informationMgr.getMainBaseLocation(self)).toPosition());
 		} else if (unit.getDistance(targetBaseLocation.getPosition()) > mainDistance) {
-			if (isOverLoaction || unit.getDistance(getBarracksPosition(targetBaseLocation).toPosition()) < 50) {
-				unit.move(targetBaseLocation.getPosition());
-				isOverLoaction = true;
-			} else {
-				unit.move(getBarracksPosition(targetBaseLocation).toPosition());
-			}
+			unit.move(getBarracksPosition(targetBaseLocation).toPosition());
+		} else {
+			unit.stop();
 		}
 		lastHitPoints[index] = unit.getHitPoints();
 	}
@@ -911,8 +913,8 @@ public class StrategyManager {
 		if (race == Race.Protoss) {
 			return self.supplyUsed() > 360;
 		} else if (race == Race.Terran) {
-			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5
-					&& self.allUnitCount(UnitType.Terran_Vulture) > 5;
+			return (self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 5
+					&& self.allUnitCount(UnitType.Terran_Vulture) > 5) || self.supplyUsed() > 360;
 		} else {
 			return self.supplyUsed() > 300;
 		}
@@ -922,8 +924,7 @@ public class StrategyManager {
 		if (race == Race.Protoss) {
 			return self.supplyUsed() < 200;
 		} else if (race == Race.Terran) {
-			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode)
-					+ self.allUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) < 6;
+			return self.supplyUsed() < 200;
 		} else {
 			return self.supplyUsed() < 160;
 		}
@@ -1035,21 +1036,21 @@ public class StrategyManager {
 
 		boolean isUsed = false;
 
-		for (Unit unit : informationMgr.getUnitData(enemy).scanObjList) {
-			if (unit == null || !unit.exists()) {
+		for (Unit enemyUnit : informationMgr.getUnitData(enemy).scanObjList) {
+			if (enemyUnit == null || !enemyUnit.exists()) {
 				continue;
 			}
 
-			if (!unit.isDetected()) {
+			if (!enemyUnit.isDetected()) {
 				// 주변에 우리 공격유닛이 있을 때만 스캔을 사용할 것
-				List<Unit> unitList = MyBotModule.Broodwar.getUnitsInRadius(unit.getPosition(), 8 * Config.TILE_SIZE);
-				Unit tempUnit;
-				for (int i = 0; i < unitList.size(); i++) {
-					tempUnit = unitList.get(i);
-					if (tempUnit.getPlayer() == self) {
-						if (informationMgr.isCombatUnitType(tempUnit.getType())) {
+				List<Unit> unitList = MyBotModule.Broodwar.getUnitsInRadius(enemyUnit.getPosition(),
+						8 * Config.TILE_SIZE);
+
+				for (Unit unit : unitList) {
+					if (unit != null && unit.getPlayer() == self) {
+						if (informationMgr.isCombatUnitType(unit.getType())) {
+							executeScanAt(enemyUnit.getPosition());
 							isUsed = true;
-							executeScanAt(unit.getPosition());
 							break;
 						}
 					}
@@ -1062,6 +1063,11 @@ public class StrategyManager {
 		}
 
 		if (isFullScaleAttackStarted) {
+			return;
+		}
+
+		if (scanCount++ < 60) {
+			System.out.println(scanCount);
 			return;
 		}
 
@@ -1088,10 +1094,9 @@ public class StrategyManager {
 					}
 				} else {
 					comsat.useTech(TechType.Scanner_Sweep, enemyBase.getPosition());
+					scanCount = 0;
 					break;
 				}
-			} else {
-				break;
 			}
 		}
 	}

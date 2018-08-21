@@ -425,7 +425,7 @@ public class InformationManager {
 
 	// 특정 baseLocation을 위험도 체크 가능한 객체로 반환
 	public DangerousLocation researchForce(BaseLocation baseLocation) {
-		
+
 		List<Unit> enemyList = MyBotModule.Broodwar.enemy().getUnits();
 		DangerousLocation tempDangerLocation = new DangerousLocation();
 
@@ -433,15 +433,15 @@ public class InformationManager {
 		int airForcePoint = 0;
 		int groundForcePoint = 0;
 
-		for(Unit enemy: enemyList) {
+		for (Unit enemy : enemyList) {
 			if (enemy == null || !enemy.exists() || !enemy.isCompleted()) {
 				continue;
 			}
-			
+
 			if (enemy.getType().isWorker() || enemy.getType().isBuilding()) {
 				continue;
 			}
-			
+
 			// 유닛이 해당 지역에 들어와있는지 확인
 			if (BWTA.getRegion(enemy.getPosition()) == baseLocation.getRegion()) {
 				// 전투 유닛인 경우만 고려
@@ -455,7 +455,7 @@ public class InformationManager {
 				}
 			}
 		}
-		
+
 		// 병력이 있을 때만 위험지역으로 return
 		if (forcePoint > 0) {
 			tempDangerLocation.setBaseLocation(baseLocation);
