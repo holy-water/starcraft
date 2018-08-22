@@ -15,7 +15,6 @@ public class DefenseManager {
 	}
 
 	private CommandUtil commandUtil = new CommandUtil();
-	private UnitData unitdata = new UnitData();
 	private InformationManager infoMngr = InformationManager.Instance();
 	private Player self = MyBotModule.Broodwar.self();
 
