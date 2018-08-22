@@ -324,8 +324,10 @@ public class InformationManager {
 		for (Unit unit : list) {
 			if (unit == null)
 				continue;
-			if (unit.getPlayer() == enemyPlayer && isCombatUnitType(unit.getType())) {
-				return true;
+			if (unit.getPlayer() == enemyPlayer) {
+				if (isCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+					return true;
+				}
 			}
 		}
 
@@ -355,12 +357,56 @@ public class InformationManager {
 	}
 
 	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
+	public Unit getGroundEnemyUnitInSight(Unit targetUnit) {
+		if (targetUnit == null)
+			return null;
+
+		// 시야 내에 있는 유닛 리스트
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().sightRange());
+
+		// 적 유닛이 있는지 확인
+		for (Unit unit : list) {
+			if (unit == null)
+				continue;
+			if (unit.getPlayer() == enemyPlayer) {
+				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+					return unit;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
 	public boolean isGroundEnemyUnitInWeaponRange(Unit targetUnit) {
 		if (targetUnit == null)
 			return false;
 
 		// 시야 내에 있는 유닛 리스트
-		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange());
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange() + 32);
+
+		// 적 유닛이 있는지 확인
+		for (Unit unit : list) {
+			if (unit == null)
+				continue;
+			if (unit.getPlayer() == enemyPlayer) {
+				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
+	public boolean isGroundEnemyUnitInWeaponRange(Unit targetUnit, int weight) {
+		if (targetUnit == null)
+			return false;
+
+		// 시야 내에 있는 유닛 리스트
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange() + weight);
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
