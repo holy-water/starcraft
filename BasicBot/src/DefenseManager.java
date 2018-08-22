@@ -15,6 +15,7 @@ public class DefenseManager {
 	}
 
 	private CommandUtil commandUtil = new CommandUtil();
+	private UnitData unitdata = new UnitData();
 	private InformationManager infoMngr = InformationManager.Instance();
 	private Player self = MyBotModule.Broodwar.self();
 
@@ -23,7 +24,7 @@ public class DefenseManager {
 	public List<Unit> airDefenseList = new ArrayList<>();
 
 	private boolean defenseFlag = false;
-	
+
 	public void update() {
 		// 1초에 한번 실행 > StrategyManager에서 수행하게 할 것
 		// 위험지역이 존재할 경우 방어병력 투입
@@ -36,7 +37,7 @@ public class DefenseManager {
 		} else {
 			// 병력 역할 해제
 			if (defenseFlag) {
-				deactivateDefense();				
+				deactivateDefense();
 			}
 		}
 	}
@@ -48,8 +49,10 @@ public class DefenseManager {
 
 		int groundCnt = curDangerLoca.getGroundCnt(); // 적의 지상 병력
 		int airCnt = curDangerLoca.getAirCnt(); // 적의 공중 병력
-		
-		
+
+		// 죽은 유닛 List 삭제
+		checkIfDead();
+
 		if (curDangerLoca.getEnemyCnt() >= 6) {
 			// 위험 지역에 병력 모두 투입
 			assignAllCombatUnit();
@@ -60,9 +63,10 @@ public class DefenseManager {
 			}
 			// 공중 유닛 배정
 			if (airDefenseList.size() < airCnt) {
-				assignAirCombatUnit(airCnt - airDefenseList.size());			
+				assignAirCombatUnit(airCnt - airDefenseList.size());
 			}
 		}
+
 		// 방어병력 위험지역으로 이동
 		if (groundDefenseList.size() > 0) {
 			for (int i = 0; i < groundDefenseList.size(); i++) {
@@ -76,34 +80,55 @@ public class DefenseManager {
 		}
 	}
 
+	// 죽은 Unit 제거
+	private void checkIfDead() {
+
+		if (groundDefenseList.size() > 0) {
+			for (int i = 0; i < groundDefenseList.size(); i++) {
+				if (groundDefenseList.get(i) == null || !groundDefenseList.get(i).exists()
+						|| groundDefenseList.get(i).getHitPoints() <= 0) {
+					groundDefenseList.remove(i);
+				}
+			}
+		}
+		if (airDefenseList.size() > 0) {
+			for (int i = 0; i < airDefenseList.size(); i++) {
+				if (airDefenseList.get(i) == null || !airDefenseList.get(i).exists()
+						|| airDefenseList.get(i).getHitPoints() <= 0) {
+					airDefenseList.remove(i);
+				}
+			}
+		}
+	}
+
 	// 총공격
 	private void assignAllCombatUnit() {
-		
+
 		List<Unit> unitList = self.getUnits();
 		for (Unit unit : unitList) {
 			if (unit == null || !unit.exists() || !unit.isCompleted()) {
-				continue;				
+				continue;
 			}
-			
+
 			if (unit.getType().isWorker() || unit.getType().isBuilding()) {
 				continue;
-	        }
-			
+			}
+
 			if (infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
-               continue;
-            }
-			
+				continue;
+			}
+
 			if (infoMngr.isCombatUnitType(unit.getType())) {
 				if (unit.getType().isFlyer()) {
 					airDefenseList.add(unit);
 				} else {
-					groundDefenseList.add(unit);					
+					groundDefenseList.add(unit);
 				}
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
 			}
 		}
 	}
-	
+
 	// 지상공격시 - 탱크 + 벌쳐
 	private void assignGroundCombatUnit(int enemyCnt) {
 
@@ -128,9 +153,9 @@ public class DefenseManager {
 			// 유닛이 정상 유닛이고 임무가 없는 상태인 경우에만 선택
 			if (unit == null || !unit.exists() || !unit.isCompleted()
 					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
-				continue;				
+				continue;
 			}
-			
+
 			if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 				if (tankCnt == enemyCnt / 2) {
 					continue;
@@ -148,7 +173,7 @@ public class DefenseManager {
 				tankCnt++;
 			} else if (unit.getType() == UnitType.Terran_Vulture) {
 				if (vultureCnt == enemyCnt / 2) {
-					continue;					
+					continue;
 				}
 				groundDefenseList.add(unit);
 				infoMngr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Defense);
@@ -161,7 +186,7 @@ public class DefenseManager {
 			for (Unit unit : unitList) {
 				if (unit == null || !unit.exists() || !unit.isCompleted()
 						|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
-					continue;					
+					continue;
 				}
 				if (unit.getType() == UnitType.Terran_Vulture) {
 					groundDefenseList.add(unit);
@@ -176,8 +201,8 @@ public class DefenseManager {
 		else if (tankCnt == enemyCnt / 2 && vultureCnt < enemyCnt / 2) {
 			for (Unit unit : unitList) {
 				if (unit == null || !unit.exists() || !unit.isCompleted()
-					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
-					continue;					
+						|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
+					continue;
 				}
 				if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 					groundDefenseList.add(unit);
@@ -195,13 +220,13 @@ public class DefenseManager {
 				}
 			}
 		}
-		
+
 		// 그래도 부족한 경우 Mine, Check 임무 가지고 있는 벌처로 보완
 		if (vultureCnt + tankCnt < enemyCnt) {
 			for (Unit unit : infoMngr.getUnitData(self).unitJobMap.keySet()) {
 				if (unit == null || !unit.exists() || !unit.isCompleted()
 						|| infoMngr.getUnitData(self).unitJobMap.get(unit) == UnitData.UnitJob.Defense) {
-					continue;					
+					continue;
 				}
 				if (unit.getType() == UnitType.Terran_Vulture) {
 					groundDefenseList.add(unit);
@@ -212,7 +237,7 @@ public class DefenseManager {
 					if (vultureCnt + tankCnt == enemyCnt)
 						break;
 				}
-			}			
+			}
 		}
 	}
 
@@ -233,7 +258,7 @@ public class DefenseManager {
 		for (Unit unit : unitList) {
 			if (unit == null || !unit.exists() || !unit.isCompleted()
 					|| infoMngr.getUnitData(self).unitJobMap.containsKey(unit)) {
-				continue;				
+				continue;
 			}
 			if (unit.getType() == UnitType.Terran_Goliath) {
 				airDefenseList.add(unit);
@@ -245,16 +270,16 @@ public class DefenseManager {
 			}
 		}
 	}
-	
+
 	// 방어병력 공격모드 해제
 	private void deactivateDefense() {
-		
+
 		Unit defenseUnit;
-		for (int i=0; i<groundDefenseList.size(); i++) {
+		for (int i = 0; i < groundDefenseList.size(); i++) {
 			defenseUnit = groundDefenseList.get(i);
 			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
 		}
-		for (int i=0; i<airDefenseList.size(); i++) {
+		for (int i = 0; i < airDefenseList.size(); i++) {
 			defenseUnit = airDefenseList.get(i);
 			infoMngr.getUnitData(self).unitJobMap.remove(defenseUnit);
 		}
