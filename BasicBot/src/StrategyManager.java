@@ -166,6 +166,9 @@ public class StrategyManager {
 		// 0820 - 최혜진 추가 Multiple Expansion
 		executeMultipleExpansion();
 
+		// 멀티견제
+		// executeMultiCheck();
+		
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
 		// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가
@@ -1213,6 +1216,22 @@ public class StrategyManager {
 		MultipleExpansionManager.Instance().update();
 
 	}
+	
+	/*private void executeMultiCheck() {
+		
+		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
+		if (isInitialBuildOrderFinished == false) {
+			return;
+		}
+
+		// 1초에 한번만 실행
+		if (frameCount % 24 != 21) {
+			return;
+		}
+
+		MultipleCheckManager.Instance().update();
+		
+	}*/
 
 	public void setInitialBuildOrder() {
 
