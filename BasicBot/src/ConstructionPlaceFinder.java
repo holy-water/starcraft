@@ -54,10 +54,10 @@ public class ConstructionPlaceFinder {
 			120, 106, 102 };
 	private static int[] turretYLocationForCircuit = { 33, 0, 42, 19, 6, 33, 0, 42, 19, 6, 96, 0, 85, 107, 120, 96, 0,
 			85, 107, 120 };
-	private static int[] turretXLocationForSpirit = { 0, 2, 8, 26, 22, 0, 94, 80, 106, 120, 0, 32, 46, 21, 6, 0, 124,
-			115, 101, 102 };
-	private static int[] turretYLocationForSpirit = { 0, 30, 44, 19, 6, 0, 3, 12, 20, 29, 0, 125, 113, 104, 97, 0, 95,
-			82, 107, 120 };
+	private static int[] turretXLocationForSpirit = { 12, 0, 2, 8, 26, 22, 85, 0, 94, 80, 106, 120, 40, 0, 32, 46, 21,
+			6, 114, 0, 124, 115, 101, 102 };
+	private static int[] turretYLocationForSpirit = { 35, 0, 30, 44, 19, 6, 18, 0, 3, 12, 20, 29, 108, 0, 125, 113, 104,
+			97, 92, 0, 95, 82, 107, 120 };
 	// 0730 - 최혜진 추가
 	public static int numberOfFactoryBuilt = 0;
 	private static boolean isFirstBuilt;
@@ -519,7 +519,7 @@ public class ConstructionPlaceFinder {
 					// 0802 - 최혜진 수정 투혼 맵에 Turret 좌표 지정
 					// 0805 - 최혜진 수정
 					if (locationOfBase == 1) {
-						if (numberOfTurretBuilt % 5 == 0) {
+						if (numberOfTurretBuilt % 6 == 1) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -529,11 +529,11 @@ public class ConstructionPlaceFinder {
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[numberOfTurretBuilt % 5];
-							turrety = turretYLocationForSpirit[numberOfTurretBuilt % 5];
+							turretx = turretXLocationForSpirit[numberOfTurretBuilt % 6];
+							turrety = turretYLocationForSpirit[numberOfTurretBuilt % 6];
 						}
 					} else if (locationOfBase == 2) {
-						if (numberOfTurretBuilt % 5 == 0) {
+						if (numberOfTurretBuilt % 6 == 1) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -543,11 +543,11 @@ public class ConstructionPlaceFinder {
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 5) + 5];
-							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 5];
+							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 6) + 6];
+							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 6) + 6];
 						}
 					} else if (locationOfBase == 3) {
-						if (numberOfTurretBuilt % 5 == 0) {
+						if (numberOfTurretBuilt % 6 == 1) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -557,11 +557,11 @@ public class ConstructionPlaceFinder {
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 5) + 10];
-							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 10];
+							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 6) + 12];
+							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 6) + 12];
 						}
 					} else if (locationOfBase == 4) {
-						if (numberOfTurretBuilt % 5 == 0) {
+						if (numberOfTurretBuilt % 6 == 1) {
 							tempChokePoint = InformationManager.Instance()
 									.getSecondChokePoint(MyBotModule.Broodwar.self());
 							if (tempChokePoint != null) {
@@ -571,8 +571,8 @@ public class ConstructionPlaceFinder {
 								turrety = desiredPosition.getY();
 							}
 						} else {
-							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 5) + 15];
-							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 5) + 15];
+							turretx = turretXLocationForSpirit[(numberOfTurretBuilt % 6) + 18];
+							turrety = turretYLocationForSpirit[(numberOfTurretBuilt % 6) + 18];
 						}
 
 					}
