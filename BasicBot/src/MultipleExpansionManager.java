@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import bwapi.Game;
 import bwapi.Player;
@@ -63,13 +64,56 @@ public class MultipleExpansionManager {
 	public void update() {
 
 		initialUpdate();
+		checkIfSCVDead();
 
 		if (thisMulti != null) {
-			scoutBaseLocation(thisMulti);
-			scoutBaseLocation(nextMulti);
+			if (mb.mapFileName().contains("Circuit")) {
+				if (multipleExpansionOrder <= 11) {
+					scoutBaseLocation(thisMulti, multipleExpansionOrder);
+				}
+				if (multipleExpansionOrder <= 10) {
+					scoutBaseLocation(nextMulti, multipleExpansionOrder + 1);
+				}
+			} else {
+				if (multipleExpansionOrder <= 8) {
+					scoutBaseLocation(thisMulti, multipleExpansionOrder);
+				}
+				if (multipleExpansionOrder <= 7) {
+					scoutBaseLocation(nextMulti, multipleExpansionOrder + 1);
+				}
+			}
 			if (isCommandCenterBuildable(thisMulti)) {
 				buildCommandCenter(thisMulti);
 			}
+		}
+	}
+
+	// 죽은 SCV 정리
+	private void checkIfSCVDead() {
+
+		Unit unit;
+		if (!scoutSCV.isEmpty()) {
+
+			Set<BaseLocation> keys = scoutSCV.keySet();
+			List<BaseLocation> toRemove = new ArrayList<>();
+			for (BaseLocation baseLocation : keys) {
+				unit = scoutSCV.get(baseLocation);
+				if (unit == null || !unit.exists() || unit.getHitPoints() <= 0) {
+					toRemove.add(baseLocation);
+				}
+			}
+			keys.removeAll(toRemove);
+		}
+
+		if (!statusSCV.isEmpty()) {
+			Set<Unit> keys = statusSCV.keySet();
+			List<Unit> toRemove = new ArrayList<>();
+			for (Unit SCV : keys) {
+				if (SCV == null || !SCV.exists() || SCV.getHitPoints() <= 0) {
+					toRemove.add(SCV);
+				}
+			}
+			keys.removeAll(toRemove);
 		}
 	}
 
@@ -397,9 +441,10 @@ public class MultipleExpansionManager {
 	}
 
 	// 정찰 보내기 포함
-	public void scoutBaseLocation(BaseLocation baseLocation) {
+	public void scoutBaseLocation(BaseLocation baseLocation, int order) {
+
 		// 정찰 SCV 선정
-		Unit SCV = assignScoutIfNeeded(baseLocation);
+		Unit SCV = assignScoutIfNeeded(baseLocation, order);
 		moveScoutUnit(baseLocation, SCV);
 	}
 
@@ -549,7 +594,7 @@ public class MultipleExpansionManager {
 	}
 
 	// Scout 역할의 SCV 선정
-	private Unit assignScoutIfNeeded(BaseLocation baseLocation) {
+	private Unit assignScoutIfNeeded(BaseLocation baseLocation, int orderNumber) {
 
 		Unit unit = null;
 		if (!scoutSCV.containsKey(baseLocation)) {
@@ -557,18 +602,9 @@ public class MultipleExpansionManager {
 
 			// 이전 Multi에 있던 SCV를 선정
 			BaseLocation firstBuilding = null;
-			int orderNumber = 0;
-			for (int i : orderOfBaseLocations.keySet()) {
-				if (orderOfBaseLocations.get(i).getTilePosition().getX() == baseLocation.getTilePosition().getX()
-						&& orderOfBaseLocations.get(i).getTilePosition().getY() == baseLocation.getTilePosition()
-								.getY()) {
-					orderNumber = i;
-					break;
-				}
-			}
 
 			// 첫번째 multi 인 경우 본진에서 출발
-			// 두번째 multi 인 경웨 이전 멀티에 출발
+			// 두번째 multi 인 경우 이전 멀티에 출발
 			if (orderNumber == 1) {
 				firstBuilding = info.getFirstExpansionLocation(self);
 			} else {
@@ -615,6 +651,31 @@ public class MultipleExpansionManager {
 					BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Command_Center,
 							BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
 					ConstructionPlaceFinder.multipleExpansionBuildMap.put(baseLocation, false);
+				}
+				for (ConstructionTask b : ConstructionManager.Instance().getConstructionQueue()) {
+					if (b.getStatus() != ConstructionTask.ConstructionStatus.Assigned.ordinal()) {
+						continue;
+					}
+					if (b.getType() != UnitType.Terran_Command_Center) {
+						continue;
+					}
+					if (b.getConstructionWorker() == null || b.getConstructionWorker().exists() == false
+							|| b.getConstructionWorker().getHitPoints() <= 0) {
+						// 저그 종족 건물 중 Extractor 건물의 경우 일꾼이 exists = false 이지만 isConstructing = true 가
+						// 되므로, 일꾼이 죽은 경우가 아니다
+
+						// Unassigned 된 상태로 되돌린다
+						WorkerManager.Instance().setIdleWorker(b.getConstructionWorker());
+
+						// free the previous location in reserved
+						ConstructionPlaceFinder.Instance().freeTiles(b.getFinalPosition(), b.getType().tileWidth(),
+								b.getType().tileHeight());
+						b.setConstructionWorker(null);
+						b.setBuildCommandGiven(false);
+						b.setFinalPosition(TilePosition.None);
+						b.setStatus(ConstructionTask.ConstructionStatus.Unassigned.ordinal());
+
+					}
 				}
 			}
 		}
@@ -688,11 +749,35 @@ public class MultipleExpansionManager {
 		TilePosition refinery = ConstructionPlaceFinder.Instance()
 				.getRefineryPositionNear(baseLocation.getTilePosition());
 		if (refinery != null && mb.canBuildHere(refinery, UnitType.Terran_Refinery)) {
-			if (!ConstructionPlaceFinder.multipleRefineryBuildMap.containsKey(baseLocation)
-					&& BuildManager.Instance().buildQueue.getItemCount(UnitType.Terran_Refinery, null) == 0) {
+			if (!ConstructionPlaceFinder.multipleRefineryBuildMap.containsKey(baseLocation)) {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
 						BuildOrderItem.SeedPositionStrategy.MultipleExpansion, true);
 				ConstructionPlaceFinder.multipleRefineryBuildMap.put(baseLocation, false);
+			}
+			for (ConstructionTask b : ConstructionManager.Instance().getConstructionQueue()) {
+				if (b.getStatus() != ConstructionTask.ConstructionStatus.Assigned.ordinal()) {
+					continue;
+				}
+				if (b.getType() != UnitType.Terran_Refinery) {
+					continue;
+				}
+				if (b.getConstructionWorker() == null || b.getConstructionWorker().exists() == false
+						|| b.getConstructionWorker().getHitPoints() <= 0) {
+					// 저그 종족 건물 중 Extractor 건물의 경우 일꾼이 exists = false 이지만 isConstructing = true 가
+					// 되므로, 일꾼이 죽은 경우가 아니다
+
+					// Unassigned 된 상태로 되돌린다
+					WorkerManager.Instance().setIdleWorker(b.getConstructionWorker());
+
+					// free the previous location in reserved
+					ConstructionPlaceFinder.Instance().freeTiles(b.getFinalPosition(), b.getType().tileWidth(),
+							b.getType().tileHeight());
+					b.setConstructionWorker(null);
+					b.setBuildCommandGiven(false);
+					b.setFinalPosition(TilePosition.None);
+					b.setStatus(ConstructionTask.ConstructionStatus.Unassigned.ordinal());
+
+				}
 			}
 		}
 		checkIfRefineryCompleted(baseLocation);

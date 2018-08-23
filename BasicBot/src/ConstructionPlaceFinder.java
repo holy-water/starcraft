@@ -1,12 +1,10 @@
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.TreeMap;
 
+import bwapi.Player;
 import bwapi.Position;
 import bwapi.Race;
 import bwapi.TilePosition;
@@ -36,6 +34,10 @@ public class ConstructionPlaceFinder {
 	private Set<TilePosition> tilesToAvoid = new HashSet<TilePosition>();
 
 	private static ConstructionPlaceFinder instance = new ConstructionPlaceFinder();
+	private InformationManager info = InformationManager.Instance();
+	private Player self = MyBotModule.Broodwar.self();
+	private Player enemy = MyBotModule.Broodwar.enemy();
+	private StrategyManager stmgr = StrategyManager.Instance();
 
 	private static boolean isInitialized = false;
 	// 0701 - 최혜진 추가 Supply Depot 위치 지정을 위한 변수 선언
@@ -82,12 +84,6 @@ public class ConstructionPlaceFinder {
 	private static int[] expansionYLocaitonForSpirit = { 34, 36, 37, 18, 16, 16, 107, 110, 110, 92, 91, 90 };
 	private static int expansionOrder;
 
-	// 0811 - 최혜진 추가 순서가 아직 정해진지 여부를 판단
-	private static boolean isMultipleExpansionOrderDecided;
-	private static Map<Integer, BaseLocation> numberOfBaseLocations = new HashMap<>();
-	private static TreeMap<Integer, BaseLocation> orderOfBaseLocations = new TreeMap<>();
-	private static int multipleExpansionOrder;
-
 	// 0814 - 최혜진 추가
 	public static Map<BaseLocation, Boolean> multipleExpansionBuildMap = new HashMap<>();
 	public static Map<BaseLocation, Boolean> multipleRefineryBuildMap = new HashMap<>();
@@ -133,13 +129,12 @@ public class ConstructionPlaceFinder {
 			switch (seedPositionStrategy) {
 
 			case MainBaseLocation:
-				desiredPosition = getBuildLocationNear(buildingType, InformationManager.Instance()
-						.getMainBaseLocation(MyBotModule.Broodwar.self()).getTilePosition());
+				desiredPosition = getBuildLocationNear(buildingType, info.getMainBaseLocation(self).getTilePosition());
 				break;
 
 			case MainBaseBackYard:
-				tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
-				tempChokePoint = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self());
+				tempBaseLocation = info.getMainBaseLocation(self);
+				tempChokePoint = info.getFirstChokePoint(self);
 				tempBaseRegion = BWTA.getRegion(tempBaseLocation.getPosition());
 
 				// std::cout << "y";
@@ -152,8 +147,8 @@ public class ConstructionPlaceFinder {
 				// FirstChokePoint 가 null 이면, MainBaseLocation 주위에서 가능한 곳을 리턴한다
 				if (tempChokePoint == null) {
 					// std::cout << "r";
-					desiredPosition = getBuildLocationNear(buildingType, InformationManager.Instance()
-							.getMainBaseLocation(MyBotModule.Broodwar.self()).getTilePosition());
+					desiredPosition = getBuildLocationNear(buildingType,
+							info.getMainBaseLocation(self).getTilePosition());
 					break;
 				}
 
@@ -237,7 +232,7 @@ public class ConstructionPlaceFinder {
 				break;
 
 			case FirstExpansionLocation:
-				tempBaseLocation = InformationManager.Instance().getFirstExpansionLocation(MyBotModule.Broodwar.self());
+				tempBaseLocation = info.getFirstExpansionLocation(self);
 				if (tempBaseLocation != null) {
 					// desiredPosition = getBuildLocationNear(buildingType,
 					// tempBaseLocation.getTilePosition());
@@ -246,14 +241,14 @@ public class ConstructionPlaceFinder {
 				break;
 
 			case FirstChokePoint:
-				tempChokePoint = InformationManager.Instance().getFirstChokePoint(MyBotModule.Broodwar.self());
+				tempChokePoint = info.getFirstChokePoint(self);
 				if (tempChokePoint != null) {
 					desiredPosition = getBuildLocationNear(buildingType, tempChokePoint.getCenter().toTilePosition());
 				}
 				break;
 
 			case SecondChokePoint:
-				tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+				tempChokePoint = info.getSecondChokePoint(self);
 				if (tempChokePoint != null) {
 					desiredPosition = getBuildLocationNear(buildingType, tempChokePoint.getCenter().toTilePosition());
 				}
@@ -263,11 +258,10 @@ public class ConstructionPlaceFinder {
 			case SupplyDepotPosition:
 				if (isSupplyDepotBuild == false) { // Supply Depot 첫번째 위치 지정인 경우
 					// BaseLocation이 맵의 어느 부분에 위치하는지 파악하고 초기값 리턴
-					tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
+					tempBaseLocation = info.getMainBaseLocation(self);
 					if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-						tempFirstExpansion = InformationManager.Instance()
-								.getFirstExpansionLocation(MyBotModule.Broodwar.self());
-						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						tempFirstExpansion = info.getFirstExpansionLocation(self);
+						tempChokePoint = info.getSecondChokePoint(self);
 						int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
 						int dy = tempBaseLocation.getTilePosition().getY()
 								- tempFirstExpansion.getTilePosition().getY();
@@ -300,9 +294,8 @@ public class ConstructionPlaceFinder {
 						}
 					} else {
 						// 0726 - 최혜진 추가 투혼 맵 적용
-						tempFirstExpansion = InformationManager.Instance()
-								.getFirstExpansionLocation(MyBotModule.Broodwar.self());
-						tempChokePoint = InformationManager.Instance().getSecondChokePoint(MyBotModule.Broodwar.self());
+						tempFirstExpansion = info.getFirstExpansionLocation(self);
+						tempChokePoint = info.getSecondChokePoint(self);
 						int dx = tempBaseLocation.getX() - tempChokePoint.getCenter().getX();
 						int dy = tempBaseLocation.getTilePosition().getY()
 								- tempFirstExpansion.getTilePosition().getY();
@@ -354,7 +347,13 @@ public class ConstructionPlaceFinder {
 				int blocky = 0;
 				// 0807 - 최혜진 수정 앞마당 입구 막기 좌표 수정
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
-					if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+					if (enemy.getRace() == Race.Terran) {
+						if (expansionOrder >= 3 && buildingType == UnitType.Terran_Bunker) {
+							desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
+									BuildOrderItem.SeedPositionStrategy.SecondChokePoint);
+							expansionOrder++;
+							break;
+						}
 						if (expansionOrder == 0) {
 							int index = expansionOrder + ((locationOfBase - 1) * 3);
 							if (index < 12) {
@@ -375,15 +374,30 @@ public class ConstructionPlaceFinder {
 
 						}
 					} else {
-						int index = expansionOrder + ((locationOfBase - 1) * 3);
-						if (index < 12) {
-							blockx = expansionXLocaitonForCircuit[index];
-							blocky = expansionYLocaitonForCircuit[index];
-							expansionOrder++;
+						if (expansionOrder >= 3 && buildingType == UnitType.Terran_Bunker) {
+							int index = 1 + ((locationOfBase - 1) * 3);
+							if (index < 12) {
+								blockx = expansionXLocaitonForCircuit[index];
+								blocky = expansionYLocaitonForCircuit[index];
+								expansionOrder++;
+							}
+						} else {
+							int index = expansionOrder + ((locationOfBase - 1) * 3);
+							if (index < 12) {
+								blockx = expansionXLocaitonForCircuit[index];
+								blocky = expansionYLocaitonForCircuit[index];
+								expansionOrder++;
+							}
 						}
 					}
 				} else {
-					if (MyBotModule.Broodwar.enemy().getRace() == Race.Terran) {
+					if (enemy.getRace() == Race.Terran) {
+						if (expansionOrder >= 3 && buildingType == UnitType.Terran_Bunker) {
+							desiredPosition = getBuildLocationWithSeedPositionAndStrategy(buildingType, seedPosition,
+									BuildOrderItem.SeedPositionStrategy.SecondChokePoint);
+							expansionOrder++;
+							break;
+						}
 						if (expansionOrder == 0) {
 							int index = expansionOrder + ((locationOfBase - 1) * 3);
 							if (index < 12) {
@@ -404,11 +418,20 @@ public class ConstructionPlaceFinder {
 
 						}
 					} else {
-						int index = expansionOrder + ((locationOfBase - 1) * 3);
-						if (index < 12) {
-							blockx = expansionXLocaitonForSpirit[index];
-							blocky = expansionYLocaitonForSpirit[index];
-							expansionOrder++;
+						if (expansionOrder >= 3 && buildingType == UnitType.Terran_Bunker) {
+							int index = 1 + ((locationOfBase - 1) * 3);
+							if (index < 12) {
+								blockx = expansionXLocaitonForSpirit[index];
+								blocky = expansionYLocaitonForSpirit[index];
+								expansionOrder++;
+							}
+						} else {
+							int index = expansionOrder + ((locationOfBase - 1) * 3);
+							if (index < 12) {
+								blockx = expansionXLocaitonForSpirit[index];
+								blocky = expansionYLocaitonForSpirit[index];
+								expansionOrder++;
+							}
 						}
 					}
 				}
@@ -463,7 +486,7 @@ public class ConstructionPlaceFinder {
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
 					if (locationOfBase == 1) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							TilePosition tempRallyPoint = stmgr.getRallyPosition();
 							if (tempRallyPoint != null) {
 								desiredPosition = ConstructionPlaceFinder.Instance()
 										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
@@ -476,10 +499,9 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 2) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							TilePosition tempRallyPoint = stmgr.getRallyPosition();
 							if (tempRallyPoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance()
-										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -489,10 +511,9 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 3) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							TilePosition tempRallyPoint = stmgr.getRallyPosition();
 							if (tempRallyPoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance()
-										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -502,10 +523,9 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 4) {
 						if (numberOfTurretBuilt % 5 == 1) {
-							TilePosition tempRallyPoint = StrategyManager.Instance().getRallyPosition();
+							TilePosition tempRallyPoint = stmgr.getRallyPosition();
 							if (tempRallyPoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance()
-										.getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret, tempRallyPoint);
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -520,11 +540,10 @@ public class ConstructionPlaceFinder {
 					// 0805 - 최혜진 수정
 					if (locationOfBase == 1) {
 						if (numberOfTurretBuilt % 6 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							tempChokePoint = info.getSecondChokePoint(self);
 							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret,
+										tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -534,11 +553,10 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 2) {
 						if (numberOfTurretBuilt % 6 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							tempChokePoint = info.getSecondChokePoint(self);
 							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret,
+										tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -548,11 +566,10 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 3) {
 						if (numberOfTurretBuilt % 6 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							tempChokePoint = info.getSecondChokePoint(self);
 							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret,
+										tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -562,11 +579,10 @@ public class ConstructionPlaceFinder {
 						}
 					} else if (locationOfBase == 4) {
 						if (numberOfTurretBuilt % 6 == 1) {
-							tempChokePoint = InformationManager.Instance()
-									.getSecondChokePoint(MyBotModule.Broodwar.self());
+							tempChokePoint = info.getSecondChokePoint(self);
 							if (tempChokePoint != null) {
-								desiredPosition = ConstructionPlaceFinder.Instance().getBuildLocationNear(
-										UnitType.Terran_Missile_Turret, tempChokePoint.getCenter().toTilePosition());
+								desiredPosition = getBuildLocationNear(UnitType.Terran_Missile_Turret,
+										tempChokePoint.getCenter().toTilePosition());
 								turretx = desiredPosition.getX();
 								turrety = desiredPosition.getY();
 							}
@@ -699,7 +715,7 @@ public class ConstructionPlaceFinder {
 			// 0730 - 최혜진 추가 본진 Factory와 Supply Depot 피해서 건설하기 위한 전략
 			// 0808 - 최혜진 서킷맵 좌표 수정
 			case OtherInMainBaseLocation:
-				tempBaseLocation = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self());
+				tempBaseLocation = info.getMainBaseLocation(self);
 				int ox = 0;
 				int oy = 0;
 				if (MyBotModule.Broodwar.mapFileName().contains("Circuit")) {
@@ -964,18 +980,16 @@ public class ConstructionPlaceFinder {
 			return getRefineryPositionNear(desiredPosition);
 		}
 
-		if (MyBotModule.Broodwar.self().getRace() == Race.Protoss) {
+		if (self.getRace() == Race.Protoss) {
 			// special easy case of having no pylons
-			if (buildingType.requiresPsi()
-					&& MyBotModule.Broodwar.self().completedUnitCount(UnitType.Protoss_Pylon) == 0) {
+			if (buildingType.requiresPsi() && self.completedUnitCount(UnitType.Protoss_Pylon) == 0) {
 				return TilePosition.None;
 			}
 		}
 
 		if (desiredPosition == TilePosition.None || desiredPosition == TilePosition.Unknown
 				|| desiredPosition == TilePosition.Invalid || desiredPosition.isValid() == false) {
-			desiredPosition = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self())
-					.getTilePosition();
+			desiredPosition = info.getMainBaseLocation(self).getTilePosition();
 		}
 
 		TilePosition testPosition = TilePosition.None;
@@ -996,7 +1010,7 @@ public class ConstructionPlaceFinder {
 		if (buildingType.isResourceDepot()) {
 			buildingGapSpace = Config.BuildingResourceDepotSpacing;
 		} else if (buildingType == UnitType.Protoss_Pylon) {
-			int numPylons = MyBotModule.Broodwar.self().completedUnitCount(UnitType.Protoss_Pylon);
+			int numPylons = self.completedUnitCount(UnitType.Protoss_Pylon);
 
 			// Protoss_Pylon 은 특히 최초 2개 건설할때는 Config::Macro::BuildingPylonEarlyStageSpacing
 			// 값으로 설정한다
@@ -1273,8 +1287,7 @@ public class ConstructionPlaceFinder {
 
 		if (seedPosition == TilePosition.None || seedPosition == TilePosition.Unknown
 				|| seedPosition == TilePosition.Invalid || seedPosition.isValid() == false) {
-			seedPosition = InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self())
-					.getTilePosition();
+			seedPosition = info.getMainBaseLocation(self).getTilePosition();
 		}
 
 		TilePosition closestGeyser = TilePosition.None;
@@ -1332,8 +1345,8 @@ public class ConstructionPlaceFinder {
 			// dimensions of the base location
 			int bx1 = base.getTilePosition().getX();
 			int by1 = base.getTilePosition().getY();
-			int bx2 = bx1 + InformationManager.Instance().getBasicResourceDepotBuildingType().tileWidth();
-			int by2 = by1 + InformationManager.Instance().getBasicResourceDepotBuildingType().tileHeight();
+			int bx2 = bx1 + info.getBasicResourceDepotBuildingType().tileWidth();
+			int by2 = by1 + info.getBasicResourceDepotBuildingType().tileHeight();
 
 			// conditions for non-overlap are easy
 			boolean noOverlap = (tx2 < bx1) || (tx1 > bx2) || (ty2 < by1) || (ty1 > by2);
@@ -1459,8 +1472,7 @@ public class ConstructionPlaceFinder {
 			// Island 일 경우 건물 지을 공간이 절대적으로 좁기 때문에 건물 안짓는 공간을 두지 않는다
 			if (base.isIsland())
 				continue;
-			if (BWTA.isConnected(base.getTilePosition(), InformationManager.Instance()
-					.getMainBaseLocation(MyBotModule.Broodwar.self()).getTilePosition()) == false)
+			if (BWTA.isConnected(base.getTilePosition(), info.getMainBaseLocation(self).getTilePosition()) == false)
 				continue;
 
 			// dimensions of the base location

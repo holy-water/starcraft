@@ -35,7 +35,12 @@ public class VultureMineManager {
 
 	private static boolean isExecuted;
 
-	private InformationManager informationMgr = InformationManager.Instance();
+	private boolean isEmergency;
+
+	private InformationManager info = InformationManager.Instance();
+	private Player self = MyBotModule.Broodwar.self();
+	private Player enemy = MyBotModule.Broodwar.enemy();
+	private StrategyManager stmgr = StrategyManager.Instance();
 
 	public enum VultureStatus {
 		TargetNotAssigned, /// < 벌쳐 유닛의 target 위치 지정이 안된 상태
@@ -48,7 +53,6 @@ public class VultureMineManager {
 	};
 
 	private static VultureMineManager instance = new VultureMineManager();
-	private Player self = MyBotModule.Broodwar.self();
 
 	/// static singleton 객체를 리턴합니다
 	public static VultureMineManager Instance() {
@@ -69,7 +73,7 @@ public class VultureMineManager {
 		// 0804 - 최혜진 수정 적군으로 가는 Vulture가 없는 경우 idle 상태인 vulture 지정
 		// 0805 - 최혜진 수정 idle 상태가 아닌 attack/move가 아닌 것으로 변경
 		if (vultureForMine.size() < 6) {
-			for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
+			for (Unit unit : self.getUnits()) {
 				if (unit.getType() == UnitType.Terran_Vulture) {
 					if (vultureForMine.containsKey(unit)) {
 						continue;
@@ -78,9 +82,9 @@ public class VultureMineManager {
 						break;
 					}
 					if (unit.isAttacking() == false && unit.isMoving() == false
-							&& informationMgr.getUnitData(self).unitJobMap.containsKey(unit) == false) {
+							&& info.getUnitData(self).unitJobMap.containsKey(unit) == false) {
 						vultureForMine.put(unit, VultureStatus.TargetNotAssigned.ordinal());
-						informationMgr.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Mine);
+						info.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Mine);
 					}
 				}
 			}
@@ -97,12 +101,9 @@ public class VultureMineManager {
 		TilePosition tempTargetTilePosition = TilePosition.None;
 		if (targetPosition == null || targetPosition == Position.None) {
 			// 0802 - 최혜진 추가 Target Position이 정해지지 않은 경우 적군의 위치를 파악 후 위치 지정
-			BaseLocation enemyBaseLocation = InformationManager.Instance()
-					.getMainBaseLocation(MyBotModule.Broodwar.enemy());
-			BaseLocation enemyFirstExpansion = InformationManager.Instance()
-					.getFirstExpansionLocation(MyBotModule.Broodwar.enemy());
-			Chokepoint enemySecondChockPoint = InformationManager.Instance()
-					.getSecondChokePoint(MyBotModule.Broodwar.enemy());
+			BaseLocation enemyBaseLocation = info.getMainBaseLocation(enemy);
+			BaseLocation enemyFirstExpansion = info.getFirstExpansionLocation(enemy);
+			Chokepoint enemySecondChockPoint = info.getSecondChokePoint(enemy);
 			// 0806 - 최혜진 추가 적 본진 모를때 로직 수행 불가
 			if (enemyBaseLocation == null || enemyFirstExpansion == null || enemySecondChockPoint == null) {
 				return;
@@ -140,6 +141,18 @@ public class VultureMineManager {
 			if (vultureForMine.size() == 0 || vultureForMine.isEmpty() == true) {
 				return;
 			}
+
+			// 도망가야 하는 상황이면 모든 vulture에게 본진으로 돌아오라고 명령
+			if (isEmergency) {
+				for (Unit vulture : vultureForMine.keySet()) {
+					if (vulture != null && vulture.exists()) {
+						vulture.move(stmgr.getRallyPosition().toPosition());
+					}
+				}
+				// 명령 후 map 삭제
+				removeFromVultureForMine();
+			}
+
 			for (Unit vulture : vultureForMine.keySet()) {
 				// 0806 - 죽은 Vulture에 대한 Nullpointer 에러 핸들링
 				if (vulture != null && vulture.exists()) {
@@ -151,17 +164,19 @@ public class VultureMineManager {
 					} else if (vultureForMine.get(vulture) == VultureStatus.MovingToEnemyBridge.ordinal()) {
 						// 0808 - 최혜진 추가 Vulture 공격 받을 시 도망가는 로직
 						if (vulture.isUnderAttack()) {
-							vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
+							vulture.move(stmgr.getRallyPosition().toPosition());
 							vultureForMine.replace(vulture, VultureStatus.RunningAwayFromEnemy.ordinal());
-							continue;
+							isEmergency = true;
+							return;
 						}
 						// 0808 - 최혜진 추가 Vulture와 적군이 일정거리 이상 가까워지기만 해도 도망가는 로직
 						Unit closestEnemy = WorkerManager.Instance().getClosestEnemyUnitFromWorker(vulture);
 						if (closestEnemy != null && closestEnemy.exists()) {
 							if (closestEnemy.getDistance(vulture) < 50) {
-								vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
+								vulture.move(stmgr.getRallyPosition().toPosition());
 								vultureForMine.replace(vulture, VultureStatus.RunningAwayFromEnemy.ordinal());
-								continue;
+								isEmergency = true;
+								return;
 							}
 						}
 						if (vulture.getPosition().getDistance(targetPosition) < 100) {
@@ -282,18 +297,16 @@ public class VultureMineManager {
 								findTargetPostion(vulture, tempTilePosition.toPosition());
 								useSpiderMineTech(vulture, minePlacementPosition);
 							} else {
-								vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
+								vulture.move(stmgr.getRallyPosition().toPosition());
 								vultureForMine.replace(vulture, VultureStatus.ComingBacktoMainBaseLocation.ordinal());
 							}
 						}
-					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()
-							|| vultureForMine.get(vulture) == VultureStatus.RunningAwayFromEnemy.ordinal()) {
+					} else if (vultureForMine.get(vulture) == VultureStatus.ComingBacktoMainBaseLocation.ordinal()) {
 						// 0808 - 최혜진 수정 도착 인식 지점 변경
-						if (vulture.getPosition()
-								.getDistance(StrategyManager.Instance().getRallyPosition().toPosition()) < 200) {
+						if (vulture.getPosition().getDistance(stmgr.getRallyPosition().toPosition()) < 200) {
 							vultureForMine.replace(vulture, VultureStatus.MissionComplete.ordinal());
 						} else if (vulture.isIdle()) {
-							vulture.move(StrategyManager.Instance().getRallyPosition().toPosition());
+							vulture.move(stmgr.getRallyPosition().toPosition());
 						}
 					} else if (vultureForMine.get(vulture) == VultureStatus.MissionComplete.ordinal()) {
 						complete++;
@@ -315,7 +328,7 @@ public class VultureMineManager {
 
 	private void removeFromVultureForMine() {
 		for (Unit unit : vultureForMine.keySet()) {
-			informationMgr.getUnitData(self).unitJobMap.remove(unit);
+			info.getUnitData(self).unitJobMap.remove(unit);
 		}
 		vultureForMine.clear();
 		isExecuted = true;
@@ -335,7 +348,7 @@ public class VultureMineManager {
 		TilePosition resultPosition = new TilePosition(currentX + plusX, currentY + plusY);
 		minePlacementPosition = resultPosition.toPosition();
 		// 0808 - 최혜진 추가 vulture가 갈 수 없는 곳이라면 다시 지정
-		if (!MyBotModule.Broodwar.isWalkable(StrategyManager.Instance().toWalkPosition(minePlacementPosition))) {
+		if (!MyBotModule.Broodwar.isWalkable(stmgr.toWalkPosition(minePlacementPosition))) {
 			findFirstTargetPostion(vulture);
 		}
 
@@ -354,7 +367,7 @@ public class VultureMineManager {
 		TilePosition resultPosition = new TilePosition(currentX + plusX, currentY + plusY);
 		minePlacementPosition = resultPosition.toPosition();
 		// 0808 - 최혜진 추가 vulture가 갈 수 없는 곳이라면 다시 지정
-		if (!MyBotModule.Broodwar.isWalkable(StrategyManager.Instance().toWalkPosition(minePlacementPosition))) {
+		if (!MyBotModule.Broodwar.isWalkable(stmgr.toWalkPosition(minePlacementPosition))) {
 			findTargetPostion(vulture, newTargetPostion);
 		}
 
