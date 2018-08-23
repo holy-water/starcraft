@@ -82,14 +82,14 @@ public class VultureMineManager {
 						break;
 					}
 					if (unit.isAttacking() == false && unit.isMoving() == false
-							&& info.getUnitData(self).unitJobMap.containsKey(unit) == false) {
+							&& info.getUnitData(self).unitJobMap.containsKey(unit) == false
+							&& unit.getSpiderMineCount() >= 3) {
 						vultureForMine.put(unit, VultureStatus.TargetNotAssigned.ordinal());
 						info.getUnitData(self).unitJobMap.put(unit, UnitData.UnitJob.Mine);
 					}
 				}
 			}
 		}
-
 	}
 
 	private void moveVultureUnit() {

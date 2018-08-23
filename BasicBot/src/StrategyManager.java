@@ -166,7 +166,7 @@ public class StrategyManager {
 		// 0820 - 최혜진 추가 Multiple Expansion
 		executeMultipleExpansion();
 		// 멀티견제
-		// executeMultiCheck();
+		executeMultiCheck();
 
 		// BasicBot 1.1 Patch Start
 		// ////////////////////////////////////////////////
@@ -1214,23 +1214,25 @@ public class StrategyManager {
 	}
 
 	private void executeMultiCheck() {
-
+		
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
 		}
 
 		// 1초에 한번만 실행
-		if (frameCount % 24 != 23) {
+		if (frameCount % 24 != 21) {
 			return;
 		}
-
-		if (self.getUpgradeLevel(UpgradeType.Ion_Thrusters) == 0) {
-			return;
+		
+		// 4분에 한번 초기화
+		long now = System.currentTimeMillis();
+		if (now - MultipleCheckManager.Instance().endTime > 1000 * 60 * 4) {
+			MultipleCheckManager.Instance().isAllChecked = false;
+			MultipleCheckManager.Instance().checkListMap = null;
 		}
 
 		MultipleCheckManager.Instance().update();
-
 	}
 
 	public void setInitialBuildOrder() {
