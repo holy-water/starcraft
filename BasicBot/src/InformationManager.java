@@ -325,7 +325,7 @@ public class InformationManager {
 			if (unit == null)
 				continue;
 			if (unit.getPlayer() == enemyPlayer) {
-				if (isCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+				if (isCombatUnitType(unit.getType())) {
 					return true;
 				}
 			}
@@ -379,41 +379,20 @@ public class InformationManager {
 	}
 
 	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
-	public boolean isGroundEnemyUnitInWeaponRange(Unit targetUnit) {
+	public boolean isGroundEnemyUnitInSiegeRange(Unit targetUnit, int weight) {
 		if (targetUnit == null)
 			return false;
 
 		// 시야 내에 있는 유닛 리스트
-		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange() + 32);
+		List<Unit> list = targetUnit
+				.getUnitsInRadius(UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange() + weight);
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
 			if (unit == null)
 				continue;
 			if (unit.getPlayer() == enemyPlayer) {
-				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
-	public boolean isGroundEnemyUnitInWeaponRange(Unit targetUnit, int weight) {
-		if (targetUnit == null)
-			return false;
-
-		// 시야 내에 있는 유닛 리스트
-		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange() + weight);
-
-		// 적 유닛이 있는지 확인
-		for (Unit unit : list) {
-			if (unit == null)
-				continue;
-			if (unit.getPlayer() == enemyPlayer) {
-				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+				if (isGroundCombatUnitType(unit.getType())) {
 					return true;
 				}
 			}
@@ -972,6 +951,12 @@ public class InformationManager {
 
 	/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 	public final boolean isCombatUnitType(UnitType type) {
+		if (type == null) {
+			return false;
+		}
+		if (type != null && type.isWorker() || type.isBuilding()) {
+			return false;
+		}
 		// check for various types of combat units
 		if (type.canAttack()) {
 			return true;
