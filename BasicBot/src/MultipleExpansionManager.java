@@ -65,7 +65,7 @@ public class MultipleExpansionManager {
 
 		initialUpdate();
 		checkIfSCVDead();
-		checkIfSCVWorking();
+		// checkIfSCVWorking();
 
 		if (thisMulti != null) {
 			if (mb.mapFileName().contains("Circuit")) {
