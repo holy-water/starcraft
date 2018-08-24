@@ -304,22 +304,20 @@ public class StrategyManager {
 				// 저그 종족인 경우, 생산중인 Zerg_Overlord (Zerg_Egg) 를 센다. Hatchery 등 건물은
 				// 세지 않는다
 
-				onBuildingSupplyCount += ConstructionManager.Instance()
-						.getConstructionQueueItemCount(informationMgr.getBasicSupplyProviderUnitType(), null)
-						* informationMgr.getBasicSupplyProviderUnitType().supplyProvided();
+				onBuildingSupplyCount += ConstructionManager.Instance().getConstructionQueueItemCount(
+						UnitType.Terran_Supply_Depot, null) * UnitType.Terran_Supply_Depot.supplyProvided();
 
 				if (currentSupplyShortage > onBuildingSupplyCount) {
 					boolean isToEnqueue = true;
 					if (!BuildManager.Instance().buildQueue.isEmpty()) {
 						BuildOrderItem currentItem = BuildManager.Instance().buildQueue.getHighestPriorityItem();
-						if (currentItem.metaType.isUnit() && currentItem.metaType.getUnitType() == InformationManager
-								.Instance().getBasicSupplyProviderUnitType()) {
+						if (currentItem.metaType.isUnit()
+								&& currentItem.metaType.getUnitType() == UnitType.Terran_Supply_Depot) {
 							isToEnqueue = false;
 						}
 					}
 					if (isToEnqueue) {
-						BuildManager.Instance().buildQueue.queueAsHighestPriority(
-								informationMgr.getBasicSupplyProviderUnitType(),
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(UnitType.Terran_Supply_Depot,
 								BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 					}
 				}
@@ -383,7 +381,7 @@ public class StrategyManager {
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					airAttackLevel = 1;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != self
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
 								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
@@ -420,7 +418,7 @@ public class StrategyManager {
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					airAttackLevel = 6;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != self
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
 								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
@@ -484,7 +482,7 @@ public class StrategyManager {
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					airAttackLevel = 4;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != self
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
 								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
@@ -517,7 +515,7 @@ public class StrategyManager {
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					airAttackLevel = 2;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != self
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
 								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
@@ -542,7 +540,7 @@ public class StrategyManager {
 					countMgr.setArmory();
 				} else if (self.completedUnitCount(UnitType.Terran_Armory) > 0) {
 					airAttackLevel = 6;
-					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != MyBotModule.Broodwar.self()
+					if (self.getMaxUpgradeLevel(UpgradeType.Charon_Boosters) != self
 							.getUpgradeLevel(UpgradeType.Charon_Boosters)) {
 						if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Charon_Boosters) == 0
 								&& !self.isUpgrading(UpgradeType.Charon_Boosters)) {
@@ -770,7 +768,7 @@ public class StrategyManager {
 			Unit engineeringBay = myUnitMap.get("EngineeringBay");
 			Position rallyPoint = getRallyPosition().toPosition();
 			// 0627 수정 및 추가
-			if (enemy.getRace() != Race.Terran && barracks != null) {
+			if (enemy.getRace() != Race.Terran && barracks != null && barracks.isCompleted()) {
 				rallyPoint = barracks.isLifted() ? getRallyPosition().toPosition() : barracks.getPosition();
 			}
 
@@ -788,6 +786,11 @@ public class StrategyManager {
 					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 						if (!unit.isMoving() && !unit.isAttacking()) {
 							unit.useTech(TechType.Tank_Siege_Mode);
+						}
+					} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+						if (unit.isAttacking() && !unit.isUnderAttack()
+								&& unit.getDistance(rallyPoint) > TilePosition.SIZE_IN_PIXELS * 3) {
+							unit.unsiege();
 						}
 					}
 				}
@@ -918,9 +921,9 @@ public class StrategyManager {
 	private void startControl(Unit unit) {
 		if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 			unit.useTech(TechType.Tank_Siege_Mode);
-		} else if (informationMgr.getFirstChokePoint(enemy) != null) {
-			if (unit.getDistance(informationMgr.getFirstChokePoint(enemy)) < 1) {
-				unit.move(targetBaseLocation.getPosition());
+		} else if (informationMgr.isGroundEnemyUnitInWeaponRange(unit)) {
+			if (!unit.isAttacking()) {
+				unit.attack(targetBaseLocation.getPosition());
 			}
 		} else if (!unit.isHoldingPosition()) {
 			unit.holdPosition();
@@ -1225,13 +1228,13 @@ public class StrategyManager {
 			return;
 		}
 
-		if (self.getMaxUpgradeLevel(UpgradeType.Ion_Thrusters) == 0) {
+		if (self.getUpgradeLevel(UpgradeType.Ion_Thrusters) == 0) {
 			return;
 		}
 
-		// 4분에 한번 초기화
+		// 3분에 한번 초기화
 		long now = System.currentTimeMillis();
-		if (now - MultipleCheckManager.Instance().endTime > 1000 * 60 * 4) {
+		if (now - MultipleCheckManager.Instance().endTime > 1000 * 60 * 3) {
 			MultipleCheckManager.Instance().isAllChecked = false;
 			MultipleCheckManager.Instance().checkListMap = null;
 		}
@@ -1255,7 +1258,7 @@ public class StrategyManager {
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 					BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			// Supply Depot
-			BuildManager.Instance().buildQueue.queueAsLowestPriority(informationMgr.getBasicSupplyProviderUnitType(),
+			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Supply_Depot,
 					BuildOrderItem.SeedPositionStrategy.SupplyDepotPosition, true);
 			// 8 SCV
 			BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
@@ -1293,12 +1296,10 @@ public class StrategyManager {
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Command Center
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						informationMgr.getBasicResourceDepotBuildingType(),
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Command_Center,
 						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
 				// Supply Depot - 0704 최혜진 수정
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						informationMgr.getBasicSupplyProviderUnitType(),
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Supply_Depot,
 						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 				// 16 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
@@ -1341,19 +1342,17 @@ public class StrategyManager {
 
 			} else if (enemy.getRace() == Race.Protoss) {
 				// Command Center
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						informationMgr.getBasicResourceDepotBuildingType(),
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Command_Center,
 						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
+				// Refinery
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
+						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 15 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Supply Depot - 0704 최혜진 수정
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						informationMgr.getBasicSupplyProviderUnitType(),
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Supply_Depot,
 						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
-				// Refinery
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
-						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// 2 Marine
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Marine,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
@@ -1391,15 +1390,13 @@ public class StrategyManager {
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 			} else {
 				// Command Center
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						informationMgr.getBasicResourceDepotBuildingType(),
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Command_Center,
 						BuildOrderItem.SeedPositionStrategy.FirstExpansionLocation, true);
 				// 15 SCV
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_SCV,
 						BuildOrderItem.SeedPositionStrategy.MainBaseLocation, true);
 				// Supply Depot - 0704 최혜진 수정
-				BuildManager.Instance().buildQueue.queueAsLowestPriority(
-						informationMgr.getBasicSupplyProviderUnitType(),
+				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Supply_Depot,
 						BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint, true);
 				// Refinery
 				BuildManager.Instance().buildQueue.queueAsLowestPriority(UnitType.Terran_Refinery,
@@ -1511,7 +1508,8 @@ public class StrategyManager {
 	}
 
 	private UnitType selectTrainUnitType(Unit unit) {
-		if (self.completedUnitCount(UnitType.Terran_Science_Facility) != 0) {
+		if (self.completedUnitCount(UnitType.Terran_Armory) > 1
+				&& self.completedUnitCount(UnitType.Terran_Science_Facility) > 0) {
 			if (BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Weapons) != 0
 					|| BuildManager.Instance().buildQueue.getItemCount(UpgradeType.Terran_Vehicle_Plating) != 0) {
 				return null;
@@ -1527,7 +1525,7 @@ public class StrategyManager {
 		if (unit.getAddon() != null) {
 			if (self.minerals() >= 150 && self.gas() >= 100) {
 				return UnitType.Terran_Siege_Tank_Tank_Mode;
-			} else if (self.gas() >= 250) {
+			} else if (self.gas() >= 200) {
 				return null;
 			}
 		}

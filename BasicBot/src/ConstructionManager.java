@@ -78,7 +78,8 @@ public class ConstructionManager {
 
 	/// constructionQueue 에서 건설 상태가 UnderConstruction 인 ConstructionTask 여러개를
 	/// 삭제합니다<br>
-	/// 건설을 시작했었던 ConstructionTask 이기 때문에 _reservedMinerals, _reservedGas 는 건드리지 않는다
+	/// 건설을 시작했었던 ConstructionTask 이기 때문에 _reservedMinerals, _reservedGas 는 건드리지
+	/// 않는다
 	public void removeCompletedConstructionTasks(final Vector<ConstructionTask> toRemove) {
 		for (ConstructionTask b : toRemove) {
 			if (constructionQueue.contains(b)) {
@@ -97,18 +98,22 @@ public class ConstructionManager {
 		// (buildCommandGiven=true) . UnderConstruction . (Finished) 로 상태 변화된다
 
 		/*
-		 * System.out.println( "\nCurrent ConstructionTasks in constructionQueue"); for
-		 * (ConstructionTask b : constructionQueue) { System.out.print( b.getType() +
-		 * " status " + b.getStatus() + ", desiredPosition " +
-		 * b.getDesiredPosition().getX() + "," + b.getDesiredPosition().getY() );
+		 * System.out.println(
+		 * "\nCurrent ConstructionTasks in constructionQueue"); for
+		 * (ConstructionTask b : constructionQueue) { System.out.print(
+		 * b.getType() + " status " + b.getStatus() + ", desiredPosition " +
+		 * b.getDesiredPosition().getX() + "," + b.getDesiredPosition().getY()
+		 * );
 		 * 
 		 * if (b.getConstructionWorker() != null) {
-		 * System.out.println(" constructionWorker " + b.getConstructionWorker().getID()
-		 * + " isConstructing " + b.getConstructionWorker().isConstructing()); } else {
+		 * System.out.println(" constructionWorker " +
+		 * b.getConstructionWorker().getID() + " isConstructing " +
+		 * b.getConstructionWorker().isConstructing()); } else {
 		 * System.out.println(" constructionWorker is null"); }
 		 * 
-		 * if (b.getFinalPosition() != null) { System.out.println(" finalPosition " +
-		 * b.getFinalPosition().getX() + "," + b.getFinalPosition().getY()); } else {
+		 * if (b.getFinalPosition() != null) {
+		 * System.out.println(" finalPosition " + b.getFinalPosition().getX() +
+		 * "," + b.getFinalPosition().getY()); } else {
 		 * System.out.println(" finalPosition null "); } }
 		 */
 
@@ -127,7 +132,8 @@ public class ConstructionManager {
 
 		for (ConstructionTask b : constructionQueue) {
 			if (b.getStatus() == ConstructionTask.ConstructionStatus.UnderConstruction.ordinal()) {
-				// 건설 진행 도중 (공격을 받아서) 건설하려던 건물이 파괴된 경우, constructionQueue 에서 삭제합니다
+				// 건설 진행 도중 (공격을 받아서) 건설하려던 건물이 파괴된 경우, constructionQueue 에서
+				// 삭제합니다
 				// 그렇지 않으면 (아마도 전투가 벌어지고있는) 기존 위치에 다시 건물을 지으려 할 것이기 때문.
 				if (b.getBuildingUnit() == null || !b.getBuildingUnit().getType().isBuilding()
 						|| b.getBuildingUnit().getHitPoints() <= 0 || !b.getBuildingUnit().exists()) {
@@ -144,7 +150,8 @@ public class ConstructionManager {
 		removeCompletedConstructionTasks(toRemove);
 	}
 
-	/// 건설 진행상태가 Unassigned 인 ConstructionTask 에 대해 건설 위치 및 건설 일꾼을 지정하고, 건설 진행상태를
+	/// 건설 진행상태가 Unassigned 인 ConstructionTask 에 대해 건설 위치 및 건설 일꾼을 지정하고, 건설
+	/// 진행상태를
 	/// Assigned 로 변경합니다
 	public void assignWorkersToUnassignedBuildings() {
 		// for each building that doesn't have a builder, assign one
@@ -157,35 +164,42 @@ public class ConstructionManager {
 			// b.getDesiredPosition().getX() + ","
 			// + b.getDesiredPosition().getY());
 
-			// 건설 일꾼이 Unassigned 인 상태에서 getBuildLocationNear 로 건설할 위치를 다시 정합니다. . Assigned
+			// 건설 일꾼이 Unassigned 인 상태에서 getBuildLocationNear 로 건설할 위치를 다시 정합니다.
+			// . Assigned
 			// 0705 - 최혜진 수정 배럭과 서플라이는 지정된 위치로
 			TilePosition testLocation = b.getDesiredPosition();
 
 			// System.out.println(
-			// b.getType() + " " + "Selected Location : " + testLocation.getX() + "," +
+			// b.getType() + " " + "Selected Location : " + testLocation.getX()
+			// + "," +
 			// testLocation.getY());
 
 			if (testLocation == TilePosition.None || testLocation == TilePosition.Invalid
 					|| testLocation.isValid() == false) {
 				// 지금 건물 지을 장소를 전혀 찾을 수 없게 된 경우는,
-				// desiredPosition 주위에 다른 건물/유닛들이 있게 되었거나, Pylon 이 파괴되었거나, Creep 이 없어진 경우이고,
+				// desiredPosition 주위에 다른 건물/유닛들이 있게 되었거나, Pylon 이 파괴되었거나, Creep
+				// 이 없어진 경우이고,
 				// 대부분 다른 건물/유닛들이 있게된 경우이므로 다음 frame 에서 다시 지을 곳을 탐색합니다
 				// System.out.println("cannot find place");
 				continue;
 			}
 
 			// System.out.println("assignWorkersToUnassignedBuildings -
-			// chooseConstuctionWorkerClosest for " + b.getType() + " to worker near " +
+			// chooseConstuctionWorkerClosest for " + b.getType() + " to worker
+			// near " +
 			// testLocation.getX() + "," + testLocation.getY());
 
-			// grab a worker unit from WorkerManager which is closest to this final position
-			// 건설을 못하는 worker 가 계속 construction worker 로 선정될 수 있다. 직전에 선정되었었던 worker 는 다시
+			// grab a worker unit from WorkerManager which is closest to this
+			// final position
+			// 건설을 못하는 worker 가 계속 construction worker 로 선정될 수 있다. 직전에 선정되었었던
+			// worker 는 다시
 			// 선정안하도록 합니다
 			Unit workerToAssign = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(b.getType(), testLocation,
 					true, b.getLastConstructionWorkerID());
 
 			if (workerToAssign != null) {
-				// System.out.println("set ConstuctionWorker " + workerToAssign.getID());
+				// System.out.println("set ConstuctionWorker " +
+				// workerToAssign.getID());
 
 				b.setConstructionWorker(workerToAssign);
 				b.setFinalPosition(testLocation);
@@ -212,9 +226,10 @@ public class ConstructionManager {
 			}
 
 			/*
-			 * if (b.getConstructionWorker() == null) { System.out.println( b.getType() +
-			 * " constructionWorker null" ); } else { System.out.println( b.getType() +
-			 * " constructionWorker " + b.getConstructionWorker().getID() + " exists " +
+			 * if (b.getConstructionWorker() == null) { System.out.println(
+			 * b.getType() + " constructionWorker null" ); } else {
+			 * System.out.println( b.getType() + " constructionWorker " +
+			 * b.getConstructionWorker().getID() + " exists " +
 			 * b.getConstructionWorker().exists() + " isIdle " +
 			 * b.getConstructionWorker().isIdle() + " isConstructing " +
 			 * b.getConstructionWorker().isConstructing() + " isMorphing " +
@@ -226,25 +241,31 @@ public class ConstructionManager {
 			// 일꾼에게 build 명령을 내리면, isConstructing = true 상태가 되어 이동을 하다가
 			// build 를 실행할 수 없는 상황이라고 판단되면 isConstructing = false 상태가 된다
 			// build 를 실행할 수 있으면, 프로토스 / 테란 종족의 경우 일꾼이 build 를 실행하고
-			// 저그 종족 건물 중 Extractor 건물이 아닌 다른 건물의 경우 일꾼이 exists = true, isConstructing =
+			// 저그 종족 건물 중 Extractor 건물이 아닌 다른 건물의 경우 일꾼이 exists = true,
+			// isConstructing =
 			// true, isMorphing = true 가 되고, 일꾼 ID 가 건물 ID가 된다
-			// 저그 종족 건물 중 Extractor 건물의 경우 일꾼이 exists = false, isConstructing = true,
+			// 저그 종족 건물 중 Extractor 건물의 경우 일꾼이 exists = false, isConstructing =
+			// true,
 			// isMorphing = true 가 된 후, 일꾼 ID 가 건물 ID가 된다.
 			// Extractor 건물 빌드를 도중에 취소하면, 새로운 ID 를 가진 일꾼이 된다
 
-			// 일꾼이 Assigned 된 후, UnderConstruction 상태로 되기 전, 즉 일꾼이 이동 중에 일꾼이 죽은 경우, 건물을
+			// 일꾼이 Assigned 된 후, UnderConstruction 상태로 되기 전, 즉 일꾼이 이동 중에 일꾼이 죽은
+			// 경우, 건물을
 			// Unassigned 상태로 되돌려 일꾼을 다시 Assign 하도록 합니다
 			if (b.getConstructionWorker() == null || b.getConstructionWorker().exists() == false
 					|| b.getConstructionWorker().getHitPoints() <= 0) {
-				// 저그 종족 건물 중 Extractor 건물의 경우 일꾼이 exists = false 이지만 isConstructing = true 가
+				// 저그 종족 건물 중 Extractor 건물의 경우 일꾼이 exists = false 이지만
+				// isConstructing = true 가
 				// 되므로, 일꾼이 죽은 경우가 아니다
 				if (b.getType() == UnitType.Zerg_Extractor && b.getConstructionWorker() != null
 						&& b.getConstructionWorker().isConstructing() == true) {
 					continue;
 				}
 
-				// System.out.println( "unassign " + b.type.getName() + " worker " +
-				// b.constructionWorker.getID() + ", because it is not exists" );
+				// System.out.println( "unassign " + b.type.getName() + " worker
+				// " +
+				// b.constructionWorker.getID() + ", because it is not exists"
+				// );
 
 				// Unassigned 된 상태로 되돌린다
 				WorkerManager.Instance().setIdleWorker(b.getConstructionWorker());
@@ -259,17 +280,21 @@ public class ConstructionManager {
 
 			}
 			// if that worker is not currently constructing
-			// 일꾼이 build command 를 받으면 isConstructing = true 가 되고 건설을 하기위해 이동하는데,
-			// isConstructing = false 가 되었다는 것은, build command 를 수행할 수 없어 게임에서 해당 임무가 취소되었다는
+			// 일꾼이 build command 를 받으면 isConstructing = true 가 되고 건설을 하기위해
+			// 이동하는데,
+			// isConstructing = false 가 되었다는 것은, build command 를 수행할 수 없어 게임에서
+			// 해당 임무가 취소되었다는
 			// 것이다
 			else if (b.getConstructionWorker().isConstructing() == false) {
-				// if we haven't explored the build position, first we mush go there
+				// if we haven't explored the build position, first we mush go
+				// there
 				// 한번도 안가본 곳에는 build 커맨드 자체를 지시할 수 없으므로, 일단 그곳으로 이동하게 합니다
 				if (!isBuildingPositionExplored(b)) {
 					commandUtil.move(b.getConstructionWorker(), b.getFinalPosition().toPosition());
 				} else if (b.isBuildCommandGiven() == false) {
 					// System.out.println(b.getType() + " build commanded to " +
-					// b.getConstructionWorker().getID() + ", buildCommandGiven true " );
+					// b.getConstructionWorker().getID() + ", buildCommandGiven
+					// true " );
 
 					// build command
 					b.getConstructionWorker().build(b.getType(), b.getFinalPosition());
@@ -281,18 +306,24 @@ public class ConstructionManager {
 					b.setLastBuildCommandGivenFrame(MyBotModule.Broodwar.getFrameCount());
 					b.setLastConstructionWorkerID(b.getConstructionWorker().getID());
 				}
-				// if this is not the first time we've sent this guy to build this
-				// 일꾼에게 build command 를 주었지만, 도중에 자원이 미달하게 되었거나, 해당 장소에 다른 유닛들이 있어서 건설을 시작 못하게
+				// if this is not the first time we've sent this guy to build
+				// this
+				// 일꾼에게 build command 를 주었지만, 도중에 자원이 미달하게 되었거나, 해당 장소에 다른 유닛들이
+				// 있어서 건설을 시작 못하게
 				// 되거나, Pylon 이나 Creep 이 없어진 경우 등이 발생할 수 있다
-				// 이 경우, 해당 일꾼의 build command 를 해제하고, 건물 상태를 Unassigned 로 바꿔서, 다시 건물 위치를 정하고, 다른
+				// 이 경우, 해당 일꾼의 build command 를 해제하고, 건물 상태를 Unassigned 로 바꿔서,
+				// 다시 건물 위치를 정하고, 다른
 				// 일꾼을 지정하는 식으로 처리합니다
 				else {
 					if (MyBotModule.Broodwar.getFrameCount() - b.getLastBuildCommandGivenFrame() > 24) {
 
-						// System.out.println(b.getType() + " (" + b.getFinalPosition().getX() + "," +
-						// b.getFinalPosition().getY() + ") buildCommandGiven . but now Unassigned" );
+						// System.out.println(b.getType() + " (" +
+						// b.getFinalPosition().getX() + "," +
+						// b.getFinalPosition().getY() + ") buildCommandGiven .
+						// but now Unassigned" );
 
-						// tell worker manager the unit we had is not needed now, since we might not be
+						// tell worker manager the unit we had is not needed
+						// now, since we might not be
 						// able
 						// to get a valid location soon enough
 
@@ -330,18 +361,22 @@ public class ConstructionManager {
 				continue;
 			}
 
-			// check all our building status objects to see if we have a match and if we do,
+			// check all our building status objects to see if we have a match
+			// and if we do,
 			// update it
 			for (ConstructionTask b : constructionQueue) {
 				if (b.getStatus() != ConstructionTask.ConstructionStatus.Assigned.ordinal()) {
 					continue;
 				}
 
-				// check if the positions match. Worker just started construction.
+				// check if the positions match. Worker just started
+				// construction.
 				if (b.getFinalPosition().getX() == buildingThatStartedConstruction.getTilePosition().getX()
 						&& b.getFinalPosition().getY() == buildingThatStartedConstruction.getTilePosition().getY()) {
-					// System.out.println( "Construction " + b.getType() + " started at " +
-					// b.getFinalPosition().getX() + "," + b.getFinalPosition().getY() );
+					// System.out.println( "Construction " + b.getType() + "
+					// started at " +
+					// b.getFinalPosition().getX() + "," +
+					// b.getFinalPosition().getY() );
 
 					// the resources should now be spent, so unreserve them
 					reservedMinerals -= buildingThatStartedConstruction.getType().mineralPrice();
@@ -352,7 +387,8 @@ public class ConstructionManager {
 
 					b.setBuildingUnit(buildingThatStartedConstruction);
 
-					// if we are zerg, make the buildingUnit null since it's morphed or destroyed
+					// if we are zerg, make the buildingUnit null since it's
+					// morphed or destroyed
 					// Extractor 의 경우 destroyed 되고, 그외 건물의 경우 morphed 된다
 					if (MyBotModule.Broodwar.self().getRace() == Race.Zerg) {
 						b.setConstructionWorker(null);
@@ -377,10 +413,12 @@ public class ConstructionManager {
 		}
 	}
 
-	/// 테란의 경우 건설 진행상태가 UnderConstruction 이지만 건설 일꾼이 죽은 경우, 다른 건설 일꾼을 지정해서 건설이 속행되도록
+	/// 테란의 경우 건설 진행상태가 UnderConstruction 이지만 건설 일꾼이 죽은 경우, 다른 건설 일꾼을 지정해서 건설이
+	/// 속행되도록
 	/// 합니다<br>
 	/// 테란은 건설을 시작한 후, 건설 도중에 일꾼이 죽을 수 있습니다. 이 경우, 건물에 대해 다시 다른 SCV를 할당합니다<br>
-	/// 참고로, 프로토스 / 저그는 건설을 시작하면 일꾼 포인터를 null 로 만들기 때문에 (constructionWorker = null)
+	/// 참고로, 프로토스 / 저그는 건설을 시작하면 일꾼 포인터를 null 로 만들기 때문에 (constructionWorker =
+	/// null)
 	/// 건설 도중에 죽은 일꾼을 신경쓸 필요 없습니다
 	public void checkForDeadTerranBuilders() {
 		if (MyBotModule.Broodwar.self().getRace() == Race.Terran) {
@@ -391,7 +429,8 @@ public class ConstructionManager {
 			// for each of our buildings under construction
 			for (ConstructionTask b : constructionQueue) {
 				// if a terran building whose worker died mid construction,
-				// send the right click command to the buildingUnit to resume construction
+				// send the right click command to the buildingUnit to resume
+				// construction
 				if (b.getStatus() == ConstructionTask.ConstructionStatus.UnderConstruction.ordinal()) {
 
 					if (b.getBuildingUnit().isCompleted())
@@ -401,15 +440,19 @@ public class ConstructionManager {
 							|| b.getConstructionWorker().getHitPoints() <= 0) {
 
 						// System.out.println("checkForDeadTerranBuilders -
-						// chooseConstuctionWorkerClosest for " + b.getType() + " to worker near " +
-						// b.getFinalPosition().getX() + "," + b.getFinalPosition().getY());
+						// chooseConstuctionWorkerClosest for " + b.getType() +
+						// " to worker near " +
+						// b.getFinalPosition().getX() + "," +
+						// b.getFinalPosition().getY());
 
-						// grab a worker unit from WorkerManager which is closest to this final position
+						// grab a worker unit from WorkerManager which is
+						// closest to this final position
 						Unit workerToAssign = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(b.getType(),
 								b.getFinalPosition(), true, b.getLastConstructionWorkerID());
 
 						if (workerToAssign != null) {
-							// System.out.println("set ConstuctionWorker " + workerToAssign.getID());
+							// System.out.println("set ConstuctionWorker " +
+							// workerToAssign.getID());
 
 							b.setConstructionWorker(workerToAssign);
 							commandUtil.rightClick(b.getConstructionWorker(), b.getBuildingUnit());
@@ -436,8 +479,10 @@ public class ConstructionManager {
 
 			// if the unit has completed
 			if (b.getBuildingUnit().isCompleted()) {
-				// System.out.println("Construction " + b.getType() + " completed at " +
-				// b.getFinalPosition().getX() + "," + b.getFinalPosition().getY());
+				// System.out.println("Construction " + b.getType() + "
+				// completed at " +
+				// b.getFinalPosition().getX() + "," +
+				// b.getFinalPosition().getY());
 
 				// if we are terran, give the worker back to worker manager
 				if (MyBotModule.Broodwar.self().getRace() == Race.Terran) {
@@ -459,11 +504,14 @@ public class ConstructionManager {
 		Vector<ConstructionTask> toCancel = new Vector<ConstructionTask>();
 		for (ConstructionTask b : constructionQueue) {
 			if (b.getStatus() != ConstructionTask.ConstructionStatus.UnderConstruction.ordinal()) {
-				// BuildManager가 판단했을때 Construction 가능조건이 갖춰져서 ConstructionManager의
+				// BuildManager가 판단했을때 Construction 가능조건이 갖춰져서
+				// ConstructionManager의
 				// ConstructionQueue 에 들어갔는데,
 				// 선행 건물이 파괴되서 Construction을 수행할 수 없게 되었거나,
-				// 일꾼이 다 사망하는 등 게임상황이 바뀌어서, 계속 ConstructionQueue 에 남아있게 되는 dead lock 상황이 됩니다
-				// 선행 건물을 BuildQueue에 추가해넣을지, 해당 ConstructionQueueItem 을 삭제할지 전략적으로 판단해야 합니다
+				// 일꾼이 다 사망하는 등 게임상황이 바뀌어서, 계속 ConstructionQueue 에 남아있게 되는 dead
+				// lock 상황이 됩니다
+				// 선행 건물을 BuildQueue에 추가해넣을지, 해당 ConstructionQueueItem 을 삭제할지
+				// 전략적으로 판단해야 합니다
 				UnitType unitType = b.getType();
 				UnitType producerType = b.getType().whatBuilds().first;
 				final Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
@@ -476,9 +524,10 @@ public class ConstructionManager {
 					isDeadlockCase = true;
 				}
 
-				// Refinery 건물의 경우, 건물 지을 장소를 찾을 수 없게 되었거나, 건물 지을 수 있을거라고 판단했는데 이미 Refinery 가
+				// Refinery 건물의 경우, 건물 지을 장소를 찾을 수 없게 되었거나, 건물 지을 수 있을거라고 판단했는데
+				// 이미 Refinery 가
 				// 지어져있는 경우, dead lock
-				if (!isDeadlockCase && unitType == InformationManager.Instance().getRefineryBuildingType()) {
+				if (!isDeadlockCase && unitType == UnitType.Terran_Refinery) {
 					boolean hasAvailableGeyser = true;
 
 					TilePosition testLocation;
@@ -515,7 +564,8 @@ public class ConstructionManager {
 					}
 				}
 
-				// 정찰결과 혹은 전투결과, 건설 장소가 아군 점령 Region 이 아니고, 적군이 점령한 Region 이 되었으면 일반적으로는 현실적으로
+				// 정찰결과 혹은 전투결과, 건설 장소가 아군 점령 Region 이 아니고, 적군이 점령한 Region 이
+				// 되었으면 일반적으로는 현실적으로
 				// dead lock 이 된다
 				// (포톤캐논 러시이거나, 적군 점령 Region 근처에서 테란 건물 건설하는 경우에는 예외일테지만..)
 				if (!isDeadlockCase

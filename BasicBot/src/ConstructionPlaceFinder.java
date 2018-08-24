@@ -1345,8 +1345,8 @@ public class ConstructionPlaceFinder {
 			// dimensions of the base location
 			int bx1 = base.getTilePosition().getX();
 			int by1 = base.getTilePosition().getY();
-			int bx2 = bx1 + info.getBasicResourceDepotBuildingType().tileWidth();
-			int by2 = by1 + info.getBasicResourceDepotBuildingType().tileHeight();
+			int bx2 = bx1 + UnitType.Terran_Command_Center.tileWidth();
+			int by2 = by1 + UnitType.Terran_Command_Center.tileHeight();
 
 			// conditions for non-overlap are easy
 			boolean noOverlap = (tx2 < bx1) || (tx1 > bx2) || (ty2 < by1) || (ty1 > by2);

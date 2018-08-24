@@ -140,7 +140,8 @@ public class BuildManager {
 					&& currentItem.seedLocation != TilePosition.Unknown && currentItem.seedLocation.isValid()) {
 				seedPosition = currentItem.seedLocation.toPosition();
 			} else {
-				// 0808 - 최혜진 수정 seedPosition과 desiredPosition의 충돌로 인해 깜빡거림 발생하는 것 방지
+				// 0808 - 최혜진 수정 seedPosition과 desiredPosition의 충돌로 인해 깜빡거림 발생하는
+				// 것 방지
 				if (currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.BlockFirstChokePoint
 						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.BunkerForZerg
 						&& currentItem.seedLocationStrategy != BuildOrderItem.SeedPositionStrategy.FactoryInMainBaseLocation
@@ -152,8 +153,10 @@ public class BuildManager {
 				}
 			}
 
-			// if (currentItem.metaType.getUnitType() == UnitType.Terran_Engineering_Bay) {
-			// System.out.println("seedPosition" + seedPosition.toTilePosition().getX() + "
+			// if (currentItem.metaType.getUnitType() ==
+			// UnitType.Terran_Engineering_Bay) {
+			// System.out.println("seedPosition" +
+			// seedPosition.toTilePosition().getX() + "
 			// "
 			// + seedPosition.toTilePosition().getY());
 			// }
@@ -165,9 +168,10 @@ public class BuildManager {
 
 			/*
 			 * if (currentItem.metaType.isUnit() &&
-			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer != null) {
-			 * System.out.println("Build " + currentItem.metaType.getName() + " producer : "
-			 * + producer.getType() + " ID : " + producer.getID()); } else {
+			 * currentItem.metaType.getUnitType().isBuilding()) { if (producer
+			 * != null) { System.out.println("Build " +
+			 * currentItem.metaType.getName() + " producer : " +
+			 * producer.getType() + " ID : " + producer.getID()); } else {
 			 * System.out.println("Build " + currentItem.metaType.getName() +
 			 * " producer null"); } }
 			 */
@@ -185,8 +189,9 @@ public class BuildManager {
 
 				/*
 				 * if (currentItem.metaType.isUnit() &&
-				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout + "Build " +
-				 * currentItem.metaType.getName() + " canMakeNow : " + canMake + std::endl; }
+				 * currentItem.metaType.getUnitType().isBuilding() ) { std::cout
+				 * + "Build " + currentItem.metaType.getName() +
+				 * " canMakeNow : " + canMake + std::endl; }
 				 */
 
 				// 프로토스 종족 유닛 중 Protoss_Archon / Protoss_Dark_Archon 은 기존
@@ -257,14 +262,17 @@ public class BuildManager {
 							// desiredPosition 주위에서 찾을 것이다
 							TilePosition desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation,
 									currentItem.seedLocationStrategy);
-							// System.out.println(desiredPosition.getX() + " " + desiredPosition.getY());
+							// System.out.println(desiredPosition.getX() + " " +
+							// desiredPosition.getY());
 							// std::cout << "BuildManager " +
 							// currentItem.metaType.getUnitType().getName().c_str()
 							// + " desiredPosition " + desiredPosition.x + "," +
 							// desiredPosition.y + std::endl;
-							// if (currentItem.metaType.getUnitType() == UnitType.Terran_Supply_Depot) {
+							// if (currentItem.metaType.getUnitType() ==
+							// UnitType.Terran_Supply_Depot) {
 							// System.out.println(
-							// "desiredPosition" + desiredPosition.getX() + " " + desiredPosition.getY());
+							// "desiredPosition" + desiredPosition.getX() + " "
+							// + desiredPosition.getY());
 							// }
 							if (desiredPosition != TilePosition.None) {
 								// Send the construction task to the
@@ -391,8 +399,9 @@ public class BuildManager {
 					if (currentItem.metaType.isUnit()) {
 						UnitType unitType = currentItem.metaType.getUnitType();
 
-						// Refinery 건물의 경우, Refinery 가 건설되지 않은 Geyser가 있는 경우에만 가능
-						if (unitType == info.getRefineryBuildingType()) {
+						// Refinery 건물의 경우, Refinery 가 건설되지 않은 Geyser가 있는 경우에만
+						// 가능
+						if (unitType == UnitType.Terran_Refinery) {
 							boolean hasAvailableGeyser = true;
 
 							// Refinery가 지어질 수 있는 장소를 찾아본다
@@ -404,7 +413,8 @@ public class BuildManager {
 									|| testLocation.isValid() == false) {
 								hasAvailableGeyser = false;
 							} else {
-								// Refinery 를 지으려는 장소에 Refinery 가 이미 건설되어 있다면 dead
+								// Refinery 를 지으려는 장소에 Refinery 가 이미 건설되어 있다면
+								// dead
 								// lock
 								for (Unit u : MyBotModule.Broodwar.getUnitsOnTile(testLocation)) {
 									if (u.getType().isRefinery() && u.exists()) {
@@ -722,8 +732,8 @@ public class BuildManager {
 		// "+desiredPosition.getY());
 		/*
 		 * std::cout +
-		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
-		 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
+		 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
+		 * + unitType.getName().c_str() + " strategy " + seedPositionStrategy +
 		 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
 		 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
 		 * std::endl;
@@ -759,11 +769,11 @@ public class BuildManager {
 						.getBuildLocationWithSeedPositionAndStrategy(unitType, seedPosition, seedPositionStrategy);
 				/*
 				 * std::cout +
-				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy " +
-				 * unitType.getName().c_str() + " strategy " + seedPositionStrategy +
-				 * " seedPosition " + seedPosition.x + "," + seedPosition.y +
-				 * " desiredPosition " + desiredPosition.x + "," + desiredPosition.y +
-				 * std::endl;
+				 * "ConstructionPlaceFinder getBuildLocationWithSeedPositionAndStrategy "
+				 * + unitType.getName().c_str() + " strategy " +
+				 * seedPositionStrategy + " seedPosition " + seedPosition.x +
+				 * "," + seedPosition.y + " desiredPosition " +
+				 * desiredPosition.x + "," + desiredPosition.y + std::endl;
 				 */
 			}
 			// 다른 곳을 더 찾아보지 않고, 끝낸다
@@ -1671,10 +1681,11 @@ public class BuildManager {
 					int requiredSupply = unitType.supplyRequired();
 
 					/*
-					 * std::cout + "To make " + unitType.getName() + ", producerType " +
-					 * producerType.getName() + " completedUnitCount " + self.completedUnitCount(
-					 * producerType) + " incompleteUnitCount " + self.incompleteUnitCount(
-					 * producerType) + std::endl;
+					 * std::cout + "To make " + unitType.getName() +
+					 * ", producerType " + producerType.getName() +
+					 * " completedUnitCount " + self.completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * self.incompleteUnitCount( producerType) + std::endl;
 					 */
 
 					// 건물을 생산하는 유닛이나, 유닛을 생산하는 건물이 존재하지 않고, 건설 예정이지도 않으면 dead
@@ -1684,7 +1695,7 @@ public class BuildManager {
 					}
 
 					// Refinery 건물의 경우, Refinery 가 건설되지 않은 Geyser가 있는 경우에만 가능
-					if (!isDeadlockCase && unitType == info.getRefineryBuildingType()) {
+					if (!isDeadlockCase && unitType == UnitType.Terran_Refinery) {
 						boolean hasAvailableGeyser = true;
 
 						// Refinery가 지어질 수 있는 장소를 찾아본다
@@ -1747,9 +1758,12 @@ public class BuildManager {
 							if (requiredUnitType != UnitType.None) {
 
 								/*
-								 * std::cout + "pre requiredUnitType " + requiredUnitType.getName() +
-								 * " completedUnitCount " + self. completedUnitCount(requiredUnitType) +
-								 * " incompleteUnitCount " + self. incompleteUnitCount(requiredUnitType) +
+								 * std::cout + "pre requiredUnitType " +
+								 * requiredUnitType.getName() +
+								 * " completedUnitCount " + self.
+								 * completedUnitCount(requiredUnitType) +
+								 * " incompleteUnitCount " + self.
+								 * incompleteUnitCount(requiredUnitType) +
 								 * std::endl;
 								 */
 
@@ -1872,11 +1886,13 @@ public class BuildManager {
 					UnitType requiredUnitType = techType.requiredUnit();
 
 					/*
-					 * System.out.println("To research " + techType.toString() + ", hasResearched "
-					 * + self.hasResearched(techType) + ", isResearching " +
-					 * self.isResearching(techType) + ", producerType " + producerType.toString() +
-					 * " completedUnitCount " + self.completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + self.incompleteUnitCount( producerType));
+					 * System.out.println("To research " + techType.toString() +
+					 * ", hasResearched " + self.hasResearched(techType) +
+					 * ", isResearching " + self.isResearching(techType) +
+					 * ", producerType " + producerType.toString() +
+					 * " completedUnitCount " + self.completedUnitCount(
+					 * producerType) + " incompleteUnitCount " +
+					 * self.incompleteUnitCount( producerType));
 					 */
 
 					if (self.hasResearched(techType) || self.isResearching(techType)) {
@@ -1924,10 +1940,12 @@ public class BuildManager {
 						}
 					} else if (requiredUnitType != UnitType.None) {
 						/*
-						 * std::cout + "To research " + techType.getName() + ", requiredUnitType " +
-						 * requiredUnitType.getName() + " completedUnitCount " +
-						 * self.completedUnitCount( requiredUnitType) + " incompleteUnitCount " +
-						 * self.incompleteUnitCount( requiredUnitType) + std::endl;
+						 * std::cout + "To research " + techType.getName() +
+						 * ", requiredUnitType " + requiredUnitType.getName() +
+						 * " completedUnitCount " + self.completedUnitCount(
+						 * requiredUnitType) + " incompleteUnitCount " +
+						 * self.incompleteUnitCount( requiredUnitType) +
+						 * std::endl;
 						 */
 
 						if (self.completedUnitCount(requiredUnitType) == 0
@@ -1948,12 +1966,15 @@ public class BuildManager {
 					UnitType requiredUnitType = upgradeType.whatsRequired();
 
 					/*
-					 * std::cout + "To upgrade " + upgradeType.getName() + ", maxLevel " + maxLevel
-					 * + ", currentLevel " + currentLevel + ", isUpgrading " +
-					 * self.isUpgrading(upgradeType) + ", producerType " + producerType.getName() +
-					 * " completedUnitCount " + self.completedUnitCount( producerType) +
-					 * " incompleteUnitCount " + self.incompleteUnitCount( producerType) +
-					 * ", requiredUnitType " + requiredUnitType.getName() + std::endl;
+					 * std::cout + "To upgrade " + upgradeType.getName() +
+					 * ", maxLevel " + maxLevel + ", currentLevel " +
+					 * currentLevel + ", isUpgrading " +
+					 * self.isUpgrading(upgradeType) + ", producerType " +
+					 * producerType.getName() + " completedUnitCount " +
+					 * self.completedUnitCount( producerType) +
+					 * " incompleteUnitCount " + self.incompleteUnitCount(
+					 * producerType) + ", requiredUnitType " +
+					 * requiredUnitType.getName() + std::endl;
 					 */
 
 					if (currentLevel >= maxLevel || self.isUpgrading(upgradeType)) {

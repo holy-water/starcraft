@@ -216,87 +216,9 @@ public class InformationManager {
 		unitData.get(unit.getPlayer()).removeUnit(unit);
 	}
 
-	/// 해당 Player (아군 or 적군) 의 position 주위의 유닛 목록을 unitInfo 에 저장합니다
-	public void getNearbyForce(Vector<UnitInfo> unitInfo, Position p, Player player, int radius) {
-		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
-
-		// for each unit we know about for that player
-		// for (final Unit kv :
-		// getUnitData(player).getUnits().keySet().iterator()){
-		while (it.hasNext()) {
-			final UnitInfo ui = getUnitData(player).getUnitAndUnitInfoMap().get(it.next());
-
-			// if it's a combat unit we care about
-			// and it's finished!
-			if (isCombatUnitType(ui.getType()) && ui.isCompleted()) {
-				// determine its attack range
-				int range = 0;
-				if (ui.getType().groundWeapon() != WeaponType.None) {
-					range = ui.getType().groundWeapon().maxRange() + 40;
-				}
-
-				// if it can attack into the radius we care about
-				if (ui.getLastPosition().getDistance(p) <= (radius + range)) {
-					// add it to the vector
-					// C++ : unitInfo.push_back(ui);
-					unitInfo.add(ui);
-				}
-			} else if (ui.getType().isDetector() && ui.getLastPosition().getDistance(p) <= (radius + 250)) {
-				// add it to the vector
-				// C++ : unitInfo.push_back(ui);
-				unitInfo.add(ui);
-			}
-		}
-	}
-
-	/// 해당 Player (아군 or 적군) 의 해당 UnitType 유닛 숫자를 리턴합니다 (훈련/건설 중인 유닛 숫자까지 포함)
-	public int getNumUnits(UnitType t, Player player) {
-		return getUnitData(player).getNumUnits(t.toString());
-	}
-
 	/// 해당 Player (아군 or 적군) 의 모든 유닛 통계 UnitData 을 리턴합니다
 	public final UnitData getUnitData(Player player) {
 		return unitData.get(player);
-	}
-
-	/// 적의 본진으로부터 아군의 가장 가까운 유닛 리턴
-	public Unit getClosestUnitFromEnemyBaseLocation(UnitType unitType) {
-		// 적의 본진
-		BaseLocation enemyBaseLocation = getMainBaseLocation(enemyPlayer);
-
-		Unit closestUnit = null;
-		double closestDist = 10000;
-
-		// 0728 수정 - 적군 유닛이 아니라 아군 유닛으로 변경
-		for (Unit unit : selfPlayer.getUnits()) {
-			if (unit == null)
-				continue;
-			if (unit.getType() == unitType) {
-				double dist = unit.getDistance(enemyBaseLocation.getPosition());
-				if (closestUnit == null || (dist < closestDist)) {
-					closestUnit = unit;
-					closestDist = dist;
-				}
-			}
-		}
-
-		return closestUnit;
-	}
-
-	/// 특정 위치로부터 일정 거리 이내에 적이 있는가 체크하는 메소드
-	public boolean isEnemyUnitInRadius(Position pos, int tileCnt) {
-		// 반경 tileCnt 타일 이내에 있는 유닛 리스트
-		List<Unit> list = MyBotModule.Broodwar.getUnitsInRadius(pos, tileCnt * Config.TILE_SIZE);
-
-		// 적 유닛이 있는지 확인
-		for (Unit unit : list) {
-			if (unit == null)
-				continue;
-			if (unit.getPlayer() == enemyPlayer) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	// 해당 지역에 적 일꾼 유닛이 있다면 적 일꾼 리턴
@@ -335,47 +257,25 @@ public class InformationManager {
 	}
 
 	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
-	public boolean isGroundEnemyUnitInSight(Unit targetUnit) {
+	public boolean isGroundEnemyUnitInWeaponRange(Unit targetUnit) {
 		if (targetUnit == null)
 			return false;
 
 		// 시야 내에 있는 유닛 리스트
-		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().sightRange());
+		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().groundWeapon().maxRange());
 
 		// 적 유닛이 있는지 확인
 		for (Unit unit : list) {
 			if (unit == null)
 				continue;
 			if (unit.getPlayer() == enemyPlayer) {
-				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
+				if (isGroundCombatUnitType(unit.getType())) {
 					return true;
 				}
 			}
 		}
 
 		return false;
-	}
-
-	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
-	public Unit getGroundEnemyUnitInSight(Unit targetUnit) {
-		if (targetUnit == null)
-			return null;
-
-		// 시야 내에 있는 유닛 리스트
-		List<Unit> list = targetUnit.getUnitsInRadius(targetUnit.getType().sightRange());
-
-		// 적 유닛이 있는지 확인
-		for (Unit unit : list) {
-			if (unit == null)
-				continue;
-			if (unit.getPlayer() == enemyPlayer) {
-				if (isGroundCombatUnitType(unit.getType()) || (unit.getType().isBuilding() && !unit.isLifted())) {
-					return unit;
-				}
-			}
-		}
-
-		return null;
 	}
 
 	// 0813 추가 - 우리 유닛 시야에 적 지상 유닛이 있는지 체크
@@ -425,49 +325,6 @@ public class InformationManager {
 			}
 		}
 		return false;
-	}
-
-	// 0813 추가 - 공중 유닛
-	public boolean isAirCombatUnitType(UnitType unitType) {
-		if (enemyRace == Race.Protoss) {
-			if (unitType == UnitType.Protoss_Arbiter || unitType == UnitType.Protoss_Carrier
-					|| unitType == UnitType.Protoss_Corsair || unitType == UnitType.Protoss_Scout
-					|| unitType == UnitType.Protoss_Interceptor) {
-				return true;
-			}
-		} else if (enemyRace == Race.Terran) {
-			if (unitType == UnitType.Terran_Battlecruiser || unitType == UnitType.Terran_Valkyrie
-					|| unitType == UnitType.Terran_Wraith) {
-				return true;
-			}
-		} else {
-			if (unitType == UnitType.Zerg_Guardian || unitType == UnitType.Zerg_Devourer
-					|| unitType == UnitType.Zerg_Mutalisk || unitType == UnitType.Zerg_Scourge) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	// 특정 지역 내에서 아군/적군의 병력 체크
-	public int getForcePoint(Region region, Player player) {
-
-		Iterator<Integer> it = getUnitData(player).getUnitAndUnitInfoMap().keySet().iterator();
-		int forcePoint = 0;
-
-		while (it.hasNext()) {
-			UnitInfo ui = getUnitData(player).getUnitAndUnitInfoMap().get(it.next());
-
-			// 유닛이 해당 지역에 들어와있는지 확인
-			if (BWTA.getRegion(ui.getLastPosition()) == region) {
-				// 전투 유닛인 경우만 고려
-				if (isCombatUnitType(ui.getType()) && ui.isCompleted()) {
-					forcePoint++;
-				}
-			}
-		}
-		return forcePoint;
 	}
 
 	// 특정 baseLocation을 위험도 체크 가능한 객체로 반환
@@ -525,45 +382,6 @@ public class InformationManager {
 			return null;
 		}
 	}
-
-	/*
-	 * // 현재 본진이 어떤 상황인지 체크 // Drop / Attack / Scout public Map<String, Unit>
-	 * getReasonForEnemysAppearance() { Map<String, Unit> reasonMap = new
-	 * HashMap<>(); Unit tempTarget = null;
-	 * 
-	 * for (Unit unit : enemyPlayer.getUnits()) { if (unit == null) continue; if
-	 * (BWTA.getRegion(unit.getPosition()) ==
-	 * getMainBaseLocation(selfPlayer).getRegion()) { if (unit.getType() ==
-	 * UnitType.Terran_Dropship || unit.getType() == UnitType.Protoss_Shuttle ||
-	 * unit.getType() == UnitType.Zerg_Overlord) { if (unit.getSpaceRemaining()
-	 * < 8) { reasonMap.put("Drop", null); // 위험상황(드랍) break; } else {
-	 * reasonMap.put("Scout", null); // 정찰 } } else if (unit.getType() ==
-	 * UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone ||
-	 * unit.getType() == UnitType.Protoss_Probe) { if (unit.isAttacking()) {
-	 * tempTarget = unit.getOrderTarget(); if (tempTarget == null) tempTarget =
-	 * unit.getTarget(); if (tempTarget != null && tempTarget.getType() ==
-	 * UnitType.Terran_SCV) { reasonMap.put("Attack", unit); // 일꾼이 일꾼 공격 break;
-	 * } } else { reasonMap.put("Scout", null); // 정찰 } } else if
-	 * (unit.getType().isBuilding() && unit.isCompleted() && unit.getHitPoints()
-	 * == unit.getType().maxHitPoints()) { reasonMap.put("Attack", unit); // 적
-	 * 건물 건설 break; } else if (unit.getType().isBuilding()) {
-	 * reasonMap.put("Scout", null); } } } return reasonMap; }
-	 * 
-	 * // 현재 본진이 어떤 상황인지 체크 // RunAway / Attack public Map<String, Unit>
-	 * getReasonForEnemysAppearanceAtMulti() { Map<String, Unit> reasonMap = new
-	 * HashMap<>(); Unit tempTarget = null;
-	 * 
-	 * for (Unit unit : enemyPlayer.getUnits()) { if (unit == null) continue; if
-	 * (BWTA.getRegion(unit.getPosition()) ==
-	 * getFirstExpansionLocation(selfPlayer).getRegion()) { if
-	 * (unit.isAttacking()) { tempTarget = unit.getOrderTarget(); if (tempTarget
-	 * == null) tempTarget = unit.getTarget(); if (tempTarget != null &&
-	 * tempTarget.getType() == UnitType.Terran_SCV) { if (unit.getType() ==
-	 * UnitType.Terran_SCV || unit.getType() == UnitType.Zerg_Drone ||
-	 * unit.getType() == UnitType.Protoss_Probe) { reasonMap.put("Attack",
-	 * unit); // 일꾼이 일꾼 공격 break; } else { reasonMap.put("RunAway", null); // 도망
-	 * break; } } } } } return reasonMap; }
-	 */
 
 	public void updateBaseLocationInfo() {
 		if (occupiedRegions.get(selfPlayer) != null) {
@@ -964,183 +782,4 @@ public class InformationManager {
 		return false;
 	}
 
-	// 해당 종족의 UnitType 중 Basic Combat Unit 에 해당하는 UnitType을 리턴합니다
-	public UnitType getBasicCombatUnitType() {
-		return getBasicCombatUnitType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Basic Combat Unit 에 해당하는 UnitType을 리턴합니다
-	public UnitType getBasicCombatUnitType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Zealot;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Marine;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Zergling;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Advanced Combat Unit 에 해당하는 UnitType을 리턴합니다
-	public UnitType getAdvancedCombatUnitType() {
-		return getAdvancedCombatUnitType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Advanced Combat Unit 에 해당하는 UnitType을 리턴합니다
-	public UnitType getAdvancedCombatUnitType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Dragoon;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Medic;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Hydralisk;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Basic Combat Unit 을 생산하기 위해 건설해야하는 UnitType을 리턴합니다
-	public UnitType getBasicCombatBuildingType() {
-		return getBasicCombatBuildingType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Basic Combat Unit 을 생산하기 위해 건설해야하는 UnitType을 리턴합니다
-	public UnitType getBasicCombatBuildingType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Gateway;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Barracks;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Hatchery;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Observer 에 해당하는 UnitType을 리턴합니다
-	public UnitType getObserverUnitType() {
-		return getObserverUnitType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Observer 에 해당하는 UnitType을 리턴합니다
-	public UnitType getObserverUnitType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Observer;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Science_Vessel;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Overlord;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 ResourceDepot 기능을 하는 UnitType을 리턴합니다
-	public UnitType getBasicResourceDepotBuildingType() {
-		return getBasicResourceDepotBuildingType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 ResourceDepot 기능을 하는 UnitType을 리턴합니다
-	public UnitType getBasicResourceDepotBuildingType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Nexus;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Command_Center;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Hatchery;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Refinery 기능을 하는 UnitType을 리턴합니다
-	public UnitType getRefineryBuildingType() {
-		return getRefineryBuildingType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Refinery 기능을 하는 UnitType을 리턴합니다
-	public UnitType getRefineryBuildingType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Assimilator;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Refinery;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Extractor;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Worker 에 해당하는 UnitType을 리턴합니다
-	public UnitType getWorkerType() {
-		return getWorkerType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Worker 에 해당하는 UnitType을 리턴합니다
-	public UnitType getWorkerType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Probe;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_SCV;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Drone;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 SupplyProvider 기능을 하는 UnitType을 리턴합니다
-	public UnitType getBasicSupplyProviderUnitType() {
-		return getBasicSupplyProviderUnitType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 SupplyProvider 기능을 하는 UnitType을 리턴합니다
-	public UnitType getBasicSupplyProviderUnitType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Pylon;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Supply_Depot;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Overlord;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Basic Depense 기능을 하는 UnitType을 리턴합니다
-	public UnitType getBasicDefenseBuildingType() {
-		return getBasicDefenseBuildingType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Basic Depense 기능을 하는 UnitType을 리턴합니다
-	public UnitType getBasicDefenseBuildingType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Pylon;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Bunker;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Creep_Colony;
-		} else {
-			return UnitType.None;
-		}
-	}
-
-	// 해당 종족의 UnitType 중 Advanced Depense 기능을 하는 UnitType을 리턴합니다
-	public UnitType getAdvancedDefenseBuildingType() {
-		return getAdvancedDefenseBuildingType(MyBotModule.Broodwar.self().getRace());
-	}
-
-	// 해당 종족의 UnitType 중 Advanced Depense 기능을 하는 UnitType을 리턴합니다
-	public UnitType getAdvancedDefenseBuildingType(Race race) {
-		if (race == Race.Protoss) {
-			return UnitType.Protoss_Photon_Cannon;
-		} else if (race == Race.Terran) {
-			return UnitType.Terran_Missile_Turret;
-		} else if (race == Race.Zerg) {
-			return UnitType.Zerg_Sunken_Colony;
-		} else {
-			return UnitType.None;
-		}
-	}
 }
