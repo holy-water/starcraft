@@ -919,7 +919,7 @@ public class StrategyManager {
 		if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 			unit.useTech(TechType.Tank_Siege_Mode);
 		} else if (informationMgr.getFirstChokePoint(enemy) != null) {
-			if (unit.getDistance(informationMgr.getFirstChokePoint(enemy)) < TilePosition.SIZE_IN_PIXELS) {
+			if (unit.getDistance(informationMgr.getFirstChokePoint(enemy)) < 1) {
 				unit.move(targetBaseLocation.getPosition());
 			}
 		} else if (!unit.isHoldingPosition()) {
@@ -1214,7 +1214,7 @@ public class StrategyManager {
 	}
 
 	private void executeMultiCheck() {
-		
+
 		// InitialBuildOrder 진행중에는 아무것도 하지 않습니다
 		if (isInitialBuildOrderFinished == false) {
 			return;
@@ -1224,7 +1224,11 @@ public class StrategyManager {
 		if (frameCount % 24 != 21) {
 			return;
 		}
-		
+
+		if (self.getMaxUpgradeLevel(UpgradeType.Ion_Thrusters) == 0) {
+			return;
+		}
+
 		// 4분에 한번 초기화
 		long now = System.currentTimeMillis();
 		if (now - MultipleCheckManager.Instance().endTime > 1000 * 60 * 4) {
