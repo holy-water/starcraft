@@ -1,4 +1,3 @@
-import bwapi.Color;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitCommand;

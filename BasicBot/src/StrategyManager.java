@@ -114,7 +114,7 @@ public class StrategyManager {
 		// 경기 결과 파일 Save / Load 및 로그파일 Save 예제 추가
 
 		// 과거 게임 기록을 로딩합니다
-		loadGameRecordList();
+		// loadGameRecordList();
 
 		// BasicBot 1.1 Patch End
 		// //////////////////////////////////////////////////
@@ -783,12 +783,15 @@ public class StrategyManager {
 					continue;
 				}
 				if (frameCount % (24 * 5) == 0) {
+					if (!unit.isMoving() && !unit.isAttacking()) {
+						unit.stop();
+					}
 					if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
 						if (!unit.isMoving() && !unit.isAttacking()) {
 							unit.useTech(TechType.Tank_Siege_Mode);
 						}
 					} else if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-						if (unit.isAttacking() && !unit.isUnderAttack()
+						if (!unit.isAttacking() && !unit.isUnderAttack()
 								&& unit.getDistance(rallyPoint) > TilePosition.SIZE_IN_PIXELS * 3) {
 							unit.unsiege();
 						}
@@ -849,7 +852,6 @@ public class StrategyManager {
 			if (informationMgr.enemyPlayer != null && informationMgr.enemyRace != Race.Unknown
 					&& informationMgr.getOccupiedBaseLocations(informationMgr.enemyPlayer).size() > 0) {
 				// 공격 대상 지역 결정
-
 				targetBaseLocation = informationMgr.getMainBaseLocation(enemy);
 
 				Unit barracks = myUnitMap.get("Barracks");
@@ -962,11 +964,11 @@ public class StrategyManager {
 
 	private boolean isFullScaleAttackStart(Race race) {
 		if (race == Race.Protoss) {
-			return self.supplyUsed() > 360;
+			return self.supplyUsed() > 320;
 		} else if (race == Race.Terran) {
 			return self.allUnitCount(UnitType.Terran_Siege_Tank_Siege_Mode) > 4;
 		} else {
-			return self.supplyUsed() > 300;
+			return self.supplyUsed() > 280;
 		}
 	}
 

@@ -1,7 +1,3 @@
-import java.util.Set;
-
-import bwapi.Color;
-import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;

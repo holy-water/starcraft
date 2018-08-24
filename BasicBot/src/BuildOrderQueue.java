@@ -1,7 +1,6 @@
 import java.awt.Point;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 
 import bwapi.TechType;
@@ -11,17 +10,6 @@ import bwapi.UpgradeType;
 
 /// 빌드 오더 목록 자료구조 class
 public class BuildOrderQueue {
-
-	// 0723 - 최혜진 수정 4드론 시 벙커 위치 위한 BunkerForZerg 전략 추가
-	// 0729 - 최혜진 수정 본진과 앞마당 둘러싸기 위한 TurretAround 전략 추가
-	// 0730 - 최혜진 수정 본진 Factory 효율적 건설 전략 추가
-	// 0730 - 최혜진 추가 본진 Factory와 Supply Depot 피해서 건설하기 위한 전략 추가
-    // 0811 - 최혜진 추가 추가적인 확장
-	private enum SeedPositionStrategy {
-		MainBaseLocation, MainBaseBackYard, FirstChokePoint, FirstExpansionLocation, SecondChokePoint, SeedPositionSpecified, BunkerForZerg, TurretAround, FactoryInMainBaseLocation, OtherInMainBaseLocation,MultipleExpansion
-	};
-
-	private SeedPositionStrategy seedLocationStrategy;
 
 	private int highestPriority;
 	private int lowestPriority;

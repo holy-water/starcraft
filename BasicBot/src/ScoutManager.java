@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import bwapi.Color;
 import bwapi.Position;
-import bwapi.Race;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -351,8 +350,6 @@ public class ScoutManager {
 			if (maxFarthest < 4) {
 				break;
 			}
-
-			double dist = sortedVertices.get(maxFarthestStart).getDistance(sortedVertices.get(maxFarthestEnd));
 
 			Vector<Position> temp = new Vector<Position>();
 

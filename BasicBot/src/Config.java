@@ -1,7 +1,4 @@
-import java.util.Set;
-
 import bwapi.Color;
-import bwapi.UnitType;
 
 /// 봇 프로그램 설정
 public class Config {

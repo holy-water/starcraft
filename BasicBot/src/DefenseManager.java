@@ -44,7 +44,8 @@ public class DefenseManager {
 	// 방어병력 투입
 	public void executeDefense(DangerousLocation curDangerLoca) {
 
-		BaseLocation dangerLocation = curDangerLoca.getBaseLocation(); // 위험지역 위치
+		BaseLocation dangerLocation = curDangerLoca.getBaseLocation(); // 위험지역
+																		// 위치
 
 		int groundCnt = curDangerLoca.getGroundCnt(); // 적의 지상 병력
 		int airCnt = curDangerLoca.getAirCnt(); // 적의 공중 병력
@@ -52,7 +53,7 @@ public class DefenseManager {
 		// 죽은 유닛 List 삭제
 		checkIfDead();
 
-		if (curDangerLoca.getEnemyCnt() >= 6) {
+		if (groundCnt > 0 && curDangerLoca.getEnemyCnt() >= 6) {
 			// 위험 지역에 병력 모두 투입
 			assignAllCombatUnit();
 		} else {

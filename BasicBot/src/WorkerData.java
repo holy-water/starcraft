@@ -258,13 +258,6 @@ public class WorkerData {
 	{
 		if (unit == null) { return; }
 
-		/*
-		if (job == Idle)
-		{
-			std::cout << "set worker " << unit.getID() << " job " << workerJobMap[unit] << " . 4 (idle) " << std::endl;
-		}
-		*/
-		
 		clearPreviousJob(unit);
 		workerJobMap.put(unit.getID(), job);
 
@@ -373,8 +366,6 @@ public class WorkerData {
 	{
 		if (unit == null) { return; }
 
-		//System.out.println("setWorkerJob "+ unit.getID() + " from " + workerJobMap.get(unit.getID()).ordinal() + " to " + job.ordinal());
-		
 		clearPreviousJob(unit);
 		workerJobMap.put(unit.getID(), job);
 
@@ -518,15 +509,6 @@ public class WorkerData {
 		{
 			return workerJobMap.get(unit.getID());
 		}
-//		Iterator<Integer> it = workerJobMap.keySet().iterator();
-//		while(it.hasNext())
-//		{
-//			Integer tempUnit = it.next(); 
-//			if(tempUnit.getID() == unit.getID())
-//			{
-//					
-//			}
-//		}
 		return WorkerJob.Default;
 	}
 
@@ -669,36 +651,6 @@ public class WorkerData {
 		return bestMineral;
 	}
 	
-	/*
-	BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
-	{
-		if (!worker) { return null; }
-
-		// get the depot associated with this unit
-		BWAPI::Unit depot = getWorkerDepot(worker);
-		BWAPI::Unit mineral = null;
-		double closestDist = 10000;
-
-		if (depot)
-		{
-			BOOST_FOREACH (BWAPI::Unit unit, MyBotModule.Broodwar.getAllUnits())
-			{
-				if (unit.getType() == BWAPI::UnitTypes::Resource_Mineral_Field && unit.getResources() > 0)
-				{
-					double dist = unit.getDistance(depot);
-
-					if (!mineral || dist < closestDist)
-					{
-						mineral = unit;
-						closestDist = dist;
-					}
-				}
-			}
-		}
-
-		return mineral;
-	}*/
-
 	public Unit getWorkerRepairUnit(Unit unit)
 	{
 		if (unit == null) { return null; }

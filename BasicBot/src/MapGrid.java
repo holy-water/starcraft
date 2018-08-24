@@ -1,9 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-
 import bwapi.Position;
-import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.Unitset;
@@ -16,7 +13,6 @@ public class MapGrid {
 	class GridCell
 	{
 		private int timeLastVisited; 		///< 가장 마지막에 방문했던 시각이 언제인지 -> Scout 에 활용		
-		private int timeLastOpponentSeen;	///< 가장 마지막에 적을 발견했던 시각이 언제인지 -> 적 의도 파악, 적 부대 파악, 전략 수립에 활용
 		private List<Unit> ourUnits= new ArrayList<Unit>();
 		private List<Unit> oppUnits= new ArrayList<Unit>();
 		private Position center;
@@ -24,7 +20,6 @@ public class MapGrid {
 		public GridCell()
 		{
 			timeLastVisited = 0;
-			timeLastOpponentSeen = 0;
 		}
 		
 		public Position getCenter()
@@ -38,8 +33,6 @@ public class MapGrid {
 	private int mapHeight;
 	private int cols;
 	private int rows;
-	private int lastUpdated;
-	
 	public GridCell[] gridCells;
 
 	private static MapGrid instance = new MapGrid(MyBotModule.Broodwar.mapHeight() * 32, MyBotModule.Broodwar.mapHeight() * 32, Config.MAP_GRID_SIZE);
@@ -61,7 +54,6 @@ public class MapGrid {
 		{
 			gridCells[i] = new GridCell();
 		}
-		this.lastUpdated = 0;
 		calculateCellCenters();
 	}
 
@@ -191,7 +183,6 @@ public class MapGrid {
 			if (unit.getHitPoints() > 0)
 			{
 				getCell(unit).oppUnits.add(unit);
-				getCell(unit).timeLastOpponentSeen = MyBotModule.Broodwar.getFrameCount();
 			}
 		}
 	}

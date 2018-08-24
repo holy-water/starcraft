@@ -4,10 +4,6 @@ import java.util.Vector;
 
 import bwapi.Position;
 import bwapi.TilePosition;
-import bwapi.Unit;
-import bwapi.UnitType;
-import bwapi.Unitset;
-import bwta.BWTA;
 
 /// provides useful tools for analyzing the starcraft map<br>
 /// calculates connectivity and distances using flood fills
@@ -18,9 +14,6 @@ public class MapTools {
 	
 	/// the map stored at TilePosition resolution, values are 0/1 for walkable or not walkable
 	private boolean[] map; 
-	
-	/// map that stores whether a unit is on this position
-	private boolean[] units; 
 	
 	/// the fringe vector which is used as a sort of 'open list'
 	private int[] fringe; 
@@ -42,7 +35,6 @@ public class MapTools {
 		rows = MyBotModule.Broodwar.mapHeight();
 		cols = MyBotModule.Broodwar.mapWidth();
 		map = new boolean[rows * cols];
-		units = new boolean[rows * cols];
 		fringe = new int[rows * cols];
 
 		setBWAPIMapData();
@@ -236,8 +228,7 @@ public class MapTools {
 	/// Position 에서 가까운 순서대로 타일의 목록을 반환한다
 	public final Vector<TilePosition> getClosestTilesTo(Position pos)
 	{
-		// make sure the distance map is calculated with pos as a destination
-		int a = getGroundDistance(MyBotModule.Broodwar.self().getStartLocation().toPosition(),pos);
+		getGroundDistance(MyBotModule.Broodwar.self().getStartLocation().toPosition(),pos);
 
 		return allMaps.get(pos).getSortedTiles();
 	}
@@ -247,36 +238,4 @@ public class MapTools {
 		return new TilePosition(index % cols,index / cols);
 	}
 	
-	// 사용하지 않는 API. 지도를 파싱해서 파일로 저장해둔다
-	/*public void parseMap()
-	{
-		//MyBotModule.game.printf("Parsing Map Information");
-		std::ofstream mapFile;
-		std::string file = "c:\\scmaps\\" + MyBotModule.game.mapName() + ".txt";
-		mapFile.open(file.c_str());
-
-		mapFile << MyBotModule.game.mapWidth()*4 << "\n";
-		mapFile << MyBotModule.game.mapHeight()*4 << "\n";
-
-		for (int j=0; j<MyBotModule.game.mapHeight()*4; j++) 
-		{
-			for (int i=0; i<MyBotModule.game.mapWidth()*4; i++) 
-			{
-				if (MyBotModule.game.isWalkable(i,j)) 
-				{
-					mapFile << "0";
-				}
-				else 
-				{
-					mapFile << "1";
-				}
-			}
-
-			mapFile << "\n";
-		}
-
-		//MyBotModule.game.printf(file.c_str());
-
-		mapFile.close();
-	}*/
 }

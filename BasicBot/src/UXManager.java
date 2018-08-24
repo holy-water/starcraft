@@ -29,8 +29,6 @@ public class UXManager {
 	private final Character brown = '';
 	private final char red = '';
 	private final char teal = '';
-	// private final char blue = '';
-	private final char purple = '';
 	private final char white = '';
 
 	private boolean hasSavedBWTAInfo = false;
@@ -309,9 +307,11 @@ public class UXManager {
 			int left = pos.getX() - unit.getType().dimensionLeft();
 			int right = pos.getX() + unit.getType().dimensionRight();
 			int top = pos.getY() - unit.getType().dimensionUp();
-			int bottom = pos.getY() + unit.getType().dimensionDown();
+			pos.getY();
+			unit.getType().dimensionDown();
 
-			// MyBotModule.game.drawBoxMap(BWAPI.Position(left, top), BWAPI.Position(right,
+			// MyBotModule.game.drawBoxMap(BWAPI.Position(left, top),
+			// BWAPI.Position(right,
 			// bottom), Color.Grey, false);
 
 			// 유닛의 HitPoint 남아있는 비율 표시
@@ -332,7 +332,7 @@ public class UXManager {
 						true);
 				MyBotModule.Broodwar.drawBoxMap(new Position(left, hpTop), new Position(ratioRight, hpBottom), hpColor,
 						true);
-				MyBotModule.Broodwar.drawBoxMap(new Position(left, hpTop), new Position(right, hpBottom), hpColor.Black,
+				MyBotModule.Broodwar.drawBoxMap(new Position(left, hpTop), new Position(right, hpBottom), Color.Black,
 						false);
 
 				int ticWidth = 3;
@@ -399,7 +399,8 @@ public class UXManager {
 		currentY += 10;
 
 		// 아군 모든 유닛 숫자 합계
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " allUnitCount: " +
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + "
+		// allUnitCount: " +
 		// MyBotModule.Broodwar.self().allUnitCount(UnitType.AllUnits));
 		// currentY += 10;
 
@@ -416,25 +417,31 @@ public class UXManager {
 		// currentY += 10;
 
 		// 아군 유닛 파괴/사망 숫자 누적값
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " deadUnitCount: " +
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + "
+		// deadUnitCount: " +
 		// MyBotModule.Broodwar.self().deadUnitCount(UnitType.AllUnits));
 		// currentY += 10;
 
 		// 상대방 유닛을 파괴/사망 시킨 숫자 누적값
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " killedUnitCount: "
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + "
+		// killedUnitCount: "
 		// + MyBotModule.Broodwar.self().killedUnitCount(UnitType.AllUnits));
 		// currentY += 10;
 
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " UnitScore: " +
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " UnitScore:
+		// " +
 		// MyBotModule.Broodwar.self().getUnitScore());
 		// currentY += 10;
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " RazingScore: " +
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + "
+		// RazingScore: " +
 		// MyBotModule.Broodwar.self().getRazingScore());
 		// currentY += 10;
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " BuildingScore: " +
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + "
+		// BuildingScore: " +
 		// MyBotModule.Broodwar.self().getBuildingScore());
 		// currentY += 10;
-		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " KillScore: " +
+		// MyBotModule.Broodwar.drawTextScreen(x, currentY, white + " KillScore:
+		// " +
 		// MyBotModule.Broodwar.self().getKillScore());
 		// currentY += 10;
 
@@ -548,51 +555,6 @@ public class UXManager {
 
 	/// BWTA 라이브러리에 의한 Map 분석 결과 정보를 Map 에 표시합니다
 	public void drawBWTAResultOnMap() {
-		/*
-		 * //we will iterate through all the base locations, and draw their outlines. //
-		 * C+ . for (std.set<BWTA.BaseLocation*>.const_iterator i =
-		 * BWTA.getBaseLocations().begin(); i != BWTA.getBaseLocations().end(); i++)
-		 * for(BaseLocation baseLocation : BWTA.getBaseLocations()) { TilePosition p =
-		 * baseLocation.getTilePosition(); Position c = baseLocation.getPosition();
-		 * 
-		 * //draw outline of Base location MyBotModule.Broodwar.drawBoxMap(p.getX() *
-		 * 32, p.getY() * 32, p.getX() * 32 + 4 * 32, p.getY() * 32 + 3 * 32,
-		 * Color.Blue);
-		 * 
-		 * //draw a circle at each mineral patch // C++ : for (BWAPI.Unitset.iterator j
-		 * = (*i).getStaticMinerals().begin(); j != (*i).getStaticMinerals().end(); j++)
-		 * for(Unit unit : baseLocation.getStaticMinerals()) { Position q =
-		 * unit.getInitialPosition(); MyBotModule.Broodwar.drawCircleMap(q.getX(),
-		 * q.getY(), 30, Color.Cyan); }
-		 * 
-		 * //draw the outlines of vespene geysers // C++ : for (BWAPI.Unitset.iterator j
-		 * = (*i).getGeysers().begin(); j != (*i).getGeysers().end(); j++) for(Unit unit
-		 * :baseLocation.getGeysers() ) { TilePosition q =
-		 * unit.getInitialTilePosition(); MyBotModule.Broodwar.drawBoxMap(q.getX() * 32,
-		 * q.getY() * 32, q.getX() * 32 + 4 * 32, q.getY() * 32 + 2 * 32, Color.Orange);
-		 * }
-		 * 
-		 * //if this is an island expansion, draw a yellow circle around the base
-		 * location if (baseLocation.isIsland()) { MyBotModule.Broodwar.drawCircleMap(c,
-		 * 80, Color.Yellow); } }
-		 * 
-		 * //we will iterate through all the regions and draw the polygon outline of it
-		 * in green. // C++ : for (std.set<BWTA.Region*>.const_iterator r =
-		 * BWTA.getRegions().begin(); r != BWTA.getRegions().end(); r++) for(Region
-		 * region : BWTA.getRegions()) { Polygon p = region.getPolygon(); for (int j =
-		 * 0; j<p.getPoints().size(); j++) { Position point1 = p.getPoints().get(j);
-		 * Position point2 = p.getPoints().get((j + 1) % p.getPoints().size());
-		 * MyBotModule.Broodwar.drawLineMap(point1, point2, Color.Green); } }
-		 * 
-		 * //we will visualize the chokepoints with red lines // C++ : for
-		 * (std.set<BWTA.Region*>.const_iterator r = BWTA.getRegions().begin(); r !=
-		 * BWTA.getRegions().end(); r++) for(Region region : BWTA.getRegions()) { // C++
-		 * : for (std.set<BWTA.Chokepoint*>.const_iterator c =
-		 * (*r).getChokepoints().begin(); c != (*r).getChokepoints().end(); c++)
-		 * for(Chokepoint Chokepoint : region.getChokepoints()) { Position point1 =
-		 * Chokepoint.getSides().first; Position point2 = Chokepoint.getSides().second;
-		 * MyBotModule.Broodwar.drawLineMap(point1, point2, Color.Red); } }
-		 */
 		int blueCount = 0;
 		int cyanCount = 0;
 		int orangeCount = 0;
@@ -600,12 +562,8 @@ public class UXManager {
 		if (hasSavedBWTAInfo == false) {
 			for (BaseLocation baseLocation : BWTA.getBaseLocations()) {
 				blueCount++;
-				for (Unit unit : baseLocation.getStaticMinerals()) {
-					cyanCount++;
-				}
-				for (Unit unit : baseLocation.getGeysers()) {
-					orangeCount++;
-				}
+				cyanCount += baseLocation.getStaticMinerals().size();
+				orangeCount += baseLocation.getGeysers().size();
 			}
 
 			blue = new int[blueCount][4];
@@ -625,9 +583,6 @@ public class UXManager {
 				blue[blueIndex][3] = p.getY() * 32 + 3 * 32;
 				blueIndex++;
 
-				// draw a circle at each mineral patch
-				// C++ : for (BWAPI.Unitset.iterator j = (*i).getStaticMinerals().begin(); j !=
-				// (*i).getStaticMinerals().end(); j++)
 				for (Unit unit : baseLocation.getStaticMinerals()) {
 					Position q = unit.getInitialPosition();
 					cyan[cyanIndex][0] = q.getX();
@@ -635,9 +590,6 @@ public class UXManager {
 					cyanIndex++;
 				}
 
-				// draw the outlines of vespene geysers
-				// C++ : for (BWAPI.Unitset.iterator j = (*i).getGeysers().begin(); j !=
-				// (*i).getGeysers().end(); j++)
 				for (Unit unit : baseLocation.getGeysers()) {
 					TilePosition q = unit.getInitialTilePosition();
 					orange[orangeIndex][0] = q.getX() * 32;
@@ -647,13 +599,15 @@ public class UXManager {
 					orangeIndex++;
 				}
 
-				// if this is an island expansion, draw a yellow circle around the base location
+				// if this is an island expansion, draw a yellow circle around
+				// the base location
 				if (baseLocation.isIsland()) {
 					yellow.add(c);
 				}
 			}
 
-			// we will iterate through all the regions and draw the polygon outline of it in
+			// we will iterate through all the regions and draw the polygon
+			// outline of it in
 			// green.
 			// C++ : for (std.set<BWTA.Region*>.const_iterator r =
 			// BWTA.getRegions().begin(); r != BWTA.getRegions().end(); r++)
@@ -669,8 +623,6 @@ public class UXManager {
 			// C++ : for (std.set<BWTA.Region*>.const_iterator r =
 			// BWTA.getRegions().begin(); r != BWTA.getRegions().end(); r++)
 			for (Region region : BWTA.getRegions()) {
-				// C++ : for (std.set<BWTA.Chokepoint*>.const_iterator c =
-				// (*r).getChokepoints().begin(); c != (*r).getChokepoints().end(); c++)
 				for (Chokepoint Chokepoint : region.getChokepoints()) {
 					red1.add(Chokepoint.getSides().first);
 					red2.add(Chokepoint.getSides().second);
@@ -678,8 +630,6 @@ public class UXManager {
 			}
 			hasSavedBWTAInfo = true;
 
-			// System.out.println(blueCount + " " + cyanCount + " " + orangeCount + " " +
-			// yellowCount + " " + greenCount + " " + redCount);
 		}
 
 		if (hasSavedBWTAInfo) {
@@ -794,26 +744,8 @@ public class UXManager {
 	public void drawBuildOrderQueueOnScreen(int x, int y) {
 		MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Build Order>");
 
-		/*
-		 * std.deque< BuildOrderItem >* queue =
-		 * BuildManager.Instance().buildQueue.getQueue(); size_t reps = queue.size() <
-		 * 24 ? queue.size() : 24; for (size_t i(0); i<reps; i++) { const MetaType &
-		 * type = (*queue)[queue.size() - 1 - i].metaType;
-		 * MyBotModule.game.drawTextScreen(x, y + 10 + (i * 10), " %s",
-		 * type.getName().c_str()); }
-		 */
-
 		Deque<BuildOrderItem> buildQueue = BuildManager.Instance().buildQueue.getQueue();
 		int itemCount = 0;
-
-		// C++ : for (std.deque<BuildOrderItem>.reverse_iterator itr =
-		// buildQueue.rbegin(); itr != buildQueue.rend(); itr++) {
-		// C++ : BuildOrderItem & currentItem = *itr;
-		// C++ : MyBotModule.game.drawTextScreen(x, y + 10 + (itemCount * 10), " %s",
-		// currentItem.metaType.getName().c_str());
-		// C++ : itemCount++;
-		// C++ : if (itemCount >= 24) break;
-		// C++ : }
 
 		Object[] tempQueue = buildQueue.toArray();
 
@@ -844,12 +776,10 @@ public class UXManager {
 		for (int i = 0; i < tempArr.length; i++) {
 			unitsUnderConstruction.add((Unit) tempArr[i]);
 		}
-		// C++ : std.sort(unitsUnderConstruction.begin(), unitsUnderConstruction.end(),
-		// CompareWhenStarted());
-
 		MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Build Status>");
 
-		int reps = unitsUnderConstruction.size() < 10 ? unitsUnderConstruction.size() : 10;
+		unitsUnderConstruction.size();
+		unitsUnderConstruction.size();
 
 		for (Unit unit : unitsUnderConstruction) {
 			y += 10;
@@ -910,8 +840,6 @@ public class UXManager {
 		Vector<ConstructionTask> constructionQueue = ConstructionManager.Instance().getConstructionQueue();
 
 		for (final ConstructionTask b : constructionQueue) {
-			String constructionState = "";
-
 			if (b.getStatus() == ConstructionTask.ConstructionStatus.Unassigned.ordinal()) {
 				MyBotModule.Broodwar.drawTextScreen(x, y + 10 + ((yspace) * 10),
 						"" + white + b.getType() + " - No Worker");
@@ -1015,29 +943,16 @@ public class UXManager {
 
 			MyBotModule.Broodwar.drawLineMap(worker.getPosition().getX(), worker.getPosition().getY(), pos.getX(),
 					pos.getY(), Color.Cyan);
-
-			/*
-			 * // ResourceDepot ~ Worker 사이에 직선 표시 BWAPI.Unit depot =
-			 * workerData.getWorkerDepot(worker); if (depot) {
-			 * MyBotModule.game.drawLineMap(worker.getPosition().x, worker.getPosition().y,
-			 * depot.getPosition().x, depot.getPosition().y, Color.Orange); }
-			 */
 		}
 	}
 
 	/// 정찰 상태를 Screen 에 표시합니다
 	public void drawScoutInformation(int x, int y) {
 		int currentScoutStatus = ScoutManager.Instance().getScoutStatus();
-		String scoutStatusString = null;
-
 		if (currentScoutStatus == ScoutManager.ScoutStatus.MovingToAnotherBaseLocation.ordinal()) {
-			scoutStatusString = "Moving To Another Base Location";
 		} else if (currentScoutStatus == ScoutManager.ScoutStatus.MoveAroundEnemyBaseLocation.ordinal()) {
-			scoutStatusString = "Move Around Enemy BaseLocation";
 		} else if (currentScoutStatus == ScoutManager.ScoutStatus.NoScout.ordinal()) {
-			scoutStatusString = "No Scout";
 		} else {
-			scoutStatusString = "No Scout";
 		}
 
 		// get the enemy base location, if we have one
@@ -1081,16 +996,6 @@ public class UXManager {
 										+ scoutMoveTo.getY() / Config.TILE_SIZE + ") Distance = "
 										+ currentScoutTargetDistance);
 					}
-					/*
-					 * else if (currentScoutStatus ==
-					 * ScoutManager.ScoutStatus.MoveAroundEnemyBaseLocation.ordinal()) {
-					 * 
-					 * Vector<Position> vertices = ScoutManager.Instance().getEnemyRegionVertices();
-					 * for (int i = 0 ; i < vertices.size() ; ++i) {
-					 * MyBotModule.Broodwar.drawCircleMap(vertices.get(i), 4, Color.Green, false);
-					 * MyBotModule.Broodwar.drawTextMap(vertices.get(i), "" + i); }
-					 * MyBotModule.Broodwar.drawCircleMap(scoutMoveTo, 5, Color.Red, true); }
-					 */
 				}
 			}
 		}

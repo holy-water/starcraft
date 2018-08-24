@@ -15,7 +15,6 @@ public class DistanceMap {
 	class GridCell
 	{
 		private int timeLastVisited;
-		private int timeLastOpponentSeen;
 		private Unitset ourUnits;
 		private Unitset oppUnits;
 		private Position center;
@@ -23,7 +22,6 @@ public class DistanceMap {
 		public GridCell()
 		{
 			timeLastVisited = 0;
-			timeLastOpponentSeen = 0;
 		}
 	};
 	
@@ -32,11 +30,6 @@ public class DistanceMap {
 	private int mapHeight;
 	private int cols;
 	private int rows;
-	private int cells;
-	private int lastUpdated;
-	private int startRow;
-	private int startCol;
-
 	private int[] dist;
 	private char[] moveTo;
 	private Vector<GridCell> gridCells;
@@ -62,8 +55,6 @@ public class DistanceMap {
 		}
 		this.rows = MyBotModule.Broodwar.mapHeight();
 		this.cols = MyBotModule.Broodwar.mapWidth();
-		this.startRow = -1;
-		this.startCol = -1;
 	}
 	
 	public DistanceMap(int mapWidth, int mapHeight, int cellSize)
@@ -73,8 +64,6 @@ public class DistanceMap {
 		this.cellSize = cellSize;
 		this.cols = (mapWidth + cellSize - 1) / cellSize;
 		this.rows = (mapHeight + cellSize - 1) / cellSize;
-		this.cells = rows * cols;
-		this.lastUpdated = 0;
 	}
 
 	public int getDistItem(int index)
@@ -109,8 +98,6 @@ public class DistanceMap {
 	
 	public void setStartPosition(final int sr, final int sc)
 	{
-		startRow = sr;
-		startCol = sc;
 	}
 
 	public void addSorted(final TilePosition tp)
@@ -244,7 +231,7 @@ public class DistanceMap {
 			if (unit.getHitPoints() > 0)
 			{
 				getCell(unit).oppUnits.getLoadedUnits().add(unit);
-				getCell(unit).timeLastOpponentSeen = MyBotModule.Broodwar.getFrameCount();
+				MyBotModule.Broodwar.getFrameCount();
 			}
 		}
 	}

@@ -1,8 +1,4 @@
-import java.util.Set;
-
-import bwapi.Color;
 import bwapi.TilePosition;
-import bwapi.UnitType;
 
 /// 빌드 명령
 public class BuildOrderItem {

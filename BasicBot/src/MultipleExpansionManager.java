@@ -89,35 +89,6 @@ public class MultipleExpansionManager {
 		}
 	}
 
-	// 아무것도 안하고 있는 SCV 정리
-	private void checkIfSCVWorking() {
-
-		List<Unit> unitList = self.getUnits();
-
-		Unit unit;
-		for (int i = 0; i < unitList.size(); i++) {
-			unit = unitList.get(i);
-			if (unit == null || !unit.exists() || unit.getHitPoints() <= 0) {
-				continue;
-			}
-			if (unit.getType() == UnitType.Terran_SCV) {
-				if (unit.getDistance(thisMulti.getPosition()) < 10) {
-					if (!unit.isAttacking() && !unit.isConstructing() && !unit.isMoving() && !unit.isGatheringGas()
-							&& !unit.isGatheringMinerals()) {
-						WorkerManager.Instance().setIdleWorker(unit);
-						if (!scoutSCV.isEmpty() && scoutSCV.containsValue(unit)) {
-							scoutSCV.remove(thisMulti, unit);
-						}
-						if (!statusSCV.isEmpty() && statusSCV.containsKey(unit)) {
-							statusSCV.remove(unit);
-						}
-						break;
-					}
-				}
-			}
-		}
-	}
-
 	// 죽은 SCV 정리
 	private void checkIfSCVDead() {
 
